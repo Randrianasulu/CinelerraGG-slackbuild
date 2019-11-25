@@ -1,0 +1,45 @@
+diff --git a/cinelerra-5.1/cinelerra/ffmpeg.C b/cinelerra-5.1/cinelerra/ffmpeg.C
+index 70098ca..9fab08f 100644
+--- a/cinelerra-5.1/cinelerra/ffmpeg.C
++++ b/cinelerra-5.1/cinelerra/ffmpeg.C
+@@ -681,7 +681,10 @@ int FFStream::seek(int64_t no, double rate)
+ 	}
+ 	if( pos == curr_pos ) return 0;
+ 	double secs = pos < 0 ? 0. : pos / rate;
+-	AVRational time_base = st->time_base;
++// if user forced timebase to a specified stream
++	AVRational time_base = ffmpeg->force_timebase >= 0 ?
++		ffmpeg->fmt_ctx->streams[ffmpeg->force_timebase]->time_base :
++		st->time_base;
+ 	int64_t tstmp = time_base.num > 0 ? secs * time_base.den/time_base.num : 0;
+ 	if( !tstmp ) {
+ 		if( st->nb_index_entries > 0 ) tstmp = st->index_entries[0].timestamp;
+@@ -1576,6 +1579,7 @@ FFMPEG::FFMPEG(FileBase *file_base)
+ 	flow = 1;
+ 	decoding = encoding = 0;
+ 	has_audio = has_video = 0;
++	force_timebase = -1;
+ 	opts = 0;
+ 	opt_duration = -1;
+ 	opt_video_filter = 0;
+@@ -2271,6 +2275,8 @@ int FFMPEG::init_decoder(const char *filename)
+ 		if( (tag=av_dict_get(opts, "format", NULL, 0)) != 0 ) {
+ 			ifmt = av_find_input_format(tag->value);
+ 		}
++		if( (tag=av_dict_get(opts, "force_timebase", NULL, 0)) != 0 )
++			force_timebase = atoi(tag->value);
+ 	}
+ 	else
+ 		load_options("decode.opts", opts);
+diff --git a/cinelerra-5.1/cinelerra/ffmpeg.h b/cinelerra-5.1/cinelerra/ffmpeg.h
+index 9e17d8b..dc6c95d 100644
+--- a/cinelerra-5.1/cinelerra/ffmpeg.h
++++ b/cinelerra-5.1/cinelerra/ffmpeg.h
+@@ -378,6 +378,7 @@ public:
+ 
+ 	int decoding, encoding;
+ 	int has_audio, has_video;
++	int force_timebase;
+ 
+ 	FFMPEG(FileBase *file_base=0);
+ 	~FFMPEG();

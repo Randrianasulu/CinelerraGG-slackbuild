@@ -1,0 +1,12 @@
+diff --git a/cinelerra-5.1/thirdparty/Makefile b/cinelerra-5.1/thirdparty/Makefile
+index 7268028..5bada22 100644
+--- a/cinelerra-5.1/thirdparty/Makefile
++++ b/cinelerra-5.1/thirdparty/Makefile
+@@ -114,7 +114,7 @@ fftw.cfg_params= --disable-fortran --enable-shared=no
+ ffmpeg.cfg_params= \
+ 	--enable-pthreads --enable-gpl \
+-	--disable-ffplay --disable-vaapi \
++	--disable-vaapi --disable-ffplay --disable-doc \
+ 	$(call if_pkg,fdk,--enable-libfdk-aac) \
+ 	$(call if_pkg,twolame,--enable-libtwolame) \
+ 	$(call if_pkg,openjpeg,--enable-libopenjpeg) \

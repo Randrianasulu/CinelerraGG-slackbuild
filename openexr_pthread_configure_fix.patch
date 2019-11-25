@@ -1,0 +1,13 @@
+diff --git a/cinelerra-5.1/configure.ac b/cinelerra-5.1/configure.ac
+index 4fe5c0f..2a52ef4 100644
+--- a/cinelerra-5.1/configure.ac
++++ b/cinelerra-5.1/configure.ac
+@@ -540,7 +540,7 @@ CHECK_WANT([OPENEXR], [auto], [use openexr], [
+  saved_LIBS="$LIBS"
+  saved_CXXFLAGS="$CXXFLAGS"
+  # ilmbase libs
+- LIBS=" -lIlmImf -lIlmThread -lIex"
++ LIBS=" -lIlmImf -lIlmThread -lIex -lpthread"
+  CXXFLAGS="-I/usr/include/OpenEXR"
+  AC_LANG_PUSH(C++)
+  AC_LINK_IFELSE([AC_LANG_PROGRAM([[

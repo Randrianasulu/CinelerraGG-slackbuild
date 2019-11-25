@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.
+# Line up the first '|' above the ':' following the base package name, and
+# the '|' on the right side marks the last column you can put a character in.
+# You must make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':' except on otherwise blank lines.
+
+         |-----handy-ruler------------------------------------------------------|
+cinelerra-goodguy: cinelerra-goodguy (GNU/Linux Video/Audio Studio)
+cinelerra-goodguy:
+cinelerra-goodguy: Cinelerra is the most  advanced non-linear video editor
+cinelerra-goodguy: and compositor for Linux.  It does primarily three main
+cinelerra-goodguy: things:  capturing, compositing, and  editing audio and
+cinelerra-goodguy: video with sample level accuracy.
+cinelerra-goodguy:
+cinelerra-goodguy: Homepage: http://cinelerra-gg.org/
+cinelerra-goodguy:
+cinelerra-goodguy: This is goodguy's own variant of Cinelerra (5.x) which
+cinelerra-goodguy: started on cinelerra.org.

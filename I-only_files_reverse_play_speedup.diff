@@ -1,0 +1,25 @@
+diff --git a/cinelerra-5.1/cinelerra/ffmpeg.C b/cinelerra-5.1/cinelerra/ffmpeg.C
+index 70098ca..32867de 100644
+--- a/cinelerra-5.1/cinelerra/ffmpeg.C
++++ b/cinelerra-5.1/cinelerra/ffmpeg.C
+@@ -1192,10 +1192,19 @@ int FFVideoStream::video_seek(int64_t pos)
+ 	if( pos == curr_pos-1 && !seeked ) return 0;
+ // if close enough, just read up to current
+ 	int gop = avctx->gop_size;
+-	if( gop < 4 ) gop = 4;
++	if( gop < 4 && gop != 0) gop = 4;
+ 	if( gop > 64 ) gop = 64;
++	if( gop == 0 ) gop = 1;
++	//fprintf(stderr, "GOP: %i \n", gop);
+ 	int read_limit = curr_pos + 3*gop;
+ 	if( pos >= curr_pos && pos <= read_limit ) return 0;
++	// fixup for I-only codecs, not sure why it needed with ffmpeg 4.2
++	if (st->codecpar->codec_id == AV_CODEC_ID_DVVIDEO || st->codecpar->codec_id == AV_CODEC_ID_MJPEG || 
++	st->codecpar->codec_id == AV_CODEC_ID_FFVHUFF || st->codecpar->codec_id == AV_CODEC_ID_DNXHD ||
++	st->codecpar->codec_id ==AV_CODEC_ID_HUFFYUV ) {
++	gop = 1;
++	if( seek(pos - 2*gop, frame_rate) < 0 ) return -1;
++	}
+ // guarentee preload more than 2*gop frames
+ 	if( seek(pos - 3*gop, frame_rate) < 0 ) return -1;
+ 	return 1;

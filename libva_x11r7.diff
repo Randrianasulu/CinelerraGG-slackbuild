@@ -1,0 +1,11 @@
+--- configure.ac.orig	2019-05-11 23:12:23.949017714 +0300
++++ configure.ac	2019-05-11 23:13:04.841017908 +0300
+@@ -904,7 +904,7 @@
+ FFMPEG_EXTRA_LDFLAGS=""
+ if test "x$WANT_VAAPI" != "xno" -a "x$HAVE_VAAPI" = "xyes"; then
+   FFMPEG_EXTRA_LDFLAGS+=' -lva'
+-  EXTRA_LIBS+=' -lva'
++  EXTRA_LIBS+=' -lva -L/usr/X11R7/lib'
+   WANT_VAPPI="yes"
+   CFG_WANTS+=" VAAPI"
+   if test "x$HAVE_vaapi_x11" = "xyes"; then

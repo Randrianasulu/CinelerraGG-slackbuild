@@ -1,0 +1,24 @@
+X-Git-Url: https://git.cinelerra-gg.org/git/?p=goodguy%2Fcinelerra.git;a=blobdiff_plain;f=cinelerra-5.1%2Fguicast%2Fbcwindowbase.C;h=1f1d0d30c151581dfbe51cc2ff90ec67ab71e1e0;hp=1ff149285aa2d2c297cf48b2ead4c708d8b23852;hb=a2ebbc5e88800bd740652a32285f8145a1acfdc6;hpb=44967d5fd341812fb6395e906bae34e743011ebc
+
+diff --git a/cinelerra-5.1/guicast/bcwindowbase.C b/cinelerra-5.1/guicast/bcwindowbase.C
+index 1ff1492..1f1d0d3 100644
+--- a/cinelerra-5.1/guicast/bcwindowbase.C
++++ b/cinelerra-5.1/guicast/bcwindowbase.C
+@@ -460,8 +460,16 @@ int BC_WindowBase::create_window(BC_WindowBase *parent_window, const char *title
+ 		vis = get_glx_visual(display);
+ 		if( !vis )
+ #endif
++		{
++			int mask = VisualDepthMask | VisualClassMask;
++			static XVisualInfo vinfo = { .depth = 24, .c_class = DirectColor, };
++			int nitems = 0;
++			XVisualInfo *vis_info = XGetVisualInfo(display, mask, &vinfo, &nitems);
++			vis = vis_info && nitems>0 ? vis_info[0].visual : 0;
++			if( vis_info ) XFree(vis_info);
++		}
++		if( !vis )
+ 			vis = DefaultVisual(display, screen);
+-
+ 		default_depth = DefaultDepth(display, screen);
+ 
+ 		client_byte_order = (*(const u_int32_t*)"a   ") & 0x00000001;

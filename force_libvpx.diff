@@ -1,0 +1,22 @@
+diff --git a/cinelerra-5.1/configure.ac b/cinelerra-5.1/configure.ac
+index dcfd41d..9cf291a 100644
+--- a/cinelerra-5.1/configure.ac
++++ b/cinelerra-5.1/configure.ac
+@@ -265,7 +265,7 @@ PKG_3RD([libvorbis],[auto],
+     lib/.libs/libvorbisfile.a ],
+   [ include . ])
+ 
+-PKG_3RD([mjpegtools],[yes],
++PKG_3RD([mjpegtools],[yes],
+   [mjpegtools-2.1.0],
+   [ utils/mmxsse/.libs/libmmxsse.a \
+     utils/.libs/libmjpegutils.a \
+@@ -313,7 +313,7 @@ PKG_3RD([x265],[auto],
+   [ libx265.a ],
+   [ . source ])
+ 
+-PKG_3RD([libvpx],[auto],
++PKG_3RD([libvpx],[yes],
+   [libvpx-1.8.1],
+   [ libvpx.a ],
+   [ . ])

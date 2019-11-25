@@ -1,0 +1,46 @@
+diff --git a/cinelerra-5.1/guicast/clip.h b/cinelerra-5.1/guicast/clip.h
+index 45a4a2c..862bbcd 100644
+--- a/cinelerra-5.1/guicast/clip.h
++++ b/cinelerra-5.1/guicast/clip.h
+@@ -75,4 +75,22 @@ static bc_always_inline void bclamp(double &dv, double dmn, double dmx) {
+ 	if( dv < dmn ) dv = dmn; else if( dv > dmx ) dv = dmx;
+ }
+ 
++static inline void bc_rgb2yuv(float r, float g, float b, float &y, float &u, float &v)
++{ //bt601, jpeg, unclipped
++       y =  0.29900*r + 0.58700*g + 0.11400*b;
++       u = -0.16874*r - 0.33126*g + 0.50000*b + 0.5;
++       v =  0.50000*r - 0.41869*g - 0.08131*b + 0.5;
++}
++
++
++static inline void bc_rgb2yuv(int r, int g, int b, int &y, int &u, int &v, int max=255)
++{ // clipped
++       float mx = max, fr = r/mx, fg = g/mx, fb = b/mx, fy, fu, fv;
++       bc_rgb2yuv(fr,fg,fb, fy,fu,fv);
++       y = (int)(fy * mx + 0.5);  bclamp(y,0,max);
++       u = (int)(fu * mx + 0.5);  bclamp(u,0,max);
++       v = (int)(fv * mx + 0.5);  bclamp(v,0,max);
++}
++
++
+ #endif
+diff --git a/cinelerra-5.1/guicast/vframe.C b/cinelerra-5.1/guicast/vframe.C
+index e8dad7e..c66b11d 100644
+--- a/cinelerra-5.1/guicast/vframe.C
++++ b/cinelerra-5.1/guicast/vframe.C
+@@ -1330,11 +1330,13 @@ int VFrame::get_memory_usage()
+ 
+ void VFrame::set_pixel_color(int rgb)
+ {
++
+ 	pixel_rgb = rgb;
+ 	int ir = 0xff & (pixel_rgb >> 16);
+ 	int ig = 0xff & (pixel_rgb >> 8);
+ 	int ib = 0xff & (pixel_rgb >> 0);
+-	YUV::yuv.rgb_to_yuv_8(ir, ig, ib);
++	//YUV::yuv.rgb_to_yuv_8(ir, ig, ib);
++	bc_rgb2yuv(ir,ig,ib, ir,ig,ib);
+ 	pixel_yuv =  (ir<<16) | (ig<<8) | (ib<<0);
+ }
+ 

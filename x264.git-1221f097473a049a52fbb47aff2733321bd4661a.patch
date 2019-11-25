@@ -1,0 +1,23 @@
+From: Henrik Gramner <henrik@gramner.com>
+Date: Sun, 22 Oct 2017 08:50:46 +0000 (+0200)
+Subject: filters/resize: Upgrade to a newer libavutil API
+X-Git-Url: http://git.videolan.org/?p=x264.git;a=commitdiff_plain;h=1221f097473a049a52fbb47aff2733321bd4661a;hp=99ca611d2e667553e026f487dc787b595dde84c5
+
+filters/resize: Upgrade to a newer libavutil API
+
+Use the AVComponentDescriptor depth field instead of depth_minus1.
+---
+
+diff --git a/filters/video/resize.c b/filters/video/resize.c
+index 95c8ec88..3ec224eb 100644
+--- a/filters/video/resize.c
++++ b/filters/video/resize.c
+@@ -212,7 +212,7 @@ static int pick_closest_supported_csp( int csp )
+     }
+     // now determine high depth
+     for( int i = 0; i < pix_desc->nb_components; i++ )
+-        if( pix_desc->comp[i].depth_minus1 >= 8 )
++        if( pix_desc->comp[i].depth > 8 )
+             ret |= X264_CSP_HIGH_DEPTH;
+     return ret;
+ }

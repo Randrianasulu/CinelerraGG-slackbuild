@@ -1,0 +1,20 @@
+--- cinelerra-5.1/cinelerra/Makefile.orig	2018-06-01 04:19:14.209775325 +0300
++++ cinelerra-5.1/cinelerra/Makefile	2018-06-01 04:38:16.993789301 +0300
+@@ -362,7 +362,7 @@
+ 	$(TDB)/$(OBJDIR)/db.a \
+ 
+ LIBS := $(LIBRARIES)
+-LIBS += $(libraries)
++LIBS += $(libraries) -L/usr/X11R7/lib
+ 
+ CUTADS = $(OBJDIR)/cutads
+ CUTOBJ = $(OBJDIR)/cutads.o
+@@ -370,7 +370,7 @@
+ 	$(OBJDIR)/mediadb.o \
+ 	$(OBJDIR)/filexml.o
+ CUTLIBS = \
+-	$(LIBZMPEG3)/$(OBJDIR)/libzmpeg3.a -lX11 \
++	$(LIBZMPEG3)/$(OBJDIR)/libzmpeg3.a  \
+ 	$(TDB)/$(OBJDIR)/db.a
+ 
+ BDWRITE = $(OBJDIR)/bdwrite

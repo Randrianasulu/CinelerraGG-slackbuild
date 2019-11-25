@@ -1,0 +1,11 @@
+--- configure.ac.orig	2019-05-11 23:35:51.933024367 +0300
++++ configure.ac	2019-05-11 23:37:47.165024911 +0300
+@@ -917,6 +917,8 @@
+   fi
+ fi
+ if test "x$WANT_VDPAU" != "xno" -a "x$HAVE_VDPAU" = "xyes"; then
++  FFMPEG_EXTRA_LDFLAGS+=' -lvdpau'
++  EXTRA_LIBS+=' -lvdpau -L/usr/X11R7/lib'
+   WANT_VDPAU="yes"
+   CFG_WANTS+=" VDPAU"
+ fi

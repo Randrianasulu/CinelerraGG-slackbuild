@@ -1,0 +1,186 @@
+diff --git a/cinelerra-5.1/cinelerra/filempeg.C b/cinelerra-5.1/cinelerra/filempeg.C
+index 986ac92..61b2182 100644
+--- a/cinelerra-5.1/cinelerra/filempeg.C
++++ b/cinelerra-5.1/cinelerra/filempeg.C
+@@ -622,9 +622,14 @@ int FileMPEG::open_file(int rd, int wr)
+ 			sprintf(string, " -F %d", frame_rate_code);
+ 			strncat(mjpeg_command, string, sizeof(mjpeg_command));
+ 
++			sprintf(string, " -H"); /* Maximise high-frequency resolution */
++			strncat(mjpeg_command, string, sizeof(mjpeg_command));
+ 
+-
+-
++			if(asset->vmpeg_preset == 3) /* no constrains for mpeg2 generic */
++			{
++				sprintf(string, " --no-constraints");
++				strncat(mjpeg_command, string, sizeof(mjpeg_command));
++			}
+ 
+ 			strncat(mjpeg_command,
+ 				asset->vmpeg_progressive ? " -I 0" : " -I 1",
+diff --git a/cinelerra-5.1/mpeg2enc/dist2_mmx.s b/cinelerra-5.1/mpeg2enc/dist2_mmx.s
+index 0f41fd8..9ce4b94 100644
+--- a/cinelerra-5.1/mpeg2enc/dist2_mmx.s
++++ b/cinelerra-5.1/mpeg2enc/dist2_mmx.s
+@@ -51,6 +51,7 @@ twos:
+ 			dw	2
+ 			dw	2
+ 
++SECTION .text
+ align 32
+ dist2_mmx:
+ 	push ebp			; save frame pointer
+@@ -597,4 +598,4 @@ bd2top22:
+ 		dec       edi
+ 		jg        bd2top22
+ 		jmp       d2exit
+-				
+\ No newline at end of file
++
+diff --git a/cinelerra-5.1/mpeg2enc/global.h b/cinelerra-5.1/mpeg2enc/global.h
+index 2826c09..a860e41 100644
+--- a/cinelerra-5.1/mpeg2enc/global.h
++++ b/cinelerra-5.1/mpeg2enc/global.h
+@@ -660,7 +660,7 @@ int quant_non_intra_hv( pict_data_s *picture,
+ 							int mquant, int *nonsat_mquant);
+ void iquant_intra ( int16_t *src, int16_t *dst, int dc_prec, int mquant);
+ void iquant_non_intra (int16_t *src, int16_t *dst, int mquant);
+-void init_quantizer_hv();
++void init_quantizer_hv(int use_sse);
+ int  next_larger_quant_hv( pict_data_s *picture, int quant );
+ 
+ extern int (*pquant_non_intra)(pict_data_s *picture, int16_t *src, int16_t *dst,
+diff --git a/cinelerra-5.1/mpeg2enc/mblock_sad_mmx.s b/cinelerra-5.1/mpeg2enc/mblock_sad_mmx.s
+index a58c580..fc75986 100644
+--- a/cinelerra-5.1/mpeg2enc/mblock_sad_mmx.s
++++ b/cinelerra-5.1/mpeg2enc/mblock_sad_mmx.s
+@@ -47,6 +47,7 @@ global dist1_00_mmx
+ ; mm7 = temp
+ 
+ 
++SECTION .text
+ align 32
+ dist1_00_mmx:
+ 	push ebp		; save frame pointer
+diff --git a/cinelerra-5.1/mpeg2enc/mblock_sad_mmxe.s b/cinelerra-5.1/mpeg2enc/mblock_sad_mmxe.s
+index 0aec521..de94413 100644
+--- a/cinelerra-5.1/mpeg2enc/mblock_sad_mmxe.s
++++ b/cinelerra-5.1/mpeg2enc/mblock_sad_mmxe.s
+@@ -48,6 +48,7 @@ global dist1_00_mmxe
+ ; mm6 = temp
+ 
+ 
++SECTION .text
+ align 32
+ dist1_00_mmxe:
+ 	push ebp					; save frame pointer
+diff --git a/cinelerra-5.1/mpeg2enc/mblockq_sad_mmxe.s b/cinelerra-5.1/mpeg2enc/mblockq_sad_mmxe.s
+index 0e57ea5..207b5ee 100644
+--- a/cinelerra-5.1/mpeg2enc/mblockq_sad_mmxe.s
++++ b/cinelerra-5.1/mpeg2enc/mblockq_sad_mmxe.s
+@@ -52,6 +52,7 @@ global mblockq_sad1_REF
+ ; mm6 = temp
+ ; mm7 = temp						
+ 
++SECTION .text
+ align 32
+ mblockq_dist1_REF:
+ 	push ebp					; save frame pointer
+diff --git a/cinelerra-5.1/mpeg2enc/mpeg2enc.c b/cinelerra-5.1/mpeg2enc/mpeg2enc.c
+index 5452fb4..af76232 100644
+--- a/cinelerra-5.1/mpeg2enc/mpeg2enc.c
++++ b/cinelerra-5.1/mpeg2enc/mpeg2enc.c
+@@ -222,7 +222,8 @@ static void init()
+ 	init_idct();
+ 	init_motion();
+ 	init_predict_hv();
+-	init_quantizer_hv();
++	int use_sse = chroma_format==CHROMA420 ? 1 : 0;
++	init_quantizer_hv(use_sse);
+ 	init_transform_hv();
+ 
+ /* round picture dimensions to nZearest multiple of 16 or 32 */
+diff --git a/cinelerra-5.1/mpeg2enc/predcomp_mmx.s b/cinelerra-5.1/mpeg2enc/predcomp_mmx.s
+index 82fd01f..2813620 100644
+--- a/cinelerra-5.1/mpeg2enc/predcomp_mmx.s
++++ b/cinelerra-5.1/mpeg2enc/predcomp_mmx.s
+@@ -45,6 +45,7 @@ global predcomp_00_mmx
+ 		
+ 
+ 
++SECTION .text
+ align 32
+ predcomp_00_mmx:
+ 	push ebp					; save frame pointer
+diff --git a/cinelerra-5.1/mpeg2enc/predcomp_mmxe.s b/cinelerra-5.1/mpeg2enc/predcomp_mmxe.s
+index a2d0413..aae425b 100644
+--- a/cinelerra-5.1/mpeg2enc/predcomp_mmxe.s
++++ b/cinelerra-5.1/mpeg2enc/predcomp_mmxe.s
+@@ -44,6 +44,7 @@ global predcomp_00_mmxe
+ ;;; mm0 = zero mask for src...
+ 		
+ 
++SECTION .text
+ align 32
+ predcomp_00_mmxe:
+ 	push ebp					; save frame pointer
+diff --git a/cinelerra-5.1/mpeg2enc/predict_mmx.s b/cinelerra-5.1/mpeg2enc/predict_mmx.s
+index dac7990..ac8015c 100644
+--- a/cinelerra-5.1/mpeg2enc/predict_mmx.s
++++ b/cinelerra-5.1/mpeg2enc/predict_mmx.s
+@@ -25,6 +25,7 @@
+ ;                  unsigned char *cur,
+ ;                  int lx, short *blk)
+ 
++SECTION .text
+ align 32
+ global sub_pred_mmx
+ sub_pred_mmx:
+diff --git a/cinelerra-5.1/mpeg2enc/putseq.c b/cinelerra-5.1/mpeg2enc/putseq.c
+index 30acf79..91958c7 100644
+--- a/cinelerra-5.1/mpeg2enc/putseq.c
++++ b/cinelerra-5.1/mpeg2enc/putseq.c
+@@ -360,5 +360,5 @@ void putseq()
+ //printf("putseq 7\n");
+ 	}
+ 	putseqend();
+-  	if(verbose) fprintf(stderr, "\nDone.  Be sure to visit heroinewarrior.com for updates.\n");
++	if(verbose) fprintf(stderr, "Done.\n");
+ }
+diff --git a/cinelerra-5.1/mpeg2enc/quant_mmx.s b/cinelerra-5.1/mpeg2enc/quant_mmx.s
+index c206918..5ba3539 100644
+--- a/cinelerra-5.1/mpeg2enc/quant_mmx.s
++++ b/cinelerra-5.1/mpeg2enc/quant_mmx.s
+@@ -63,8 +63,6 @@ align 32
+ quant_buf:	resw 64
+ 		
+ SECTION .text
+-		
+-
+ align 32
+ quantize_ni_mmx:
+ 	push ebp				; save frame pointer
+diff --git a/cinelerra-5.1/mpeg2enc/quantize.c b/cinelerra-5.1/mpeg2enc/quantize.c
+index f842843..dd6740e 100644
+--- a/cinelerra-5.1/mpeg2enc/quantize.c
++++ b/cinelerra-5.1/mpeg2enc/quantize.c
+@@ -57,7 +57,7 @@ static void iquant_non_intra_m1(int16_t *src, int16_t *dst, uint16_t *quant_mat)
+   Currently just setting up MMX routines if available...
+  */
+ 
+-void init_quantizer_hv()
++void init_quantizer_hv(int use_sse)
+ {
+ #ifdef X86_CPU
+   int flags;
+@@ -86,7 +86,8 @@ void init_quantizer_hv()
+ 		{
+ 			if(verbose) fprintf( stderr, "EXTENDED MMX");
+ 			pquant_weight_coeff_sum = quant_weight_coeff_sum_mmx;
+-			piquant_non_intra_m1 = iquant_non_intra_m1_sse;
++			if( use_sse )
++				piquant_non_intra_m1 = iquant_non_intra_m1_sse;
+ 		}
+ 		else
+ 		{

@@ -1,0 +1,37 @@
+diff --git a/cinelerra-5.1/mpeg2enc/quantize.c b/cinelerra-5.1/mpeg2enc/quantize.c
+index f842843..00993ea 100644
+--- a/cinelerra-5.1/mpeg2enc/quantize.c
++++ b/cinelerra-5.1/mpeg2enc/quantize.c
+@@ -59,6 +59,7 @@ static void iquant_non_intra_m1(int16_t *src, int16_t *dst, uint16_t *quant_mat)
+ 
+ void init_quantizer_hv()
+ {
++#if 1
+ #ifdef X86_CPU
+   int flags;
+   flags = cpu_accel();
+@@ -81,7 +82,7 @@ void init_quantizer_hv()
+ 		{
+ 			pquant_non_intra = quant_non_intra_hv;
+ 		}
+-
++/*
+ 		if ( (flags & ACCEL_X86_MMXEXT) != 0 )
+ 		{
+ 			if(verbose) fprintf( stderr, "EXTENDED MMX");
+@@ -89,6 +90,7 @@ void init_quantizer_hv()
+ 			piquant_non_intra_m1 = iquant_non_intra_m1_sse;
+ 		}
+ 		else
++*/
+ 		{
+ 			if(verbose) fprintf( stderr, "MMX");
+ 			pquant_weight_coeff_sum = quant_weight_coeff_sum_mmx;
+@@ -97,6 +99,7 @@ void init_quantizer_hv()
+ 		if(verbose) fprintf( stderr, " for QUANTIZER!\n");
+ 	}
+   else
++#endif
+ #endif
+ 	{
+ 	  pquant_non_intra = quant_non_intra_hv;	  

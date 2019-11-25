@@ -1,0 +1,39 @@
+diff --git a/cinelerra-5.1/libzmpeg3/Makefile b/cinelerra-5.1/libzmpeg3/Makefile
+index 616603f..d4ab3cf 100644
+--- a/cinelerra-5.1/libzmpeg3/Makefile
++++ b/cinelerra-5.1/libzmpeg3/Makefile
+@@ -75,7 +75,7 @@ UTILS += $(OBJDIR)/zmpeg3cat
+ UTILS += $(OBJDIR)/zmpeg3ifochk
+ UTILS += $(OBJDIR)/zmpeg3cc2txt
+
+-LIBS = -lm -lpthread
++LIBS = -lm -lpthread -L/usr/X11R7/lib
+
+ LIBS += $(lib_a52dec) $(lib_djbfft)
+
+diff --git a/cinelerra-5.1/mpeg2enc/Makefile b/cinelerra-5.1/mpeg2enc/Makefile
+index 37ac9a2..d718187 100644
+--- a/cinelerra-5.1/mpeg2enc/Makefile
++++ b/cinelerra-5.1/mpeg2enc/Makefile
+@@ -52,7 +52,7 @@ OBJ = \
+ 	$(OBJDIR)/writepic.o
+
+ LIBS := $(LIBZMPEG3)/$(OBJDIR)/libzmpeg3.a
+-LIBS += $(libraries)
++LIBS += $(libraries) -L/usr/X11R7/lib
+
+ HVEG2LIB = $(OBJDIR)/hveg2enc.a
+ HVEG2ENC = $(OBJDIR)/hveg2enc
+diff --git a/cinelerra-5.1/mplexlo/Makefile b/cinelerra-5.1/mplexlo/Makefile
+index 6fb9ca7..9a692e4 100644
+--- a/cinelerra-5.1/mplexlo/Makefile
++++ b/cinelerra-5.1/mplexlo/Makefile
+@@ -9,7 +9,7 @@ CFLAGS += -I$(LIBZMPEG3)
+ CFLAGS += $(static_incs)
+
+ LIBS := $(LIBZMPEG3)/$(OBJDIR)/libzmpeg3.a
+-LIBS += $(libraries)
++LIBS += $(libraries) -L/usr/X11R7/lib
+
+ OUTPUT := $(OBJDIR)/mplexlo
+

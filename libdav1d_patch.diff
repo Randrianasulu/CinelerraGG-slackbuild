@@ -1,0 +1,19 @@
+diff --git a/cinelerra-5.1/cinelerra/ffmpeg.C b/cinelerra-5.1/cinelerra/ffmpeg.C
+index 3bb9dd8..bb7bc99 100644
+--- a/cinelerra-5.1/cinelerra/ffmpeg.C
++++ b/cinelerra-5.1/cinelerra/ffmpeg.C
+@@ -374,7 +374,13 @@ int FFStream::decode_activate()
+ 		}
+ 		while( ret >= 0 && st != 0 && !reading ) {
+ 			AVCodecID codec_id = st->codecpar->codec_id;
+-			AVCodec *decoder = avcodec_find_decoder(codec_id);
++			/* hack */
++			const AVCodecDescriptor *descr = avcodec_descriptor_get(codec_id);
++			AVCodec *decoder = NULL;
++			decoder = avcodec_find_decoder(codec_id);
++			if ( descr->id == AV_CODEC_ID_AV1) {
++			 decoder = avcodec_find_decoder_by_name("libdav1d");
++		        }
+ 			avctx = avcodec_alloc_context3(decoder);
+ 			if( !avctx ) {
+ 				eprintf(_("cant allocate codec context\n"));

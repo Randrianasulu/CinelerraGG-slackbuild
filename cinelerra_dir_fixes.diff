@@ -1,0 +1,31 @@
+diff --git a/cinelerra-5.1/cinelerra/Makefile b/cinelerra-5.1/cinelerra/Makefile
+index cb0c1d6..b5eeba1 100644
+--- a/cinelerra-5.1/cinelerra/Makefile
++++ b/cinelerra-5.1/cinelerra/Makefile
+@@ -347,7 +347,7 @@ LIBRARIES := \
+ 	$(THEME_DATA) \
+ 
+ LIBS := $(LIBRARIES)
+-LIBS += $(libraries)
++LIBS += $(libraries) -L/usr/X11R7/lib
+ 
+ CUTADS = $(OBJDIR)/cutads
+ CUTOBJ = $(OBJDIR)/cutads.o
+@@ -355,7 +355,7 @@ CUTOBJS = $(CUTOBJ) \
+ 	$(OBJDIR)/mediadb.o \
+ 	$(OBJDIR)/filexml.o
+ CUTLIBS = \
+-	$(LIBZMPEG3)/$(OBJDIR)/libzmpeg3.a -lX11 \
++	$(LIBZMPEG3)/$(OBJDIR)/libzmpeg3.a \
+ 	$(TDB)/$(OBJDIR)/db.a
+ 
+ BDWRITE = $(OBJDIR)/bdwrite
+diff --git a/cinelerra-5.1/cinelerra/ci b/cinelerra-5.1/cinelerra/ci
+index bc98783..2285898 120000
+--- a/cinelerra-5.1/cinelerra/ci
++++ b/cinelerra-5.1/cinelerra/ci
+@@ -1 +1 @@
+-../bin/cinelerra
+\ No newline at end of file
++../bin/cin
+\ No newline at end of file

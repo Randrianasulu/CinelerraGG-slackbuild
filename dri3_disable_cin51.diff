@@ -1,0 +1,12 @@
+--- cinelerra/main.C.orig	2017-05-19 21:54:14.591114867 +0300
++++ cinelerra/main.C	2017-05-19 22:03:32.229841024 +0300
+@@ -117,6 +117,9 @@
+ 	deamon_path[0] = 0;
+ 	EDL::id_lock = new Mutex("EDL::id_lock");
+ 
++	/* disable dri3, it broke hw effects on nouveau as of 19-05-2017 */
++	setenv("LIBGL_DRI3_DISABLE", "1", 1);
++
+ 	File::init_cin_path();
+ 	const char *locale_path = File::get_locale_path();
+ 	const char *cin = File::get_cin();

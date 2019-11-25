@@ -1,0 +1,11 @@
+--- configure._orig.ac	2018-05-06 21:19:13.179206006 +0300
++++ configure.ac	2018-05-06 21:30:08.243214018 +0300
+@@ -233,7 +233,7 @@
+   [ include ])
+ 
+ PKG_3RD([openjpeg],[auto],
+-  [openjpeg-2.1.0-20160221],
++  [openjpeg-2.3.0],
+   [ bin/libopenjp2.a ],
+   [ src/lib/openjp2 ])
+ 

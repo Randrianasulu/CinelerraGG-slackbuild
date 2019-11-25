@@ -1,0 +1,70 @@
+diff --git a/cinelerra-5.1/mpeg2enc/mpeg2enc.c b/cinelerra-5.1/mpeg2enc/mpeg2enc.c
+index 5452fb4..a2e2215 100644
+--- a/cinelerra-5.1/mpeg2enc/mpeg2enc.c
++++ b/cinelerra-5.1/mpeg2enc/mpeg2enc.c
+@@ -222,8 +222,14 @@ static void init()
+ 	init_idct();
+ 	init_motion();
+ 	init_predict_hv();
+-	init_quantizer_hv();
+-	init_transform_hv();
++	
++	if (chroma_format==CHROMA420)
++	init_quantizer_hv(1);
++	else
++	if (chroma_format==CHROMA422)
++	init_quantizer_hv(0);
++	
++	init_transform_hv(0);
+ 
+ /* round picture dimensions to nZearest multiple of 16 or 32 */
+ 	mb_width = (horizontal_size+15)/16;
+diff --git a/cinelerra-5.1/mpeg2enc/quantize.c b/cinelerra-5.1/mpeg2enc/quantize.c
+index f842843..83762b9 100644
+--- a/cinelerra-5.1/mpeg2enc/quantize.c
++++ b/cinelerra-5.1/mpeg2enc/quantize.c
+@@ -57,8 +57,9 @@ static void iquant_non_intra_m1(int16_t *src, int16_t *dst, uint16_t *quant_mat)
+   Currently just setting up MMX routines if available...
+  */
+ 
+-void init_quantizer_hv()
++void init_quantizer_hv(int use_sse)
+ {
++
+ #ifdef X86_CPU
+   int flags;
+   flags = cpu_accel();
+@@ -73,10 +74,10 @@ void init_quantizer_hv()
+ /*
+  * 		else if ( (flags & ACCEL_X86_MMXEXT) != 0 )
+  * 		{
+- * 			if(verbose) fprintf( stderr, "SSE and ");
++ *  			if(verbose) fprintf( stderr, "SSE and ");
+  * 			pquant_non_intra = quant_non_intra_hv_sse;
+- * 		}
+- */
++ *		}
++*/
+ 		else 
+ 		{
+ 			pquant_non_intra = quant_non_intra_hv;
+@@ -86,9 +87,11 @@ void init_quantizer_hv()
+ 		{
+ 			if(verbose) fprintf( stderr, "EXTENDED MMX");
+ 			pquant_weight_coeff_sum = quant_weight_coeff_sum_mmx;
++			if (use_sse == 1)
+ 			piquant_non_intra_m1 = iquant_non_intra_m1_sse;
+ 		}
+ 		else
++
+ 		{
+ 			if(verbose) fprintf( stderr, "MMX");
+ 			pquant_weight_coeff_sum = quant_weight_coeff_sum_mmx;
+@@ -98,6 +101,7 @@ void init_quantizer_hv()
+ 	}
+   else
+ #endif
++
+ 	{
+ 	  pquant_non_intra = quant_non_intra_hv;	  
+ 	  pquant_weight_coeff_sum = quant_weight_coeff_sum;

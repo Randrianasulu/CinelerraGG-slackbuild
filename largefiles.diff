@@ -1,0 +1,12 @@
+diff --git a/cinelerra-5.1/configure.ac b/cinelerra-5.1/configure.ac
+index df40ef5..cd649be 100644
+--- a/cinelerra-5.1/configure.ac
++++ b/cinelerra-5.1/configure.ac
+@@ -14,6 +14,7 @@ CFG_CFLAGS+=" -D__STDC_CONSTANT_MACROS"
+ CFG_CFLAGS+=" -D__STDC_LIMIT_MACROS"
+ CFG_CFLAGS+=" -DPNG_SKIP_SETJMP_CHECK=1"
+ CFG_CFLAGS+=" -I/usr/include/freetype2"
++CFG_CFLAGS+=" -D_FILE_OFFSET_BITS=64"
+ 
+ AC_DEFUN([CHECK_WITH], [
+ AC_ARG_WITH([$1],

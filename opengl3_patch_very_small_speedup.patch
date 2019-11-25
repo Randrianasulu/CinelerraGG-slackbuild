@@ -1,0 +1,34 @@
+diff --git a/cinelerra-5.1/cinelerra/vdevicex11.C b/cinelerra-5.1/cinelerra/vdevicex11.C
+index 24d1be0..6d87692 100644
+--- a/cinelerra-5.1/cinelerra/vdevicex11.C
++++ b/cinelerra-5.1/cinelerra/vdevicex11.C
+@@ -333,6 +333,13 @@ void VDeviceX11::new_output_buffer(VFrame **result, int file_colormodel, EDL *ed
+ 				}
+ 				break;
+ 
++			case BC_RGBA_FLOAT:
++			case BC_RGB_FLOAT:
++			if( device->out_config->driver == PLAYBACK_X11_GL 
++				&& !output->use_scrollbars )
++					bitmap_type = BITMAP_PRIMARY;
++				break;
++
+ 			case BC_YUV420P:
+ 				if( device->out_config->driver == PLAYBACK_X11_XV &&
+ 				    window->accel_available(display_colormodel, 0) &&
+diff --git a/cinelerra-5.1/guicast/bctexture.C b/cinelerra-5.1/guicast/bctexture.C
+index 52787e1..f1fd166 100644
+--- a/cinelerra-5.1/guicast/bctexture.C
++++ b/cinelerra-5.1/guicast/bctexture.C
+@@ -124,9 +124,9 @@ void BC_Texture::create_texture(int w, int h, int colormodel)
+ 		glGenTextures(1, (GLuint*)&texture_id);
+ 		glBindTexture(GL_TEXTURE_2D, (GLuint)texture_id);
+ 		glEnable(GL_TEXTURE_2D);
+-		int internal_format = texture_components == 4 ? GL_RGBA8 : GL_RGB8 ;
++		int internal_format = texture_components == 4 ? GL_RGBA32F : GL_RGB32F ;
+ 		glTexImage2D(GL_TEXTURE_2D, 0, internal_format, texture_w, texture_h,
+-				0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
++				0, GL_RGBA, GL_FLOAT, 0);
+ 		window_id = BC_WindowBase::get_synchronous()->current_window->get_id();
+ 		BC_WindowBase::get_synchronous()->put_texture(texture_id,
+ 			texture_w, texture_h, texture_components);

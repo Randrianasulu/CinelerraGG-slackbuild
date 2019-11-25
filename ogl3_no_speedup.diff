@@ -1,0 +1,36 @@
+diff --git a/cinelerra-5.1/cinelerra/playback3d.C b/cinelerra-5.1/cinelerra/playback3d.C
+index a7f185b..e45edc6 100644
+--- a/cinelerra-5.1/cinelerra/playback3d.C
++++ b/cinelerra-5.1/cinelerra/playback3d.C
+@@ -1491,11 +1491,14 @@ void Playback3D::convert_cmodel(Canvas *canvas,
+ 	if(
+ 		(output->get_opengl_state() == VFrame::TEXTURE ||
+ 		output->get_opengl_state() == VFrame::SCREEN) &&
++(
+ // OpenGL has no floating point.
++/*
+ 		( (src_cmodel == BC_RGB888 && dst_cmodel == BC_RGB_FLOAT) ||
+ 		  (src_cmodel == BC_RGBA8888 && dst_cmodel == BC_RGBA_FLOAT) ||
+ 		  (src_cmodel == BC_RGB_FLOAT && dst_cmodel == BC_RGB888) ||
+-		  (src_cmodel == BC_RGBA_FLOAT && dst_cmodel == BC_RGBA8888) ||
++		  (src_cmodel == BC_RGBA_FLOAT && dst_cmodel == BC_RGBA8888) || 
++*/
+ // OpenGL sets alpha to 1 on import
+ 		  (src_cmodel == BC_RGB888 && dst_cmodel == BC_RGBA8888) ||
+ 		  (src_cmodel == BC_YUV888 && dst_cmodel == BC_YUVA8888) ||
+diff --git a/cinelerra-5.1/guicast/bctexture.C b/cinelerra-5.1/guicast/bctexture.C
+index 52787e1..cc50454 100644
+--- a/cinelerra-5.1/guicast/bctexture.C
++++ b/cinelerra-5.1/guicast/bctexture.C
+@@ -124,9 +124,9 @@ void BC_Texture::create_texture(int w, int h, int colormodel)
+ 		glGenTextures(1, (GLuint*)&texture_id);
+ 		glBindTexture(GL_TEXTURE_2D, (GLuint)texture_id);
+ 		glEnable(GL_TEXTURE_2D);
+-		int internal_format = texture_components == 4 ? GL_RGBA8 : GL_RGB8 ;
++		int internal_format = texture_components == 4 ? GL_RGBA16F : GL_RGB16F ;
+ 		glTexImage2D(GL_TEXTURE_2D, 0, internal_format, texture_w, texture_h,
+-				0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
++				0, GL_RGBA, GL_FLOAT, 0);
+ 		window_id = BC_WindowBase::get_synchronous()->current_window->get_id();
+ 		BC_WindowBase::get_synchronous()->put_texture(texture_id,
+ 			texture_w, texture_h, texture_components);

@@ -1,0 +1,34 @@
+diff --git a/cinelerra-5.1/db/utils/Makefile b/cinelerra-5.1/db/utils/Makefile
+index 3ded994..b44df78 100644
+--- a/cinelerra-5.1/db/utils/Makefile
++++ b/cinelerra-5.1/db/utils/Makefile
+@@ -5,7 +5,7 @@ $(shell mkdir -p $(OBJDIR))
+ $(shell echo $(CFLAGS) > $(OBJDIR)/c_flags)
+ CXXFLAGS:=-ggdb -I.. -Wall `cat $(OBJDIR)/c_flags`
+ LDLIBS:=../$(OBJDIR)/db.a
+-LDFLAGS:=
++LDFLAGS:=-L/usr/X11R7/lib
+ 
+ TARGETS:=clip_accesses \
+ 	clip_data \
+@@ -46,7 +46,7 @@ XTV_MEDIA_OBJS := $(TOPDIR)/cinelerra/$(OBJDIR)/mediadb.o $(TOPDIR)/cinelerra/$(
+ 
+ XTV_LIBS := $(TOPDIR)/libzmpeg3/$(OBJDIR)/libzmpeg3.a
+ XTV_LIBS += $(TOPDIR)/db/$(OBJDIR)/db.a
+-XTV_LIBS += $(libraries)
++XTV_LIBS += $(libraries) -L/usr/X11R7/lib
+ 
+ XTV_INCLUDES := -I$(TOPDIR) -I$(TOPDIR)/guicast
+ XTV_INCLUDES += $(static_incs)
+diff --git a/cinelerra-5.1/db/utils/xtv.C b/cinelerra-5.1/db/utils/xtv.C
+index edda5e2..45d247d 100644
+--- a/cinelerra-5.1/db/utils/xtv.C
++++ b/cinelerra-5.1/db/utils/xtv.C
+@@ -10,6 +10,7 @@
+ #include <X11/X.h>
+ #include <X11/Xlib.h>
+ #include <X11/extensions/Xvlib.h>
++#include <X11/extensions/XShm.h>
+ 
+ #include <alsa/asoundlib.h>
+ #include <sys/time.h>
