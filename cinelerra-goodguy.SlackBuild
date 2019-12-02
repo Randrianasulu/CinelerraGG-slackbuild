@@ -139,6 +139,7 @@ LDFLAGS="-L/usr/X11R7/lib -ldl -L/usr/lib${LIBDIRSUFFIX}" \
     --libdir=/usr/lib \
     --with-ladspa-build \
     --with-opus \
+    --without-nv \
     --enable-opus \
     --with-jobs=4 \
     --with-booby \
@@ -196,8 +197,8 @@ mkdir -p $PKG/usr/share/applications
 cp $CWD/patches/cinelerra-goodguy.desktop $PKG/usr/share/applications/cinelerra-goodguy.desktop
 cp $CWD/patches/cin.xpm $PKG/usr/share/pixmaps/
 
-cp $CWD/ffmpeg_opts/video/* $PKG/usr/share/cin/ffmpeg/video
-cp $CWD/ffmpeg_opts/audio/* $PKG/usr/share/cin/ffmpeg/audio
+# cp $CWD/ffmpeg_opts/video/* $PKG/usr/share/cin/ffmpeg/video
+# cp $CWD/ffmpeg_opts/audio/* $PKG/usr/share/cin/ffmpeg/audio
 
 
 cd $PKG
