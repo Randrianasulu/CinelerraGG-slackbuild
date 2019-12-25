@@ -98,7 +98,7 @@ git apply -v  $CWD/I-only_files_reverse_play_speedup.diff
 
 # tmp for broken dv avi type file
 #git apply -v $CWD/andrew.patch
-cp $CWD/avi_fix.patch thirdparty/src/ffmpeg.git.patch10
+cp $CWD/avi_fix.patch thirdparty/src/ffmpeg.git.patch20
 
 # old gphoto fails opencv build
 git apply -v $CWD/opencv_gphoto2.diff
@@ -106,9 +106,9 @@ git apply -v $CWD/opencv_gphoto2.diff
 cat $CWD/x265-mult/Makefile.diff | patch -p1 --verbose || exit 0
 
 # temporariry remove ffmpeg.git patch #2
-mv thirdparty/src/ffmpeg.git.patch2 thirdparty/src/NO_patch
+# mv thirdparty/src/ffmpeg.git.patch2 thirdparty/src/NO_patch
 #add new patch from  Marton Balint
-cp $CWD/ffmpeg_ts-branch1.patch thirdparty/src/ffmpeg.git.patch2
+# cp $CWD/ffmpeg_ts-branch1.patch thirdparty/src/ffmpeg.git.patch2
 
 # configure the build
 ./autogen.sh
