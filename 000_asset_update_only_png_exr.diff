@@ -1,0 +1,75 @@
+diff --git a/cinelerra-5.1/cinelerra/asset.C b/cinelerra-5.1/cinelerra/asset.C
+index fd6e97e..e8806d6 100644
+--- a/cinelerra-5.1/cinelerra/asset.C
++++ b/cinelerra-5.1/cinelerra/asset.C
+@@ -133,9 +133,11 @@ int Asset::init_values()
+ 	ac3_bitrate = 128;
+ 
+ 	png_use_alpha = 0;
+-
++	png_compression = 0;
++	
+ 	exr_use_alpha = 0;
+ 	exr_compression = 0;
++	exr_dwa_compression_level = 45;
+ 
+ 	tiff_cmodel = 0;
+ 	tiff_compression = 0;
+@@ -279,8 +281,10 @@ void Asset::copy_format(Asset *asset, int do_index)
+ 	ac3_bitrate = asset->ac3_bitrate;
+ 
+ 	png_use_alpha = asset->png_use_alpha;
++	png_compression = asset->png_compression;
+ 	exr_use_alpha = asset->exr_use_alpha;
+ 	exr_compression = asset->exr_compression;
++	exr_dwa_compression_level = asset->exr_dwa_compression_level;
+ 
+ 	tiff_cmodel = asset->tiff_cmodel;
+ 	tiff_compression = asset->tiff_compression;
+@@ -803,8 +807,10 @@ void Asset::load_defaults(BC_Hash *defaults,
+ 	ac3_bitrate = GET_DEFAULT("AC3_BITRATE", ac3_bitrate);
+ 
+ 	png_use_alpha = GET_DEFAULT("PNG_USE_ALPHA", png_use_alpha);
++	png_compression = GET_DEFAULT("PNG_COMPRESSION", png_compression);
+ 	exr_use_alpha = GET_DEFAULT("EXR_USE_ALPHA", exr_use_alpha);
+ 	exr_compression = GET_DEFAULT("EXR_COMPRESSION", exr_compression);
++	exr_dwa_compression_level = GET_DEFAULT("EXR_DWA_COMPRESSION_LEVEL", exr_dwa_compression_level);
+ 	tiff_cmodel = GET_DEFAULT("TIFF_CMODEL", tiff_cmodel);
+ 	tiff_compression = GET_DEFAULT("TIFF_COMPRESSION", tiff_compression);
+ 
+@@ -899,8 +905,10 @@ void Asset::save_defaults(BC_Hash *defaults,
+ 
+ 
+ 		UPDATE_DEFAULT("PNG_USE_ALPHA", png_use_alpha);
++		UPDATE_DEFAULT("PNG_COMPRESSION", png_compression);
+ 		UPDATE_DEFAULT("EXR_USE_ALPHA", exr_use_alpha);
+ 		UPDATE_DEFAULT("EXR_COMPRESSION", exr_compression);
++		UPDATE_DEFAULT("EXR_DWA_COMPRESSION_LEVEL", exr_dwa_compression_level);
+ 		UPDATE_DEFAULT("TIFF_CMODEL", tiff_cmodel);
+ 		UPDATE_DEFAULT("TIFF_COMPRESSION", tiff_compression);
+ 
+diff --git a/cinelerra-5.1/cinelerra/asset.h b/cinelerra-5.1/cinelerra/asset.h
+index 096ea98..869891f 100644
+--- a/cinelerra-5.1/cinelerra/asset.h
++++ b/cinelerra-5.1/cinelerra/asset.h
+@@ -189,6 +189,7 @@ public:
+ // for jpeg compression
+ 	int jpeg_quality;
+ 
++
+ // for mpeg video compression
+ 	int vmpeg_iframe_distance;
+ 	int vmpeg_progressive;
+@@ -220,10 +221,11 @@ public:
+ 
+ // PNG video compression
+ 	int png_use_alpha;
+-
++	int png_compression;
+ // EXR video compression
+ 	int exr_use_alpha;
+ 	int exr_compression;
++	float exr_dwa_compression_level;
+ 
+ // TIFF video compression.  An enumeration from filetiff.h
+ 	int tiff_cmodel;

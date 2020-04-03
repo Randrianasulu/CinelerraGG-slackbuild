@@ -1,0 +1,15 @@
+diff --git a/cinelerra-5.1/thirdparty/Makefile b/cinelerra-5.1/thirdparty/Makefile
+index e343f39a..26fd330b 100644
+--- a/cinelerra-5.1/thirdparty/Makefile
++++ b/cinelerra-5.1/thirdparty/Makefile
+@@ -195,8 +195,8 @@ audiofile.mak_params?=LIBS="-lm -lstdc++"
+ flac.cfg_params?= --enable-shared=no
+ flac.cflags?="$(call inc_path,libogg) $(call ld_path,libogg,src/.libs)"
+ giflib.cfg_params=echo "exec true" > ./configure; chmod +x ./configure;
+-lame.cfg_vars?= CFLAGS+=" -O"
+-lame.cfg_params?=--enable-shared=no
++lame.cfg_vars?= CFLAGS+=" -O3 -DUSE_FAST_LOG=1 -ffast-math"
++lame.cfg_params?=--enable-shared=no --enable-nasm --enable-expopt=norm
+ lame.mak_params?= ; cd $(call bld_path,lame,include); ln -sf . lame
+ libaom.cfg_vars?=$(call cmake_config,aom-master)
+ libaom.cfg_params?= -DENABLE_SHARED=no -DCMAKE_INSTALL_LIBDIR=lib \

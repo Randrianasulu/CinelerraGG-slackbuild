@@ -1,6 +1,0 @@
-
-cd build/linux/
-./multilib.sh
-cp 8bit/libx265.a ../../
-cp 8bit/Makefile ../../
-# cmake "$@" "source"

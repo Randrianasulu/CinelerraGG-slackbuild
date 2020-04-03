@@ -1,0 +1,58 @@
+diff --git a/cinelerra-5.1/cinelerra/filetiff.C b/cinelerra-5.1/cinelerra/filetiff.C
+index cde59a0..cecd3c7 100644
+--- a/cinelerra-5.1/cinelerra/filetiff.C
++++ b/cinelerra-5.1/cinelerra/filetiff.C
+@@ -109,6 +109,9 @@ const char* FileTIFF::compression_to_str(int value)
+ 		case FileTIFF::PACK_BITS: return "Pack Bits"; break;
+ 		case FileTIFF::DEFLATE: return "Deflate"; break;
+ 		case FileTIFF::JPEG: return "JPEG"; break;
++		case FileTIFF::PIXARFILM: return "PIXARFILM"; break;
++		case FileTIFF::PIXARLOG: return "PIXARLOG"; break;
++		case FileTIFF::JP2000: return "JP2000"; break;
+ 		default:
+ 			return "None";
+ 			break;
+@@ -474,6 +477,15 @@ int FileTIFF::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
+ 		case FileTIFF::JPEG:
+ 			compression = COMPRESSION_JPEG;
+ 			break;
++		case FileTIFF::PIXARFILM:
++			compression = COMPRESSION_PIXARFILM;
++			break;
++		case FileTIFF::PIXARLOG:
++			compression = COMPRESSION_PIXARLOG;
++			break;
++		case FileTIFF::JP2000:
++			compression = COMPRESSION_JP2000;
++			break;
+ 		default:
+ 			compression = COMPRESSION_NONE;
+ 			break;
+@@ -658,7 +670,10 @@ void TIFFCompression::create_objects()
+ 	add_item(new TIFFCompressionItem(gui, FileTIFF::NONE));
+ //	add_item(new TIFFCompressionItem(gui, FileTIFF::LZW));
+ 	add_item(new TIFFCompressionItem(gui, FileTIFF::PACK_BITS));
+-//	add_item(new TIFFCompressionItem(gui, FileTIFF::DEFLATE));
++	add_item(new TIFFCompressionItem(gui, FileTIFF::DEFLATE)); // works!
++//	add_item(new TIFFCompressionItem(gui, FileTIFF::PIXARFILM)); not supported for scanline encoding
++//	add_item(new TIFFCompressionItem(gui, FileTIFF::PIXARLOG)); only 8 bit ?
++//	add_item(new TIFFCompressionItem(gui, FileTIFF::JP2000)); doesn't support scanline encoding
+ //	add_item(new TIFFCompressionItem(gui, FileTIFF::JPEG));
+ }
+ 
+diff --git a/cinelerra-5.1/cinelerra/filetiff.h b/cinelerra-5.1/cinelerra/filetiff.h
+index 321ea9b..124097d 100644
+--- a/cinelerra-5.1/cinelerra/filetiff.h
++++ b/cinelerra-5.1/cinelerra/filetiff.h
+@@ -70,7 +70,10 @@ public:
+ 		LZW,
+ 		PACK_BITS,
+ 		DEFLATE,
+-		JPEG
++		JPEG,
++		PIXARFILM,
++		PIXARLOG,
++		JP2000
+ 	};
+ 
+ 	Mutex *unit_lock;

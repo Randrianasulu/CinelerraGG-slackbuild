@@ -1,9 +1,0 @@
-[Desktop Entry]
-Name=Cinelerra-GG 5.1 (goodguy)
-Comment=Video Editor
-Encoding=UTF-8
-Categories=Application;AudioVideo;Multimedia;VideoEditing;
-Exec=/usr/bin/cin
-Terminal=false
-Type=Application
-Icon=/usr/share/pixmaps/cin.xpm

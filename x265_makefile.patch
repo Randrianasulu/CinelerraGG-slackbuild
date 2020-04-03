@@ -1,0 +1,16 @@
+diff --git a/cinelerra-5.1/thirdparty/Makefile b/cinelerra-5.1/thirdparty/Makefile
+index e343f39a..47ae260a 100644
+--- a/cinelerra-5.1/thirdparty/Makefile
++++ b/cinelerra-5.1/thirdparty/Makefile
+@@ -249,8 +249,9 @@ tiff.cfg_params+= --enable-shared=no --disable-zstd $(call if_pkg,libwebp,\
+  --with-webp-lib-dir=$(call pkg_libs,libwebp))
+ twolame.cfg_params?=--enable-shared=no
+ x264.cfg_params?= --enable-static --enable-pic
+-x265.cfg_vars?=$(call cmake_config,source)
+-x265.cfg_params?= -DENABLE_SHARED=no
++#x265.cfg_vars?=$(call cmake_config,source)
++x265.cfg_vars?=chmod +x ./configure; chmod +x ./multilib.sh;
++#x265.cfg_params?= -DENABLE_SHARED=no
+ libvpx.cfg_params?= --enable-pic
+ 
+ DS:=$$$$$$$$

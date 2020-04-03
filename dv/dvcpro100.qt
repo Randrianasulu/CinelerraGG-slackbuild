@@ -1,7 +1,0 @@
-mov dvvideo
-vcodec=dvvideo
-pixel_format=yuv422p
-flags=+ildct+ilme
-b=100000000
-aspect=16:9
-#threads=3

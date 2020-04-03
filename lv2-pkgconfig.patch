@@ -1,0 +1,13 @@
+diff --git a/cinelerra-5.1/thirdparty/Makefile b/cinelerra-5.1/thirdparty/Makefile
+index 0c595ee..33766ad 100644
+--- a/cinelerra-5.1/thirdparty/Makefile
++++ b/cinelerra-5.1/thirdparty/Makefile
+@@ -261,7 +261,7 @@ define waf-setup
+ $(1).cfg_vars+=./waf --version; find .waf* -type f -name "*.py" | \
+  while read f; do sed -e '/StopIter/d' -i "$(DS)f"; done; \
+  echo 'exec ./waf configure "$(DS)@"' > ./configure; chmod +x \
+- ./configure;  PKG_CONFIG_PATH=$(LV2_PKGCFG) LD_LIBRARY_PATH=$(LV2_LIBPATH) 
++ ./configure;  PKG_CONFIG_PATH=$(LV2_PKGCFG):$(PKG_CONFIG_PATH)  LD_LIBRARY_PATH=$(LV2_LIBPATH) 
+ $(1).cfg_params+=\
+  CFLAGS="-I$(call bld_path,lv2) $(foreach f,$(2), $(call inc_path,$(f))) -fPIC -std=c99"\
+  LDFLAGS="-lm $(foreach f,$(2), $(call ld_path,$(f),usr/local/lib)) "

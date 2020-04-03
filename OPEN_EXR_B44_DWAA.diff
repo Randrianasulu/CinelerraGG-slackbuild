@@ -1,0 +1,54 @@
+diff --git a/cinelerra-5.1/cinelerra/fileexr.C b/cinelerra-5.1/cinelerra/fileexr.C
+index 998372b..8a6a574 100644
+--- a/cinelerra-5.1/cinelerra/fileexr.C
++++ b/cinelerra-5.1/cinelerra/fileexr.C
+@@ -191,6 +191,10 @@ const char* FileEXR::compression_to_str(int compression)
+ 	switch(compression)
+ 	{
+ 		case FileEXR::NONE: return "None"; break;
++		case FileEXR::B44: return "B44"; break;
++		case FileEXR::B44A: return "B44A"; break;
++		case FileEXR::DWAB: return "DWAB"; break;
++		case FileEXR::DWAA: return "DWAA"; break;
+ 		case FileEXR::PIZ: return "PIZ"; break;
+ 		case FileEXR::ZIP: return "ZIP"; break;
+ 		case FileEXR::ZIPS: return "ZIPS"; break;
+@@ -209,6 +213,10 @@ int FileEXR::compression_to_exr(int compression)
+ 		case FileEXR::ZIP: return (int)Imf::ZIP_COMPRESSION; break;
+ 		case FileEXR::ZIPS: return (int)Imf::ZIPS_COMPRESSION; break;
+ 		case FileEXR::RLE: return (int)Imf::RLE_COMPRESSION; break;
++		case FileEXR::B44: return (int)Imf::B44_COMPRESSION; break;
++		case FileEXR::B44A: return (int)Imf::B44A_COMPRESSION; break;
++		case FileEXR::DWAA: return (int)Imf::DWAA_COMPRESSION; break;
++		case FileEXR::DWAB: return (int)Imf::DWAB_COMPRESSION; break;
+ 		case FileEXR::PXR24: return (int)Imf::PXR24_COMPRESSION; break;
+ 	}
+ 	return Imf::NO_COMPRESSION;
+@@ -634,6 +642,10 @@ void EXRCompression::create_objects()
+ 	add_item(new EXRCompressionItem(gui, FileEXR::ZIPS));
+ 	add_item(new EXRCompressionItem(gui, FileEXR::RLE));
+ 	add_item(new EXRCompressionItem(gui, FileEXR::PXR24));
++	add_item(new EXRCompressionItem(gui, FileEXR::B44));
++	add_item(new EXRCompressionItem(gui, FileEXR::B44A));
++	add_item(new EXRCompressionItem(gui, FileEXR::DWAA));
++	add_item(new EXRCompressionItem(gui, FileEXR::DWAB));
+ }
+ 
+ int EXRCompression::handle_event()
+diff --git a/cinelerra-5.1/cinelerra/fileexr.h b/cinelerra-5.1/cinelerra/fileexr.h
+index 3e47489..eac1c99 100644
+--- a/cinelerra-5.1/cinelerra/fileexr.h
++++ b/cinelerra-5.1/cinelerra/fileexr.h
+@@ -55,7 +55,11 @@ public:
+ 		ZIP,
+ 		ZIPS,
+ 		RLE,
+-		PXR24
++		PXR24,
++		B44,
++		B44A,
++		DWAA,
++		DWAB
+ 	};
+ 
+ 	static const char* compression_to_str(int compression);

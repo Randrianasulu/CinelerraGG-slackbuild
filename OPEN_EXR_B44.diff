@@ -1,0 +1,46 @@
+diff --git a/cinelerra-5.1/cinelerra/fileexr.C b/cinelerra-5.1/cinelerra/fileexr.C
+index 998372b..2a7c5e6 100644
+--- a/cinelerra-5.1/cinelerra/fileexr.C
++++ b/cinelerra-5.1/cinelerra/fileexr.C
+@@ -191,6 +191,8 @@ const char* FileEXR::compression_to_str(int compression)
+ 	switch(compression)
+ 	{
+ 		case FileEXR::NONE: return "None"; break;
++		case FileEXR::B44: return "B44"; break;
++		case FileEXR::B44A: return "B44A"; break;
+ 		case FileEXR::PIZ: return "PIZ"; break;
+ 		case FileEXR::ZIP: return "ZIP"; break;
+ 		case FileEXR::ZIPS: return "ZIPS"; break;
+@@ -209,6 +211,8 @@ int FileEXR::compression_to_exr(int compression)
+ 		case FileEXR::ZIP: return (int)Imf::ZIP_COMPRESSION; break;
+ 		case FileEXR::ZIPS: return (int)Imf::ZIPS_COMPRESSION; break;
+ 		case FileEXR::RLE: return (int)Imf::RLE_COMPRESSION; break;
++		case FileEXR::B44: return (int)Imf::B44_COMPRESSION; break;
++		case FileEXR::B44A: return (int)Imf::B44A_COMPRESSION; break;
+ 		case FileEXR::PXR24: return (int)Imf::PXR24_COMPRESSION; break;
+ 	}
+ 	return Imf::NO_COMPRESSION;
+@@ -634,6 +638,8 @@ void EXRCompression::create_objects()
+ 	add_item(new EXRCompressionItem(gui, FileEXR::ZIPS));
+ 	add_item(new EXRCompressionItem(gui, FileEXR::RLE));
+ 	add_item(new EXRCompressionItem(gui, FileEXR::PXR24));
++	add_item(new EXRCompressionItem(gui, FileEXR::B44));
++	add_item(new EXRCompressionItem(gui, FileEXR::B44A));
+ }
+ 
+ int EXRCompression::handle_event()
+diff --git a/cinelerra-5.1/cinelerra/fileexr.h b/cinelerra-5.1/cinelerra/fileexr.h
+index 3e47489..9fd87e7 100644
+--- a/cinelerra-5.1/cinelerra/fileexr.h
++++ b/cinelerra-5.1/cinelerra/fileexr.h
+@@ -55,7 +55,9 @@ public:
+ 		ZIP,
+ 		ZIPS,
+ 		RLE,
+-		PXR24
++		PXR24,
++		B44,
++		B44A
+ 	};
+ 
+ 	static const char* compression_to_str(int compression);

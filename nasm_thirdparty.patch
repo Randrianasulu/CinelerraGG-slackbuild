@@ -1,0 +1,112 @@
+diff --git a/cinelerra-5.1/configure.ac b/cinelerra-5.1/configure.ac
+index f61ef27..00552c6 100644
+--- a/cinelerra-5.1/configure.ac
++++ b/cinelerra-5.1/configure.ac
+@@ -328,6 +328,12 @@ PKG_3RD([mjpegtools],[yes],
+     mpeg2enc/.libs/libmpeg2encpp.a ],
+   [ .  lavtools utils ])
+ 
++PKG_3RD([nasm],[yes],
++ [nasm-2.14.02],
++ [ ],
++ [ . ])
++
++
+ PKG_3RD([openexr],[auto],
+   [openexr-2.4.1],
+   [ usr/local/lib/libHalf.a \
+@@ -458,23 +464,23 @@ ARCH=[`uname -m`]
+ I86=[`expr "x$ARCH" : 'xi[346]86.*'`]
+ X86=[`expr "x$ARCH" : 'x..._64*'`]
+ 
+-if test "x$I86$X86" != "x00" ; then
++#if test "x$I86$X86" != "x00" ; then
+   # Checks for ix86 programs.
+-  REQUIRE_PROG(NASM, [nasm])
++#  REQUIRE_PROG(NASM, [nasm])
+   # libx264 nasm fix
+-  AC_MSG_CHECKING([nasm x264 compatible])
+-  echo "vmovdqa32 [[eax]]{k1}{z}, zmm0" > conftest.asm
+-  nasm conftest.asm -o conftest.o > /dev/null 2>&1
+-  if test $? != 0 ; then
+-   AC_MSG_RESULT([no])
+-   AC_MSG_WARN([libx264 built without assembly code])
+-   X264_CFG_PARAMS="$X264_CFG_PARAMS --disable-asm"
+-  else
+-   AC_MSG_RESULT([yes])
+-  fi
+-  rm -f conftest.asm conftest.o
+-  REQUIRE_PROG(YASM, [yasm])
+-fi
++#  AC_MSG_CHECKING([nasm x264 compatible])
++#  echo "vmovdqa32 [[eax]]{k1}{z}, zmm0" > conftest.asm
++#  nasm conftest.asm -o conftest.o > /dev/null 2>&1
++#  if test $? != 0 ; then
++#   AC_MSG_RESULT([no])
++#   AC_MSG_WARN([libx264 built without assembly code])
++#   X264_CFG_PARAMS="$X264_CFG_PARAMS --disable-asm"
++#  else
++#   AC_MSG_RESULT([yes])
++#  fi
++#  rm -f conftest.asm conftest.o
++#  REQUIRE_PROG(YASM, [yasm])
++#fi
+ 
+ ## end arch dep tests
+ 
+@@ -911,6 +917,7 @@ PKG_PROVIDE([mjpegtools])
+ PKG_PROVIDE([libaom])
+ PKG_PROVIDE([dav1d])
+ PKG_PROVIDE([libwebp])
++PKG_PROVIDE([nasm])
+ PKG_PROVIDE([openExr], [$WANT_OPENEXR])
+ PKG_PROVIDE([openexr], [$WANT_OPENEXR])
+ PKG_PROVIDE([openjpeg])
+@@ -1219,6 +1226,7 @@ echo ""
+ echo "export thirdparty_libraries libraries"
+ echo "export CFLAGS_ CXXFLAGS_ LDFLAGS_"
+ echo "unexport CFLAGS CXXFLAGS LDFLAGS"
++echo "export PATH=`realpath $(echo $PWD)`/thirdparty/nasm-2.14.02:$PATH"
+ 
+ if test "x$HAVE_tiff" = "xyes"; then
+   if test "x$HAVE_jbig" != "xyes"; then
+diff --git a/cinelerra-5.1/thirdparty/Makefile b/cinelerra-5.1/thirdparty/Makefile
+index 0c595ee..29c84c4 100644
+--- a/cinelerra-5.1/thirdparty/Makefile
++++ b/cinelerra-5.1/thirdparty/Makefile
+@@ -234,6 +234,7 @@ libtheora.ldflags?="$(call ld_path,libvorbis,lib/.libs) $(call ld_path,libogg,sr
+ libtheora.cfg_params?= --disable-examples --disable-spec --enable-shared=no
+ libuuid.cfg_params?=--enable-shared=no
+ libvorbis.cfg_params?= --disable-oggtest --enable-shared=no
++nasm.cfg_params?= --disable-doc
+ openjpeg.cfg_params?= -DBUILD_SHARED_LIBS:BOOL=OFF
+ openjpeg.cfg_vars?=$(call cmake_config,.)
+ openjpeg.mak_params?= ; cd $(call bld_path,openjpeg,src/lib/openjp2); ln -sf . openjpeg-2.1
+@@ -314,6 +315,7 @@ else
+ rules=$(eval $(1))
+ endif
+ 
++$(call rules,$(call std-build,nasm))
+ $(call rules,$(call std-build,a52dec,djbfft))
+ $(call rules,$(call std-build,djbfft))
+ $(call rules,$(call std-build,audiofile))
+@@ -329,7 +331,7 @@ $(call rules,$(call std-build,ilmBase, openexr))
+ $(call rules,$(call std-build,ladspa))
+ $(call rules,$(call std-build,lame))
+ $(call rules,$(call std-build,libaom))
+-$(call rules,$(call std-build,dav1d))
++$(call rules,$(call std-build,dav1d,nasm))
+ $(call rules,$(call std-build,libwebp))
+ $(call rules,$(call std-build,libavc1394,libraw1394))
+ $(call rules,$(call std-build,libdv))
+@@ -350,8 +352,8 @@ $(call rules,$(call std-build,opus))
+ $(call rules,$(call std-build,speech_tools))
+ $(call rules,$(call std-build,tiff, libwebp))
+ $(call rules,$(call std-build,twolame))
+-$(call rules,$(call std-build,x264))
+-$(call rules,$(call std-build,x265))
++$(call rules,$(call std-build,x264,nasm))
++$(call rules,$(call std-build,x265,nasm))
+ $(call rules,$(call std-build,libvpx))
+ $(call rules,$(call std-build,lv2))
+ $(call rules,$(call std-build,serd))

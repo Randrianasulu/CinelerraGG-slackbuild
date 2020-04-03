@@ -1,0 +1,12 @@
+diff --git a/cinelerra-5.1/opencv_build b/cinelerra-5.1/opencv_build
+index fd029027..fabb8775 100644
+--- a/cinelerra-5.1/opencv_build
++++ b/cinelerra-5.1/opencv_build
+@@ -49,6 +49,7 @@ jobs:=-j$(shell echo $$(($(cpus) + $(cpus)/2 +2)))
+ #opencv4 breaks SIFT/SURF findobj
+ CFLAGS += -I$(opencv_prefix)/include/opencv4
+ CFLAGS += -I$(opencv_prefix)/include
++CFLAGS += -std=c++11
+ 
+ ifeq ($(src),git)
+ $(opencv).src:
