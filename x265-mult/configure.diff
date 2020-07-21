@@ -1,9 +1,0 @@
---- x265_3.1.2/configure.old	2019-11-02 13:23:49.463388621 +0300
-+++ x265_3.1.2/configure	2019-11-02 13:23:46.631388565 +0300
-@@ -1 +1,5 @@
--cmake "$@" "source"
-+cd build/linux/
-+./multilib.sh
-+cp 8bit/libx265.a ../../
-+
-+# cmake "$@" "source"
