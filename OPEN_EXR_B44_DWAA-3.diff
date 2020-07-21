@@ -1,0 +1,181 @@
+diff --git a/cinelerra-5.1/cinelerra/fileexr.C b/cinelerra-5.1/cinelerra/fileexr.C
+index 998372b..869ae11 100644
+--- a/cinelerra-5.1/cinelerra/fileexr.C
++++ b/cinelerra-5.1/cinelerra/fileexr.C
+@@ -24,6 +24,7 @@
+ #include "asset.h"
+ #include "bcsignals.h"
+ #include "clip.h"
++#include "file.h" // for num. of cpus
+ #include "fileexr.h"
+ #include "filesystem.h"
+ #include "interlacemodes.h"
+@@ -42,6 +43,7 @@
+ #include "ImfRgbaYca.h"
+ #include "ImfVersion.h"
+ 
++
+ class EXRIStream : public Imf::IStream
+ {
+ public:
+@@ -120,15 +122,6 @@ void EXRIStream::clear()
+ }
+ 
+ 
+-
+-
+-
+-
+-
+-
+-
+-
+-
+ EXROStream::EXROStream(VFrame *data)
+  : Imf::OStream("mypath")
+ {
+@@ -161,14 +154,6 @@ void EXROStream::seekp(Imf::Int64 pos)
+ 
+ 
+ 
+-
+-
+-
+-
+-
+-
+-
+-
+ FileEXR::FileEXR(Asset *asset, File *file)
+  : FileList(asset, file, "EXRLIST", ".exr", FILE_EXR, FILE_EXR_LIST)
+ {
+@@ -191,6 +176,10 @@ const char* FileEXR::compression_to_str(int compression)
+ 	switch(compression)
+ 	{
+ 		case FileEXR::NONE: return "None"; break;
++		case FileEXR::B44: return "B44"; break;
++		case FileEXR::B44A: return "B44A"; break;
++		case FileEXR::DWAB: return "DWAB"; break;
++		case FileEXR::DWAA: return "DWAA"; break;
+ 		case FileEXR::PIZ: return "PIZ"; break;
+ 		case FileEXR::ZIP: return "ZIP"; break;
+ 		case FileEXR::ZIPS: return "ZIPS"; break;
+@@ -209,6 +198,10 @@ int FileEXR::compression_to_exr(int compression)
+ 		case FileEXR::ZIP: return (int)Imf::ZIP_COMPRESSION; break;
+ 		case FileEXR::ZIPS: return (int)Imf::ZIPS_COMPRESSION; break;
+ 		case FileEXR::RLE: return (int)Imf::RLE_COMPRESSION; break;
++		case FileEXR::B44: return (int)Imf::B44_COMPRESSION; break;
++		case FileEXR::B44A: return (int)Imf::B44A_COMPRESSION; break;
++		case FileEXR::DWAA: return (int)Imf::DWAA_COMPRESSION; break;
++		case FileEXR::DWAB: return (int)Imf::DWAB_COMPRESSION; break;
+ 		case FileEXR::PXR24: return (int)Imf::PXR24_COMPRESSION; break;
+ 	}
+ 	return Imf::NO_COMPRESSION;
+@@ -227,7 +220,14 @@ int FileEXR::str_to_compression(char *string)
+ 	if(!strcmp(compression_to_str(FileEXR::RLE), string))
+ 		return FileEXR::RLE;
+ 	if(!strcmp(compression_to_str(FileEXR::PXR24), string))
+-		return PXR24;
++	if(!strcmp(compression_to_str(FileEXR::B44), string))
++		return FileEXR::B44;
++	if(!strcmp(compression_to_str(FileEXR::B44A), string))
++		return FileEXR::B44A;
++	if(!strcmp(compression_to_str(FileEXR::DWAA), string))
++		return FileEXR::DWAA;
++	if(!strcmp(compression_to_str(FileEXR::DWAB), string))
++		return FileEXR::DWAB;
+ 	return FileEXR::NONE;
+ }
+ 
+@@ -328,11 +328,14 @@ int FileEXR::read_frame_header(char *path)
+ 
+ int FileEXR::read_frame(VFrame *frame, VFrame *data)
+ {
++	Imf::setGlobalThreadCount (file->cpus);
+ 	EXRIStream exr_stream((char*)data->get_data(), data->get_compressed_size());
+ 	Imf::InputFile file(exr_stream);
+ 	Imath::Box2i dw = file.header().dataWindow();
+     int dx = dw.min.x;
+     int dy = dw.min.y;
++
++
+ 	Imf::FrameBuffer framebuffer;
+ 	float **rows = (float**)frame->get_rows();
+ 	int components = BC_CModels::components(frame->get_color_model());
+@@ -460,7 +463,7 @@ int FileEXR::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
+ 	VFrame *output_frame;
+ 	data->set_compressed_size(0);
+ 
+-
++	Imf::setGlobalThreadCount (file->cpus);
+ 	int native_cmodel = asset->exr_use_alpha ? BC_RGBA_FLOAT : BC_RGB_FLOAT;
+ 	int components = BC_CModels::components(native_cmodel);
+ 
+@@ -497,6 +500,8 @@ int FileEXR::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
+ 	Imf::Header header(output_frame->get_w(), output_frame->get_h());
+ 	header.compression() = (Imf::Compression)compression_to_exr(
+ 		asset->exr_compression);
++//	if(asset->exr_compression == DWAA || asset->exr_compression == DWAB)
++//	header.insert("dwaCompressionLevel", asset->exr_dwa_compression_level);
+ 	header.channels().insert("R", Imf::Channel(Imf::FLOAT));
+ 	header.channels().insert("G", Imf::Channel(Imf::FLOAT));
+ 	header.channels().insert("B", Imf::Channel(Imf::FLOAT));
+@@ -539,15 +544,6 @@ FrameWriterUnit* FileEXR::new_writer_unit(FrameWriter *writer)
+ 
+ 
+ 
+-
+-
+-
+-
+-
+-
+-
+-
+-
+ EXRUnit::EXRUnit(FileEXR *file, FrameWriter *writer)
+  : FrameWriterUnit(writer)
+ {
+@@ -562,14 +558,6 @@ EXRUnit::~EXRUnit()
+ 
+ 
+ 
+-
+-
+-
+-
+-
+-
+-
+-
+ EXRConfigVideo::EXRConfigVideo(BC_WindowBase *parent_window, Asset *asset)
+  : BC_Window(_(PROGRAM_NAME ": Video Compression"),
+ 	parent_window->get_abs_cursor_x(1), parent_window->get_abs_cursor_y(1),
+@@ -634,6 +622,10 @@ void EXRCompression::create_objects()
+ 	add_item(new EXRCompressionItem(gui, FileEXR::ZIPS));
+ 	add_item(new EXRCompressionItem(gui, FileEXR::RLE));
+ 	add_item(new EXRCompressionItem(gui, FileEXR::PXR24));
++	add_item(new EXRCompressionItem(gui, FileEXR::B44));
++	add_item(new EXRCompressionItem(gui, FileEXR::B44A));
++	add_item(new EXRCompressionItem(gui, FileEXR::DWAA));
++	add_item(new EXRCompressionItem(gui, FileEXR::DWAB));
+ }
+ 
+ int EXRCompression::handle_event()
+diff --git a/cinelerra-5.1/cinelerra/fileexr.h b/cinelerra-5.1/cinelerra/fileexr.h
+index 3e47489..eac1c99 100644
+--- a/cinelerra-5.1/cinelerra/fileexr.h
++++ b/cinelerra-5.1/cinelerra/fileexr.h
+@@ -55,7 +55,11 @@ public:
+ 		ZIP,
+ 		ZIPS,
+ 		RLE,
+-		PXR24
++		PXR24,
++		B44,
++		B44A,
++		DWAA,
++		DWAB
+ 	};
+ 
+ 	static const char* compression_to_str(int compression);

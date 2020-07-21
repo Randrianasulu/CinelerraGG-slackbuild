@@ -1,0 +1,14 @@
+--- cinelerra-5.1/thirdparty/Makefile.orig	2020-04-12 03:42:53.636065402 +0300
++++ cinelerra-5.1/thirdparty/Makefile	2020-04-12 03:44:08.132065754 +0300
+@@ -253,8 +253,9 @@
+  $(call if_npkg,libwebp,--disable-webp)
+ twolame.cfg_params?=--enable-shared=no
+ x264.cfg_params?= --enable-static --enable-pic
+-x265.cfg_vars?=$(call cmake_config,source)
+-x265.cfg_params?= -DENABLE_SHARED=no
++x265.cfg_vars?=chmod +x ./configure; chmod +x ./multilib.sh;
++#x265.cfg_vars?=$(call cmake_config,source)
++#x265.cfg_params?= -DENABLE_SHARED=no
+ libvpx.cfg_params?= --enable-pic --disable-unit-tests --disable-examples --disable-tools
+ 
+ 

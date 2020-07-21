@@ -1,0 +1,20 @@
+--- configure.orig	2020-03-24 17:41:45.495193069 +0300
++++ configure	2020-03-24 17:59:44.696469016 +0300
+@@ -13200,7 +13200,7 @@
+ $as_echo_n "checking version of GCC... " >&6; }
+ 		GCC_version="`${CC} --version | sed -n '1s/^[^ ]* (.*) //;s/ .*$//;1p'`"
+ 		case "${GCC_version}" in
+-		0-9*0-9*)
++		[0-9]*[0-9]*)
+ 			{ $as_echo "$as_me:${as_lineno-$LINENO}: result: ${GCC_version}" >&5
+ $as_echo "${GCC_version}" >&6; }
+ 			;;
+@@ -17422,7 +17422,7 @@
+ 			OPTIMIZATION_FULL="-fmove-all-movables -freduce-all-givs \
+ 				-fbranch-count-reg -fforce-addr -fforce-mem"
+ 			;;
+-		456789.*)
++		456789.*.*)
+ 			OPTIMIZATION="-O3 -fomit-frame-pointer -ffast-math"
+ 			OPTIMIZATION_FULL="-fbranch-count-reg -fforce-addr"
+ 			;;

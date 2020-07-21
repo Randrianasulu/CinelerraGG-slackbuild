@@ -22,9 +22,11 @@
 # OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+LANG=C
+
 PRGNAM=cinelerra-goodguy
 VERSION="$( date +%Y%m%d )"
-BUILD=${BUILD:-22}
+BUILD=${BUILD:-33}
 TAG=${TAG:-_cin}
 
 if [ -z "$ARCH" ]; then
@@ -41,8 +43,8 @@ PKG=$TMP/package-$PRGNAM
 OUTPUT=${OUTPUT:-/tmp}
 
 if [ "$ARCH" = "i486" ]; then
-  #SLKCFLAGS="-O3 -march=i686 -mtune=i686"
-  SLKCFLAGS="-O3 -ffast-math -mavx -march=native -mtune=native"
+  SLKCFLAGS="-O3 -march=i686 -mtune=i686"
+  #SLKCFLAGS="-O3 -ffast-math -mavx -march=native -mtune=native -fopenmp"
   LIBDIRSUFFIX=""
 elif [ "$ARCH" = "i686" ]; then
   SLKCFLAGS="-O3 -march=i686 -mtune=i686"
@@ -62,7 +64,9 @@ rm -rf $PKG
 mkdir -p $TMP $PKG $OUTPUT
 cd $TMP
 rm -rf $PRGNAM-$VERSION
-git clone --depth 1 git://git.cinelerra-gg.org/goodguy/cinelerra.git $PRGNAM-$VERSION
+#git clone --depth 1 git://git.cinelerra-gg.org/goodguy/cinelerra.git $PRGNAM-$VERSION
+
+cp -aR $CWD/new-git/cinelerra/ $TMP/$PRGNAM-$VERSION
 
 # tmp hack
 # cd $PRGNAM-$VERSION
@@ -72,15 +76,20 @@ git clone --depth 1 git://git.cinelerra-gg.org/goodguy/cinelerra.git $PRGNAM-$VE
 # cd ../
 
 cd $PRGNAM-$VERSION/cinelerra-5.1
+git pull
 chown -R root:root .
 
 git apply -v $CWD/x11_nonstd_prefix_compile_fixes.diff
-git apply -v $CWD/cinelerra_dir_fixes_3.diff
+git apply -v $CWD/cinelerra_dir_fixes_4.diff
 git apply -v $CWD/db_compile_fixes.diff
 cat $CWD/dri3_disable_cin51.diff | patch -p0
 #git apply -v $CWD/ffmpeg_disable-doc-building.patch
 #git apply -v $CWD/openexr_pthread_configure_fix.patch
 git apply -v $CWD/force_libvpx.diff
+
+git apply -v $CWD/nasm_thirdparty_2.patch
+#git apply -v $CWD/c11_configure.ac_from_oxr_1.patch
+#git apply -v $CWD/lv2-pkgconfig.patch
 
 cat $CWD/libva_x11r7.diff | patch -p0
 cat $CWD/libvdpau_x11r7.diff | patch -p0
@@ -90,25 +99,66 @@ cat $CWD/libvdpau_x11r7.diff | patch -p0
 #git apply -v $CWD/largefiles.diff
 #cat $CWD/openjpeg-23.patch | patch -p0 --verbose || exit
 
-cp $CWD/dv/correctly_decode_bottom_mb_row_1080i_dv.patch thirdparty/src/ffmpeg-4.2.patch8
-cp $CWD/dv/corretcly_set_interlaced_and_tff.patch thirdparty/src/ffmpeg-4.2.patch9
-cp $CWD/dv/ffmpeg_dvcprohd.patch thirdparty/src/ffmpeg-4.2.patch10
+#cp $CWD/dv/correctly_decode_bottom_mb_row_1080i_dv.patch thirdparty/src/ffmpeg-4.2.patch8
+#cp $CWD/dv/corretcly_set_interlaced_and_tff.patch thirdparty/src/ffmpeg-4.2.patch9
+#cp $CWD/dv/ffmpeg_dvcprohd.patch thirdparty/src/ffmpeg-4.2.patch10
 
 git apply -v  $CWD/I-only_files_reverse_play_speedup.diff
 
 # tmp for broken dv avi type file
 #git apply -v $CWD/andrew.patch
-cp $CWD/avi_fix.patch thirdparty/src/ffmpeg.git.patch10
+cp $CWD/avi_fix.patch thirdparty/src/ffmpeg.git.patch20
+
 
 # old gphoto fails opencv build
-git apply -v $CWD/opencv_gphoto2.diff
+#git apply -v $CWD/opencv_gphoto2.diff
 
-cat $CWD/x265-mult/Makefile.diff | patch -p1 --verbose || exit 0
+git apply -v $CWD/thirdparty_build_trim-full.diff
+
+#moved to dedicated x265 multidepth secction below
+#cat $CWD/x265-mult/Makefile.diff | patch -p1 --verbose || exit 0
+
+# ffmpeg.git changed mpegts muxer again - 25/04/2020
+#mv thirdparty/src/ffmpeg.git.patch2  thirdparty/src/_ffmpeg.git.patch2
+
+#git apply -v  $CWD/filepng_16_bit_real_fix-II.diff
+
+# tmp libaom update
+#rm thirdparty/src/libaom-v1.0.0.tar.xz
+#cp $CWD/libaom-v1.0.0.tar.xz thirdparty/src/
+
+# nasm
+cp $CWD/nasm-2.14.02.tar.xz thirdparty/src
+
+# lame patches
+cp $CWD/lame-3.100-fastcrc.diff thirdparty/src/lame-3.100.patch1
+#cp $CWD/lame-3.100-sse-20171014.diff thirdparty/src/lame-3.100.patch2
+git apply -v $CWD/lame-make-opt-after-th.diff
+
+git apply -v $CWD/openCV4-static-gcc5_more-disable-3.diff
+#git apply $CWD/TIFF-2.diff
+
+#x265 multidepth .a lib
+cp $CWD/x265_3.4.patch1 thirdparty/src
+cp $CWD/x265_3.4.patch2 thirdparty/src
+cp $CWD/x265_3.4.patch3 thirdparty/src
+patch -p1 < $CWD/x265_makefile-3.patch
+
+# tmp fix for 'del' hang
+#git apply $CWD/mainmenu.patch
+
+# tmp fix for ffmpeg threading assert
+#git apply $CWD/asset_fix.patch
+
+
+# tmp fix for boxblur plugin
+#git apply -v $CWD/boxblur_32bit_tmp_fix.diff
 
 # temporariry remove ffmpeg.git patch #2
-mv thirdparty/src/ffmpeg.git.patch2 thirdparty/src/NO_patch
+# mv thirdparty/src/ffmpeg.git.patch2 thirdparty/src/NO_patch
 #add new patch from  Marton Balint
-cp $CWD/ffmpeg_ts-branch1.patch thirdparty/src/ffmpeg.git.patch2
+# cp $CWD/ffmpeg_ts-branch1.patch thirdparty/src/ffmpeg.git.patch2
+#mv thirdparty/src/ffmpeg.git.patch9 thirdparty/src/__mpeg.git.patch9
 
 # configure the build
 ./autogen.sh
@@ -123,22 +173,23 @@ export CC="ccache gcc"
 #  currently fails due to old libtiff (3.9.7)
 
 #    --with-git-ffmpeg=https://git.ffmpeg.org/ffmpeg.git \
+#    --with-opencv=sta,tar=https://cinelerra-gg.org/download/opencv/opencv-20200306.tgz \
 
-
-EXTRA_LIBS=" -lOpenCL -ldav1d -lxvidcore -lass -lbluray" \
-FFMPEG_EXTRA_CFG=" --enable-opencl --enable-libdav1d --enable-libxvid --enable-libass --enable-libbluray" \
+EXTRA_LIBS=" -lOpenCL -ldav1d -lxvidcore -lass -lbluray -lsnappy" \
+FFMPEG_EXTRA_CFG=" --enable-opencl --enable-libdav1d --enable-libxvid --enable-libass --enable-libbluray --enable-libsnappy" \
 CFLAGS="$SLKCFLAGS -D__STDC_CONSTANT_MACROS" \
 CXXFLAGS="$SLKCFLAGS -D__STDC_CONSTANT_MACROS" \
 LDFLAGS="-L/usr/X11R7/lib -ldl -L/usr/lib${LIBDIRSUFFIX}" \
 ./configure \
     --prefix=/usr \
     --with-git-ffmpeg=https://git.ffmpeg.org/ffmpeg.git \
-    --with-opencv=sta,tar=https://cinelerra-gg.org/download/opencv/opencv-20180401.tgz \
+    --with-opencv=sta,tar=https://cinelerra-gg.org/download/opencv/opencv-20200306.tgz \
     --sysconfdir=/etc \
     --localstatedir=/var \
-    --libdir=/usr/lib \
+    --libdir=/usr/lib${LIBDIRSUFFIX} \
     --with-ladspa-build \
     --with-opus \
+    --with-nv \
     --enable-opus \
     --with-jobs=4 \
     --with-booby \
@@ -152,15 +203,16 @@ LDFLAGS="-L/usr/X11R7/lib -ldl -L/usr/lib${LIBDIRSUFFIX}" \
 
 #cd  $TMP/$PRGNAM-$VERSION/cinelerra-5.1/thirdparty/x264-snapshot-20180118-2245
 
-cp $CWD/lavf.c.patch1  src/x264-snapshot-20180118-2245.patch2
-cp $CWD/x264-git.patch2 src/x264-snapshot-20180118-2245.patch3
-cp $CWD/x264-git.patch3 src/x264-snapshot-20180118-2245.patch4
+cp $CWD/lavf.c.patch1  src/x264-snapshot-20191217-2245.patch2
+cp $CWD/x264-git.patch2 src/x264-snapshot-20191217-2245.patch3
+cp $CWD/x264-git.patch3 src/x264-snapshot-20191217-2245.patch4
 
-mkdir x265_3.1.2
-cp $CWD/x265-mult/configure.placebo x265_3.1.2/configure
-cp $CWD/x265-mult/Makefile x265_3.1.2/
-cp $CWD/x265-mult/multilib_root.sh x265_3.1.2/multilib.sh
-cp $CWD/x265-mult/multilib.sh.diff src/x265_3.1.2.patch1
+#superseeded by above
+#mkdir x265_3.2.1
+#cp $CWD/x265-mult/configure.placebo x265_3.2.1/configure
+#cp $CWD/x265-mult/Makefile x265_3.2.1/
+#cp $CWD/x265-mult/multilib_root.sh x265_3.2.1/multilib.sh
+#cp $CWD/x265-mult/multilib.sh.diff src/x265_3.2.1.patch1
 
 #cat $CWD/lavf.c.patch | patch -R -v -p1
 #cat $CWD/x264-revert-1.diff | patch -R -v -p1
@@ -196,8 +248,8 @@ mkdir -p $PKG/usr/share/applications
 cp $CWD/patches/cinelerra-goodguy.desktop $PKG/usr/share/applications/cinelerra-goodguy.desktop
 cp $CWD/patches/cin.xpm $PKG/usr/share/pixmaps/
 
-cp $CWD/ffmpeg_opts/video/* $PKG/usr/share/cin/ffmpeg/video
-cp $CWD/ffmpeg_opts/audio/* $PKG/usr/share/cin/ffmpeg/audio
+# cp $CWD/ffmpeg_opts/video/* $PKG/usr/share/cin/ffmpeg/video
+# cp $CWD/ffmpeg_opts/audio/* $PKG/usr/share/cin/ffmpeg/audio
 
 
 cd $PKG

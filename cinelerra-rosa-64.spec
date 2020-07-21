@@ -1,4 +1,4 @@
-%define ver 20190430
+%define ver 20200331
 %define cin cinelerra
 Summary: Multimedia Editing and construction
 
@@ -39,15 +39,22 @@ BuildRequires: flac-devel
 BuildRequires: freetype-devel
 BuildRequires: gcc-c++
 BuildRequires: gettext-devel
-BuildRequires: git
+BuildRequires: lib64usb1.0-devel
+BuildRequires: lib64asound-devel
+BuildRequires: lib64sndfile-devel
+BuildRequires: lib64tiff-devel
+#BuildRequires: git
 #BuildRequires: inkscape
 BuildRequires: lib64png-devel
 BuildRequires: lib64xft-devel
 BuildRequires: lib64xinerama-devel
 BuildRequires: lib64xv-devel
+BuildRequires: libtheora-devel
+BuildRequires: fftw3-devel
 BuildRequires: nasm
 BuildRequires: libtool
 BuildRequires: ncurses-devel
+BuildRequires: perl-libxml-perl
 BuildRequires: texinfo
 BuildRequires: udftools
 BuildRequires: gtk2-devel

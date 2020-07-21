@@ -16,7 +16,7 @@ index 70098ca..32867de 100644
 +	// fixup for I-only codecs, not sure why it needed with ffmpeg 4.2
 +	if (st->codecpar->codec_id == AV_CODEC_ID_DVVIDEO || st->codecpar->codec_id == AV_CODEC_ID_MJPEG || 
 +	st->codecpar->codec_id == AV_CODEC_ID_FFVHUFF || st->codecpar->codec_id == AV_CODEC_ID_DNXHD ||
-+	st->codecpar->codec_id ==AV_CODEC_ID_HUFFYUV ) {
++	st->codecpar->codec_id ==AV_CODEC_ID_HUFFYUV || st->codecpar->codec_id == AV_CODEC_ID_PRORES) {
 +	gop = 1;
 +	if( seek(pos - 2*gop, frame_rate) < 0 ) return -1;
 +	}

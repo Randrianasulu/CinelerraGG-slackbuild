@@ -1,0 +1,484 @@
+diff --git a/cinelerra-5.1/cinelerra/asset.C b/cinelerra-5.1/cinelerra/asset.C
+index fd6e97e..e8806d6 100644
+--- a/cinelerra-5.1/cinelerra/asset.C
++++ b/cinelerra-5.1/cinelerra/asset.C
+@@ -133,9 +133,11 @@ int Asset::init_values()
+ 	ac3_bitrate = 128;
+ 
+ 	png_use_alpha = 0;
+-
++	png_compression = 0;
++	
+ 	exr_use_alpha = 0;
+ 	exr_compression = 0;
++	exr_dwa_compression_level = 45;
+ 
+ 	tiff_cmodel = 0;
+ 	tiff_compression = 0;
+@@ -279,8 +281,10 @@ void Asset::copy_format(Asset *asset, int do_index)
+ 	ac3_bitrate = asset->ac3_bitrate;
+ 
+ 	png_use_alpha = asset->png_use_alpha;
++	png_compression = asset->png_compression;
+ 	exr_use_alpha = asset->exr_use_alpha;
+ 	exr_compression = asset->exr_compression;
++	exr_dwa_compression_level = asset->exr_dwa_compression_level;
+ 
+ 	tiff_cmodel = asset->tiff_cmodel;
+ 	tiff_compression = asset->tiff_compression;
+@@ -803,8 +807,10 @@ void Asset::load_defaults(BC_Hash *defaults,
+ 	ac3_bitrate = GET_DEFAULT("AC3_BITRATE", ac3_bitrate);
+ 
+ 	png_use_alpha = GET_DEFAULT("PNG_USE_ALPHA", png_use_alpha);
++	png_compression = GET_DEFAULT("PNG_COMPRESSION", png_compression);
+ 	exr_use_alpha = GET_DEFAULT("EXR_USE_ALPHA", exr_use_alpha);
+ 	exr_compression = GET_DEFAULT("EXR_COMPRESSION", exr_compression);
++	exr_dwa_compression_level = GET_DEFAULT("EXR_DWA_COMPRESSION_LEVEL", exr_dwa_compression_level);
+ 	tiff_cmodel = GET_DEFAULT("TIFF_CMODEL", tiff_cmodel);
+ 	tiff_compression = GET_DEFAULT("TIFF_COMPRESSION", tiff_compression);
+ 
+@@ -899,8 +905,10 @@ void Asset::save_defaults(BC_Hash *defaults,
+ 
+ 
+ 		UPDATE_DEFAULT("PNG_USE_ALPHA", png_use_alpha);
++		UPDATE_DEFAULT("PNG_COMPRESSION", png_compression);
+ 		UPDATE_DEFAULT("EXR_USE_ALPHA", exr_use_alpha);
+ 		UPDATE_DEFAULT("EXR_COMPRESSION", exr_compression);
++		UPDATE_DEFAULT("EXR_DWA_COMPRESSION_LEVEL", exr_dwa_compression_level);
+ 		UPDATE_DEFAULT("TIFF_CMODEL", tiff_cmodel);
+ 		UPDATE_DEFAULT("TIFF_COMPRESSION", tiff_compression);
+ 
+diff --git a/cinelerra-5.1/cinelerra/asset.h b/cinelerra-5.1/cinelerra/asset.h
+index 096ea98..869891f 100644
+--- a/cinelerra-5.1/cinelerra/asset.h
++++ b/cinelerra-5.1/cinelerra/asset.h
+@@ -189,6 +189,7 @@ public:
+ // for jpeg compression
+ 	int jpeg_quality;
+ 
++
+ // for mpeg video compression
+ 	int vmpeg_iframe_distance;
+ 	int vmpeg_progressive;
+@@ -220,10 +221,11 @@ public:
+ 
+ // PNG video compression
+ 	int png_use_alpha;
+-
++	int png_compression;
+ // EXR video compression
+ 	int exr_use_alpha;
+ 	int exr_compression;
++	float exr_dwa_compression_level;
+ 
+ // TIFF video compression.  An enumeration from filetiff.h
+ 	int tiff_cmodel;
+diff --git a/cinelerra-5.1/cinelerra/fileexr.C b/cinelerra-5.1/cinelerra/fileexr.C
+index 998372b..8794d74 100644
+--- a/cinelerra-5.1/cinelerra/fileexr.C
++++ b/cinelerra-5.1/cinelerra/fileexr.C
+@@ -42,6 +42,7 @@
+ #include "ImfRgbaYca.h"
+ #include "ImfVersion.h"
+ 
++
+ class EXRIStream : public Imf::IStream
+ {
+ public:
+@@ -120,15 +121,6 @@ void EXRIStream::clear()
+ }
+ 
+ 
+-
+-
+-
+-
+-
+-
+-
+-
+-
+ EXROStream::EXROStream(VFrame *data)
+  : Imf::OStream("mypath")
+ {
+@@ -161,14 +153,6 @@ void EXROStream::seekp(Imf::Int64 pos)
+ 
+ 
+ 
+-
+-
+-
+-
+-
+-
+-
+-
+ FileEXR::FileEXR(Asset *asset, File *file)
+  : FileList(asset, file, "EXRLIST", ".exr", FILE_EXR, FILE_EXR_LIST)
+ {
+@@ -191,6 +175,10 @@ const char* FileEXR::compression_to_str(int compression)
+ 	switch(compression)
+ 	{
+ 		case FileEXR::NONE: return "None"; break;
++		case FileEXR::B44: return "B44"; break;
++		case FileEXR::B44A: return "B44A"; break;
++		case FileEXR::DWAB: return "DWAB"; break;
++		case FileEXR::DWAA: return "DWAA"; break;
+ 		case FileEXR::PIZ: return "PIZ"; break;
+ 		case FileEXR::ZIP: return "ZIP"; break;
+ 		case FileEXR::ZIPS: return "ZIPS"; break;
+@@ -209,6 +197,10 @@ int FileEXR::compression_to_exr(int compression)
+ 		case FileEXR::ZIP: return (int)Imf::ZIP_COMPRESSION; break;
+ 		case FileEXR::ZIPS: return (int)Imf::ZIPS_COMPRESSION; break;
+ 		case FileEXR::RLE: return (int)Imf::RLE_COMPRESSION; break;
++		case FileEXR::B44: return (int)Imf::B44_COMPRESSION; break;
++		case FileEXR::B44A: return (int)Imf::B44A_COMPRESSION; break;
++		case FileEXR::DWAA: return (int)Imf::DWAA_COMPRESSION; break;
++		case FileEXR::DWAB: return (int)Imf::DWAB_COMPRESSION; break;
+ 		case FileEXR::PXR24: return (int)Imf::PXR24_COMPRESSION; break;
+ 	}
+ 	return Imf::NO_COMPRESSION;
+@@ -227,7 +219,14 @@ int FileEXR::str_to_compression(char *string)
+ 	if(!strcmp(compression_to_str(FileEXR::RLE), string))
+ 		return FileEXR::RLE;
+ 	if(!strcmp(compression_to_str(FileEXR::PXR24), string))
+-		return PXR24;
++	if(!strcmp(compression_to_str(FileEXR::B44), string))
++		return FileEXR::B44;
++	if(!strcmp(compression_to_str(FileEXR::B44A), string))
++		return FileEXR::B44A;
++	if(!strcmp(compression_to_str(FileEXR::DWAA), string))
++		return FileEXR::DWAA;
++	if(!strcmp(compression_to_str(FileEXR::DWAB), string))
++		return FileEXR::DWAB;
+ 	return FileEXR::NONE;
+ }
+ 
+@@ -333,6 +332,8 @@ int FileEXR::read_frame(VFrame *frame, VFrame *data)
+ 	Imath::Box2i dw = file.header().dataWindow();
+     int dx = dw.min.x;
+     int dy = dw.min.y;
++	Imf::setGlobalThreadCount (4);
++
+ 	Imf::FrameBuffer framebuffer;
+ 	float **rows = (float**)frame->get_rows();
+ 	int components = BC_CModels::components(frame->get_color_model());
+@@ -460,7 +461,7 @@ int FileEXR::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
+ 	VFrame *output_frame;
+ 	data->set_compressed_size(0);
+ 
+-
++	Imf::setGlobalThreadCount (4);
+ 	int native_cmodel = asset->exr_use_alpha ? BC_RGBA_FLOAT : BC_RGB_FLOAT;
+ 	int components = BC_CModels::components(native_cmodel);
+ 
+@@ -497,6 +498,8 @@ int FileEXR::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
+ 	Imf::Header header(output_frame->get_w(), output_frame->get_h());
+ 	header.compression() = (Imf::Compression)compression_to_exr(
+ 		asset->exr_compression);
++//	if(asset->exr_compression == DWAA || asset->exr_compression == DWAB)
++//	header.insert("dwaCompressionLevel", Imf_2_2::Attribute, asset->exr_dwa_compression_level);
+ 	header.channels().insert("R", Imf::Channel(Imf::FLOAT));
+ 	header.channels().insert("G", Imf::Channel(Imf::FLOAT));
+ 	header.channels().insert("B", Imf::Channel(Imf::FLOAT));
+@@ -539,15 +542,6 @@ FrameWriterUnit* FileEXR::new_writer_unit(FrameWriter *writer)
+ 
+ 
+ 
+-
+-
+-
+-
+-
+-
+-
+-
+-
+ EXRUnit::EXRUnit(FileEXR *file, FrameWriter *writer)
+  : FrameWriterUnit(writer)
+ {
+@@ -562,14 +556,6 @@ EXRUnit::~EXRUnit()
+ 
+ 
+ 
+-
+-
+-
+-
+-
+-
+-
+-
+ EXRConfigVideo::EXRConfigVideo(BC_WindowBase *parent_window, Asset *asset)
+  : BC_Window(_(PROGRAM_NAME ": Video Compression"),
+ 	parent_window->get_abs_cursor_x(1), parent_window->get_abs_cursor_y(1),
+@@ -634,6 +620,10 @@ void EXRCompression::create_objects()
+ 	add_item(new EXRCompressionItem(gui, FileEXR::ZIPS));
+ 	add_item(new EXRCompressionItem(gui, FileEXR::RLE));
+ 	add_item(new EXRCompressionItem(gui, FileEXR::PXR24));
++	add_item(new EXRCompressionItem(gui, FileEXR::B44));
++	add_item(new EXRCompressionItem(gui, FileEXR::B44A));
++	add_item(new EXRCompressionItem(gui, FileEXR::DWAA));
++	add_item(new EXRCompressionItem(gui, FileEXR::DWAB));
+ }
+ 
+ int EXRCompression::handle_event()
+diff --git a/cinelerra-5.1/cinelerra/fileexr.h b/cinelerra-5.1/cinelerra/fileexr.h
+index 3e47489..eac1c99 100644
+--- a/cinelerra-5.1/cinelerra/fileexr.h
++++ b/cinelerra-5.1/cinelerra/fileexr.h
+@@ -55,7 +55,11 @@ public:
+ 		ZIP,
+ 		ZIPS,
+ 		RLE,
+-		PXR24
++		PXR24,
++		B44,
++		B44A,
++		DWAA,
++		DWAB
+ 	};
+ 
+ 	static const char* compression_to_str(int compression);
+diff --git a/cinelerra-5.1/cinelerra/filepng.C b/cinelerra-5.1/cinelerra/filepng.C
+index f632607..a53887b 100644
+--- a/cinelerra-5.1/cinelerra/filepng.C
++++ b/cinelerra-5.1/cinelerra/filepng.C
+@@ -119,10 +119,10 @@ int FilePNG::colormodel_supported(int colormodel)
+ 
+ int FilePNG::get_best_colormodel(Asset *asset, int driver)
+ {
+-	if(asset->png_use_alpha)
+-		return BC_RGBA8888;
++	if (asset->png_use_alpha)
++		return BC_RGBA16161616;
+ 	else
+-		return BC_RGB888;
++		return BC_RGB161616;
+ }
+ 
+ 
+@@ -209,9 +209,14 @@ int FilePNG::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
+ 	png_infop info_ptr = 0;
+ 	VFrame *output_frame;
+ 	int result = 1;
++	int is_float = (frame->get_color_model() == BC_RGBA_FLOAT || frame->get_color_model() == BC_RGB_FLOAT);
++	
+ 	data->set_compressed_size(0);
+ //printf("FilePNG::write_frame 1\n");
+ 	native_cmodel = asset->png_use_alpha ? BC_RGBA8888 : BC_RGB888;
++	if (is_float)
++	native_cmodel = asset->png_use_alpha ? BC_RGBA16161616 : BC_RGB161616;
++	
+ 	if(frame->get_color_model() != native_cmodel)
+ 	{
+ 		if(!png_unit->temp_frame) png_unit->temp_frame =
+@@ -230,12 +235,15 @@ int FilePNG::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
+ 			info_ptr = png_create_info_struct(png_ptr);
+ 			png_set_write_fn(png_ptr, data,
+ 				(png_rw_ptr)write_function, (png_flush_ptr)flush_function);
+-			png_set_compression_level(png_ptr, 5);
++			png_set_compression_level(png_ptr, asset->png_compression);
+ 
+-			png_set_IHDR(png_ptr, info_ptr, asset->width, asset->height, 8,
++			png_set_IHDR(png_ptr, info_ptr, asset->width, asset->height, is_float ? 16 : 8,
+ 				asset->png_use_alpha ?  PNG_COLOR_TYPE_RGB_ALPHA : PNG_COLOR_TYPE_RGB,
+ 				PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
+ 			png_write_info(png_ptr, info_ptr);
++			if(is_float)
++/* on LE machine */
++			png_set_swap(png_ptr);
+ 			png_write_image(png_ptr, output_frame->get_rows());
+ 			png_write_end(png_ptr, info_ptr);
+ 			result = 0;
+@@ -351,21 +359,30 @@ PNGUnit::~PNGUnit()
+ PNGConfigVideo::PNGConfigVideo(BC_WindowBase *parent_window, Asset *asset)
+  : BC_Window(_(PROGRAM_NAME ": Video Compression"),
+ 	parent_window->get_abs_cursor_x(1), parent_window->get_abs_cursor_y(1),
+-	xS(200), yS(100))
++	xS(200), yS(120))
+ {
+ 	this->parent_window = parent_window;
+ 	this->asset = asset;
++	use_alpha = 0;
++	compression = 0;
+ }
+ 
+ PNGConfigVideo::~PNGConfigVideo()
+ {
++	delete compression;
+ }
+ 
+ void PNGConfigVideo::create_objects()
+ {
+ 	lock_window("PNGConfigVideo::create_objects");
++	BC_Title *title;
+ 	int x = xS(10), y = yS(10);
+-	add_subwindow(new PNGUseAlpha(this, x, y));
++	add_subwindow(use_alpha = new PNGUseAlpha(this, x, y));
++	y += use_alpha->get_h() + yS(10);
++	add_subwindow(title = new BC_Title(x,y,_("Compression:")));
++	int x1 = x + title->get_w() + xS(10);
++	compression = new PNGCompression(this, x1, y);
++	compression->create_objects();
+ 	add_subwindow(new BC_OKButton(this));
+ 	show_window(1);
+ 	unlock_window();
+@@ -390,3 +407,15 @@ int PNGUseAlpha::handle_event()
+ 	return 1;
+ }
+ 
++PNGCompression::PNGCompression(PNGConfigVideo *gui, int x, int y)
++ : BC_TumbleTextBox(gui, (int64_t)gui->asset->png_compression,
++	(int64_t)0, (int64_t)9, x, y, xS(40))
++{
++	this->gui = gui;
++}
++
++int PNGCompression::handle_event()
++{
++	gui->asset->png_compression = atol(get_text());
++	return 1;
++}
+diff --git a/cinelerra-5.1/cinelerra/filepng.h b/cinelerra-5.1/cinelerra/filepng.h
+index 2263bc3..71d123c 100644
+--- a/cinelerra-5.1/cinelerra/filepng.h
++++ b/cinelerra-5.1/cinelerra/filepng.h
+@@ -29,6 +29,10 @@
+ #include "filelist.h"
+ #include "vframe.inc"
+ 
++class PNGUseAlpha;
++class PNGCompression;
++
++
+ class FilePNG : public FileList
+ {
+ public:
+@@ -77,6 +81,9 @@ public:
+ 
+ 	BC_WindowBase *parent_window;
+ 	Asset *asset;
++	
++	PNGUseAlpha *use_alpha;
++	PNGCompression *compression;
+ };
+ 
+ 
+@@ -88,5 +95,12 @@ public:
+ 	PNGConfigVideo *gui;
+ };
+ 
++class PNGCompression : public BC_TumbleTextBox
++{
++public:
++        PNGCompression(PNGConfigVideo *gui, int x, int y);
++        int handle_event();
++        PNGConfigVideo *gui;
++};
+ 
+ #endif
+diff --git a/cinelerra-5.1/cinelerra/filetiff.C b/cinelerra-5.1/cinelerra/filetiff.C
+index cde59a0..ea2247c 100644
+--- a/cinelerra-5.1/cinelerra/filetiff.C
++++ b/cinelerra-5.1/cinelerra/filetiff.C
+@@ -109,6 +109,12 @@ const char* FileTIFF::compression_to_str(int value)
+ 		case FileTIFF::PACK_BITS: return "Pack Bits"; break;
+ 		case FileTIFF::DEFLATE: return "Deflate"; break;
+ 		case FileTIFF::JPEG: return "JPEG"; break;
++		case FileTIFF::PIXARFILM: return "PIXARFILM"; break;
++		case FileTIFF::PIXARLOG: return "PIXARLOG"; break;
++		case FileTIFF::JP2000: return "JP2000"; break;
++		case FileTIFF::SGILOG: return "SGILOG"; break;
++		case FileTIFF::LZMA: return "LZMA"; break;
++		case FileTIFF::ADOBE_DEFLATE: return "Adobe Deflate"; break;
+ 		default:
+ 			return "None";
+ 			break;
+@@ -474,17 +480,39 @@ int FileTIFF::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
+ 		case FileTIFF::JPEG:
+ 			compression = COMPRESSION_JPEG;
+ 			break;
++		case FileTIFF::PIXARFILM:
++			compression = COMPRESSION_PIXARFILM;
++			break;
++		case FileTIFF::PIXARLOG:
++			compression = COMPRESSION_PIXARLOG;
++			break;
++		case FileTIFF::JP2000:
++			compression = COMPRESSION_JP2000;
++			break;
++		case FileTIFF::LZMA:
++			compression = COMPRESSION_LZMA;
++			break;
++		case FileTIFF::SGILOG:
++			compression = COMPRESSION_SGILOG;
++			break;
++		case FileTIFF::ADOBE_DEFLATE:
++			compression = ADOBE_DEFLATE;
++			break;
+ 		default:
+ 			compression = COMPRESSION_NONE;
+ 			break;
+ 	}
++	uint16 out[1];
++	out[0] = EXTRASAMPLE_UNASSALPHA;
+ 
+ 	TIFFSetField(stream, TIFFTAG_IMAGEWIDTH, asset->width);
+ 	TIFFSetField(stream, TIFFTAG_IMAGELENGTH, asset->height);
+ 	TIFFSetField(stream, TIFFTAG_ORIENTATION, ORIENTATION_TOPLEFT);
+ 	TIFFSetField(stream, TIFFTAG_SAMPLESPERPIXEL, components);
+ 	TIFFSetField(stream, TIFFTAG_BITSPERSAMPLE, bits);
+-    TIFFSetField(stream, TIFFTAG_SAMPLEFORMAT, sampleformat);
++        TIFFSetField(stream, TIFFTAG_SAMPLEFORMAT, sampleformat);
++        if(components == 4)
++	TIFFSetField(stream, TIFFTAG_EXTRASAMPLES, 1, &out);
+ 	TIFFSetField(stream, TIFFTAG_COMPRESSION, compression);
+ 	TIFFSetField(stream, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
+  	TIFFSetField(stream, TIFFTAG_ROWSPERSTRIP,
+@@ -492,7 +520,7 @@ int FileTIFF::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
+ //  	TIFFSetField(stream, TIFFTAG_ROWSPERSTRIP,
+ // 		(8 * 1024) / bytesperrow);
+ 	TIFFSetField(stream, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_RGB);
+-
++	
+ 	if(frame->get_color_model() == color_model)
+ 	{
+ 		for(int i = 0; i < asset->height; i++)
+@@ -656,9 +684,15 @@ int TIFFCompression::handle_event()
+ void TIFFCompression::create_objects()
+ {
+ 	add_item(new TIFFCompressionItem(gui, FileTIFF::NONE));
+-//	add_item(new TIFFCompressionItem(gui, FileTIFF::LZW));
++	add_item(new TIFFCompressionItem(gui, FileTIFF::LZW)); // patent expired in 2004 ?
+ 	add_item(new TIFFCompressionItem(gui, FileTIFF::PACK_BITS));
+-//	add_item(new TIFFCompressionItem(gui, FileTIFF::DEFLATE));
++	add_item(new TIFFCompressionItem(gui, FileTIFF::DEFLATE)); // works!
++//	add_item(new TIFFCompressionItem(gui, FileTIFF::SGILOG));  scanline encoding not implemented
++	add_item(new TIFFCompressionItem(gui, FileTIFF::LZMA)); // works, a bit new for data exchange?
++//	add_item(new TIFFCompressionItem(gui, FileTIFF::ADOBE_DEFLATE)); scanline encoding not implemented
++//	add_item(new TIFFCompressionItem(gui, FileTIFF::PIXARFILM)); not supported for scanline encoding
++//	add_item(new TIFFCompressionItem(gui, FileTIFF::PIXARLOG)); only 8 bit ?
++//	add_item(new TIFFCompressionItem(gui, FileTIFF::JP2000)); doesn't support scanline encoding
+ //	add_item(new TIFFCompressionItem(gui, FileTIFF::JPEG));
+ }
+ 
+diff --git a/cinelerra-5.1/cinelerra/filetiff.h b/cinelerra-5.1/cinelerra/filetiff.h
+index 321ea9b..c6e21f5 100644
+--- a/cinelerra-5.1/cinelerra/filetiff.h
++++ b/cinelerra-5.1/cinelerra/filetiff.h
+@@ -70,7 +70,13 @@ public:
+ 		LZW,
+ 		PACK_BITS,
+ 		DEFLATE,
+-		JPEG
++		JPEG,
++		PIXARFILM,
++		PIXARLOG,
++		JP2000,
++		ADOBE_DEFLATE,
++		SGILOG,
++		LZMA
+ 	};
+ 
+ 	Mutex *unit_lock;

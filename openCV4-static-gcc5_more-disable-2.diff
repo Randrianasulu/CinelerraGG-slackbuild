@@ -1,0 +1,47 @@
+diff --git a/cinelerra-5.1/opencv_build b/cinelerra-5.1/opencv_build
+index fd029027..252cda69 100644
+--- a/cinelerra-5.1/opencv_build
++++ b/cinelerra-5.1/opencv_build
+@@ -49,6 +49,7 @@ jobs:=-j$(shell echo $$(($(cpus) + $(cpus)/2 +2)))
+ #opencv4 breaks SIFT/SURF findobj
+ CFLAGS += -I$(opencv_prefix)/include/opencv4
+ CFLAGS += -I$(opencv_prefix)/include
++CFLAGS += -std=c++11
+ 
+ ifeq ($(src),git)
+ $(opencv).src:
+@@ -81,12 +82,16 @@ $(opencv)/build: $(opencv).src
+   -DINSTALL_C_EXAMPLES=OFF \
+   -DINSTALL_PYTHON_EXAMPLES=OFF \
+   -DBUILD_EXAMPLES=OFF .. \
++  -DBUILD_PERF_TESTS=OFF \
++  -DBUILD_TESTS=OFF \
++  -DBUILD_opencv_apps=OFF \
+   -DBUILD_opencv_python3=no \
+   -DCMAKE_INSTALL_PREFIX=/usr/local \
+   -DOPENCV_EXTRA_MODULES_PATH="$(opencv)_contrib/modules/"
+ 
+ LFLAGS += -Wl,--start-group
+ LFLAGS += $(shell find $(opencv_prefix)/lib* -name "libopencv_*.a" 2> /dev/null)
++LFLAGS += $(shell find $(opencv_prefix)/lib/opencv4/3rdparty/lib* -name "lib*.a" 2> /dev/null)
+ #opencv4 breaks SIFT/SURF findobj
+ LFLAGS += $(shell find $(opencv_prefix)/lib64/opencv4/3rdparty/lib* -name "lib*.a" 2> /dev/null)
+ LFLAGS += $(shell find $(opencv_prefix)/share/OpenCV/3rdparty/lib* -name "lib*.a" 2> /dev/null)
+@@ -107,7 +112,7 @@ $(opencv)/build: $(opencv).src
+   -DCMAKE_INSTALL_PREFIX=/usr/local \
+   -DOPENCV_EXTRA_MODULES_PATH="$(opencv)_contrib/modules/"
+ 
+-SYSLIB := $(lastword $(wildcard /usr/lib /usrlib32 /usr/lib64))
++SYSLIB := $(lastword $(wildcard /usr/lib /usr/lib32 /usr/lib64))
+ CVLIBS := $(dir $(shell find $(opencv_prefix) -name libopencv_core.so))
+ LFLAGS += -L$(CVLIBS) $(patsubst $(CVLIBS)/lib%.so,-l%,$(wildcard $(CVLIBS)/libopencv_*.so))
+ LFLAGS += $(patsubst $(SYSLIB)/lib%.so,-l%,$(wildcard $(SYSLIB)/lib{Half,Imath,Ilm,Iex}*.so))
+@@ -116,7 +121,7 @@ static_incs :=
+ else ifeq ($(bld),sys)
+ $(opencv)/build:
+ 
+-SYSLIB := $(lastword $(wildcard /usr/lib /usrlib32 /usr/lib64))
++SYSLIB := $(lastword $(wildcard /usr/lib /usr/lib32 /usr/lib64))
+ LFLAGS += $(patsubst $(SYSLIB)/lib%.so,-l%,$(wildcard $(SYSLIB)/libopencv_*.so))
+ LFLAGS += $(patsubst $(SYSLIB)/lib%.so,-l%,$(wildcard $(SYSLIB)/lib{Half,Imath,Ilm,Iex}*.so))
+ static_libs :=

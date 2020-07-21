@@ -1,0 +1,104 @@
+diff --git a/cinelerra-5.1/cinelerra/filetiff.C b/cinelerra-5.1/cinelerra/filetiff.C
+index cde59a0..7e9b44c 100644
+--- a/cinelerra-5.1/cinelerra/filetiff.C
++++ b/cinelerra-5.1/cinelerra/filetiff.C
+@@ -109,6 +109,12 @@ const char* FileTIFF::compression_to_str(int value)
+ 		case FileTIFF::PACK_BITS: return "Pack Bits"; break;
+ 		case FileTIFF::DEFLATE: return "Deflate"; break;
+ 		case FileTIFF::JPEG: return "JPEG"; break;
++		case FileTIFF::PIXARFILM: return "PIXARFILM"; break;
++		case FileTIFF::PIXARLOG: return "PIXARLOG"; break;
++		case FileTIFF::JP2000: return "JP2000"; break;
++		case FileTIFF::SGILOG: return "SGILOG"; break;
++		case FileTIFF::LZMA: return "LZMA"; break;
++		case FileTIFF::ADOBE_DEFLATE: return "Adobe Deflate"; break;
+ 		default:
+ 			return "None";
+ 			break;
+@@ -474,17 +480,39 @@ int FileTIFF::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
+ 		case FileTIFF::JPEG:
+ 			compression = COMPRESSION_JPEG;
+ 			break;
++		case FileTIFF::PIXARFILM:
++			compression = COMPRESSION_PIXARFILM;
++			break;
++		case FileTIFF::PIXARLOG:
++			compression = COMPRESSION_PIXARLOG;
++			break;
++		case FileTIFF::JP2000:
++			compression = COMPRESSION_JP2000;
++			break;
++		case FileTIFF::LZMA:
++			compression = COMPRESSION_LZMA;
++			break;
++		case FileTIFF::SGILOG:
++			compression = COMPRESSION_SGILOG;
++			break;
++		case FileTIFF::ADOBE_DEFLATE:
++			compression = ADOBE_DEFLATE;
++			break;
+ 		default:
+ 			compression = COMPRESSION_NONE;
+ 			break;
+ 	}
++	uint16 out[1];
++	out[0] = EXTRASAMPLE_ASSOCALPHA;
+ 
+ 	TIFFSetField(stream, TIFFTAG_IMAGEWIDTH, asset->width);
+ 	TIFFSetField(stream, TIFFTAG_IMAGELENGTH, asset->height);
+ 	TIFFSetField(stream, TIFFTAG_ORIENTATION, ORIENTATION_TOPLEFT);
+ 	TIFFSetField(stream, TIFFTAG_SAMPLESPERPIXEL, components);
+ 	TIFFSetField(stream, TIFFTAG_BITSPERSAMPLE, bits);
+-    TIFFSetField(stream, TIFFTAG_SAMPLEFORMAT, sampleformat);
++        TIFFSetField(stream, TIFFTAG_SAMPLEFORMAT, sampleformat);
++        if(components == 4)
++	TIFFSetField(stream, TIFFTAG_EXTRASAMPLES, 1, &out);
+ 	TIFFSetField(stream, TIFFTAG_COMPRESSION, compression);
+ 	TIFFSetField(stream, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
+  	TIFFSetField(stream, TIFFTAG_ROWSPERSTRIP,
+@@ -492,7 +520,7 @@ int FileTIFF::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
+ //  	TIFFSetField(stream, TIFFTAG_ROWSPERSTRIP,
+ // 		(8 * 1024) / bytesperrow);
+ 	TIFFSetField(stream, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_RGB);
+-
++	
+ 	if(frame->get_color_model() == color_model)
+ 	{
+ 		for(int i = 0; i < asset->height; i++)
+@@ -656,9 +684,15 @@ int TIFFCompression::handle_event()
+ void TIFFCompression::create_objects()
+ {
+ 	add_item(new TIFFCompressionItem(gui, FileTIFF::NONE));
+-//	add_item(new TIFFCompressionItem(gui, FileTIFF::LZW));
++	add_item(new TIFFCompressionItem(gui, FileTIFF::LZW)); // patent expired in 2004 ?
+ 	add_item(new TIFFCompressionItem(gui, FileTIFF::PACK_BITS));
+-//	add_item(new TIFFCompressionItem(gui, FileTIFF::DEFLATE));
++	add_item(new TIFFCompressionItem(gui, FileTIFF::DEFLATE)); // works!
++//	add_item(new TIFFCompressionItem(gui, FileTIFF::SGILOG));  scanline encoding not implemented
++	add_item(new TIFFCompressionItem(gui, FileTIFF::LZMA)); // works, a bit new for data exchange?
++//	add_item(new TIFFCompressionItem(gui, FileTIFF::ADOBE_DEFLATE)); scanline encoding not implemented
++//	add_item(new TIFFCompressionItem(gui, FileTIFF::PIXARFILM)); not supported for scanline encoding
++//	add_item(new TIFFCompressionItem(gui, FileTIFF::PIXARLOG)); only 8 bit ?
++//	add_item(new TIFFCompressionItem(gui, FileTIFF::JP2000)); doesn't support scanline encoding
+ //	add_item(new TIFFCompressionItem(gui, FileTIFF::JPEG));
+ }
+ 
+diff --git a/cinelerra-5.1/cinelerra/filetiff.h b/cinelerra-5.1/cinelerra/filetiff.h
+index 321ea9b..c6e21f5 100644
+--- a/cinelerra-5.1/cinelerra/filetiff.h
++++ b/cinelerra-5.1/cinelerra/filetiff.h
+@@ -70,7 +70,13 @@ public:
+ 		LZW,
+ 		PACK_BITS,
+ 		DEFLATE,
+-		JPEG
++		JPEG,
++		PIXARFILM,
++		PIXARLOG,
++		JP2000,
++		ADOBE_DEFLATE,
++		SGILOG,
++		LZMA
+ 	};
+ 
+ 	Mutex *unit_lock;

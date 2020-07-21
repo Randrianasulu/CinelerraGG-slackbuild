@@ -17,6 +17,6 @@ index dcfd41d..9cf291a 100644
  
 -PKG_3RD([libvpx],[auto],
 +PKG_3RD([libvpx],[yes],
-   [libvpx-1.8.1],
+   [libvpx-1.8.2],
    [ libvpx.a ],
    [ . ])

@@ -1,0 +1,22 @@
+diff --git a/cinelerra-5.1/cinelerra/Makefile b/cinelerra-5.1/cinelerra/Makefile
+index a22a21a..373251a 100644
+--- a/cinelerra-5.1/cinelerra/Makefile
++++ b/cinelerra-5.1/cinelerra/Makefile
+@@ -423,7 +423,7 @@ LIBRARIES += \
+ 
+ endif
+ 
+-LIBS := $(LIBRARIES)
++LIBS := $(LIBRARIES) -L/usr/X11R7/lib
+ 
+ ifeq ($(WANT_CIN_3RDPARTY),no)
+ LIBS += -lavcodec -lavdevice -lavfilter -lavformat -lavutil
+@@ -444,7 +444,7 @@ CUTOBJS = $(CUTOBJ) \
+ 	$(OBJDIR)/mediadb.o \
+ 	$(OBJDIR)/filexml.o
+ CUTLIBS = \
+-	$(LIBZMPEG3)/$(OBJDIR)/libzmpeg3.a -lX11 \
++	$(LIBZMPEG3)/$(OBJDIR)/libzmpeg3.a \
+ 	$(TDB)/$(OBJDIR)/db.a
+ endif
+ 

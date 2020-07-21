@@ -1,0 +1,366 @@
+diff --git a/cinelerra-5.1/cinelerra/Makefile b/cinelerra-5.1/cinelerra/Makefile
+index 81d1ace..e80f8f7 100644
+--- a/cinelerra-5.1/cinelerra/Makefile
++++ b/cinelerra-5.1/cinelerra/Makefile
+@@ -496,7 +496,7 @@ CFLAGS += -DUSE_ALPHA
+ else
+ 
+ LDFLAGS1 = -Wl,-export-dynamic -g
+-LDFLAGS2 = $(LDFLAGS)
++LDFLAGS2 = $(LDFLAGS) -ltiff
+ LINKER = $(CXX) -o $(OUTPUT)
+ 
+ endif
+diff --git a/cinelerra-5.1/cinelerra/ci b/cinelerra-5.1/cinelerra/ci
+index bc98783..2285898 120000
+--- a/cinelerra-5.1/cinelerra/ci
++++ b/cinelerra-5.1/cinelerra/ci
+@@ -1 +1 @@
+-../bin/cinelerra
+\ No newline at end of file
++../bin/cin
+\ No newline at end of file
+diff --git a/cinelerra-5.1/cinelerra/commercials.h b/cinelerra-5.1/cinelerra/commercials.h
+index b7b815c..01f4c27 100644
+--- a/cinelerra-5.1/cinelerra/commercials.h
++++ b/cinelerra-5.1/cinelerra/commercials.h
+@@ -1,3 +1,4 @@
++#ifdef __i386__
+ #ifndef _COMMERCIALS_H_
+ #define _COMMERCIALS_H_
+ 
+@@ -202,3 +203,4 @@ public:
+ 
+ 
+ #endif
++#endif /* i386 */
+\ No newline at end of file
+diff --git a/cinelerra-5.1/cinelerra/dbwindow.h b/cinelerra-5.1/cinelerra/dbwindow.h
+index 24a40df..983c65b 100644
+--- a/cinelerra-5.1/cinelerra/dbwindow.h
++++ b/cinelerra-5.1/cinelerra/dbwindow.h
+@@ -1,3 +1,4 @@
++#ifdef __i386__
+ #ifndef _DBWINDOW_H_
+ #define _DBWINDOW_H_
+ 
+@@ -296,3 +297,4 @@ public:
+ 
+ 
+ #endif
++#endif /* i386 */
+\ No newline at end of file
+diff --git a/cinelerra-5.1/cinelerra/mediadb.h b/cinelerra-5.1/cinelerra/mediadb.h
+index 9bb970e..eb39340 100644
+--- a/cinelerra-5.1/cinelerra/mediadb.h
++++ b/cinelerra-5.1/cinelerra/mediadb.h
+@@ -1,3 +1,4 @@
++#ifdef __i386__
+ #ifndef _MEDIA_DB_H_
+ #define _MEDIA_DB_H_
+ 
+@@ -239,3 +240,4 @@ public:
+ };
+ 
+ #endif
++#endif /* i386 */
+\ No newline at end of file
+diff --git a/cinelerra-5.1/cinelerra/mwindow.C b/cinelerra-5.1/cinelerra/mwindow.C
+index 8c0dd6c..cdc0325 100644
+--- a/cinelerra-5.1/cinelerra/mwindow.C
++++ b/cinelerra-5.1/cinelerra/mwindow.C
+@@ -282,7 +282,9 @@ MWindow::~MWindow()
+ 	delete render;          render = 0;
+ 	delete mixers_align;    mixers_align = 0;
+ 	commit_commercial();
++#ifdef HAVE_COMMERCIALS
+ 	if( commercials && !commercials->remove_user() ) commercials = 0;
++#endif
+ 	close_mixers();
+ 	if( speed_edl ) { speed_edl->remove_user();  speed_edl = 0; }
+ // Save defaults for open plugins
+diff --git a/cinelerra-5.1/configure.ac b/cinelerra-5.1/configure.ac
+index f61ef27..75cdd1e 100644
+--- a/cinelerra-5.1/configure.ac
++++ b/cinelerra-5.1/configure.ac
+@@ -319,8 +319,7 @@ PKG_3RD([libvorbis],[auto],
+ 
+ PKG_3RD([mjpegtools],[yes],
+   [mjpegtools-2.1.0],
+-  [ utils/mmxsse/.libs/libmmxsse.a \
+-    utils/.libs/libmjpegutils.a \
++  [ utils/.libs/libmjpegutils.a \
+     lavtools/.libs/liblavfile.a \
+     lavtools/.libs/liblavjpeg.a \
+     mplex/.libs/libmplex2.a \
+@@ -363,7 +362,7 @@ PKG_3RD([twolame],[auto],
+   [ libtwolame/.libs/libtwolame.a ],
+   [  libtwolame ])
+ 
+-PKG_3RD([x264],[auto],
++PKG_3RD([x264],[no],
+   [x264-snapshot-20191217-2245-stable],
+   [ libx264.a ],
+   [ . ])
+diff --git a/cinelerra-5.1/db/tdb.h b/cinelerra-5.1/db/tdb.h
+index 8ee8800..b337b90 100644
+--- a/cinelerra-5.1/db/tdb.h
++++ b/cinelerra-5.1/db/tdb.h
+@@ -1,3 +1,5 @@
++#ifdef __i386__
++
+ #ifndef __DB_H__
+ #define __DB_H__
+ #include <cstring>
+@@ -1514,3 +1516,5 @@ public:
+ };
+ 
+ #endif
++
++#endif /* i386 */
+\ No newline at end of file
+diff --git a/cinelerra-5.1/doc/cinelerra.html b/cinelerra-5.1/doc/cinelerra.html
+index f7742b5..de7e921 100644
+--- a/cinelerra-5.1/doc/cinelerra.html
++++ b/cinelerra-5.1/doc/cinelerra.html
+@@ -1,6 +1,6 @@
+ <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+ <html>
+-<!-- Created by GNU Texinfo 6.0, http://www.gnu.org/software/texinfo/ -->
++<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+ <head>
+ <title>SECRETS OF CINELERRA</title>
+ 
+@@ -34,9 +34,8 @@ pre.smalldisplay {font-family: inherit; font-size: smaller}
+ pre.smallexample {font-size: smaller}
+ pre.smallformat {font-family: inherit; font-size: smaller}
+ pre.smalllisp {font-size: smaller}
+-span.nocodebreak {white-space: nowrap}
+ span.nolinebreak {white-space: nowrap}
+-span.roman {font-family: serif; font-weight: normal}
++span.roman {font-family: initial; font-weight: normal}
+ span.sansserif {font-family: sans-serif; font-weight: normal}
+ ul.no-bullet {list-style: none}
+ -->
+@@ -6682,6 +6681,7 @@ int x_accum, y_accum;
+ </p>
+ <div class="example">
+ <pre class="example">
++
+ 	switch (code) {
+      		case REL_X:
+      			mousedev-&gt;packet.x_accum += value * DOWNSAMPLE_N;
+@@ -6796,6 +6796,7 @@ the fastest file system is
+ </p>
+ <div class="example">
+ <pre class="example">
++
+ mke2fs -i 65536 -b 4096 my_device
+ tune2fs -r0 -c10000 my_device
+ 
+@@ -6808,6 +6809,7 @@ failures is
+ </p>
+ <div class="example">
+ <pre class="example">
++
+ mke2fs -j -i 65536 -b 4096 my_device
+ tune2fs -r0 -c10000 my_device
+ 
+@@ -9764,6 +9766,7 @@ variables to yield the current values.
+ </p>
+ <div class="example">
+ <pre class="example">
++
+ 	this-&gt;parameter1 = (float)(prev.parameter1 * prev_scale + next.parameter1 * next_scale);
+ 	this-&gt;parameter2 = (float)(prev.parameter2 * prev_scale + next.parameter2 * next_scale);
+ 	this-&gt;parameter3 = (int)(prev.parameter3 * prev_scale + next.parameter3 * next_scale);
+@@ -9829,6 +9832,7 @@ appropriate arguments.
+ </p>
+ <div class="example">
+ <pre class="example">
++
+ #include &quot;guicast.h&quot;
+ 
+ MyWindow::MyWindow(MyPlugin *plugin)
+@@ -10040,6 +10044,7 @@ the plugin header.  Instead, the following methods must be defined.
+ </p>
+ <div class="example">
+ <pre class="example">
++
+ BC_Hash *defaults;
+ 
+ </pre></div>
+@@ -10048,6 +10053,7 @@ BC_Hash *defaults;
+ </p>
+ <div class="example">
+ <pre class="example">
++
+ MainProgressBar *progress;
+ </pre></div>
+ 
+@@ -10102,6 +10108,7 @@ instantiate the progress object with a line like
+ </p>
+ <div class="example">
+ <pre class="example">
++
+ progress = start_progress(&quot;MyPlugin progress...&quot;, 
+ 	PluginClient::get_total_len());
+ 
+@@ -10995,6 +11002,7 @@ Shift F   Set Format
+ 
+ <div class="example">
+ <pre class="example">
++
+ Shift X    Cut keyframes
+ Shift C    Copy keyframes
+ Shift V    Paste keyframes
+@@ -11010,6 +11018,7 @@ Alt v      Paste default keyframe
+ 
+ <div class="example">
+ <pre class="example">
++
+ t          Add Audio Track
+ u          Insert default Audio Transition
+ Shift T    Add Video Track
+@@ -11026,6 +11035,7 @@ Shift-Tab  Toggle every other track's arming status
+ 
+ <div class="example">
+ <pre class="example">
++
+ 1         Show titles
+ 2         Show transitions
+ 3         Fade keyframes
+@@ -11047,6 +11057,7 @@ Shift-Tab  Toggle every other track's arming status
+ 
+ <div class="example">
+ <pre class="example">
++
+ x         Cut
+ c         Copy
+ v         Paste
+@@ -11092,6 +11103,7 @@ between the in/out points to be played, if in/out points are defined.
+ 
+ <div class="example">
+ <pre class="example">
++
+ Space              Start and pause recording of the current batch
+ l                  Toggle label at current position.
+ 
+diff --git a/cinelerra-5.1/guicast/Makefile b/cinelerra-5.1/guicast/Makefile
+index 04bc87a..be47e0b 100644
+--- a/cinelerra-5.1/guicast/Makefile
++++ b/cinelerra-5.1/guicast/Makefile
+@@ -12,6 +12,11 @@ ifeq ($(OBJDIR), amd64)
+ BOOTSTRAPFLAGS := -DBOOTSTRAP="\"objcopy -B i386 -I binary -O elf64-x86-64\""
+ endif
+ 
++ifeq ($(OBJDIR), e2k)
++BOOTSTRAPFLAGS := -DBOOTSTRAP="\"objcopy -B e2k -I binary -O elf64-e2k\""
++endif
++
++
+ $(shell mkdir -p $(OBJDIR) )
+ 
+ OBJS = \
+diff --git a/cinelerra-5.1/guicast/bcsignals.C b/cinelerra-5.1/guicast/bcsignals.C
+index ffc8a1c..71b69b9 100644
+--- a/cinelerra-5.1/guicast/bcsignals.C
++++ b/cinelerra-5.1/guicast/bcsignals.C
+@@ -471,15 +471,16 @@ static void reg_dump(FILE *fp,sigregs_t *rp)
+ static void reg_dump(FILE *fp,sigregs_t *rp) {}
+ #endif
+ 
+-#ifndef IP
+-#error gotta have IP
+-#endif
++//#ifndef IP
++//#error gotta have IP
++//#endif
+ 
+ // HAVE_CTX
+ #endif
+ 
+ static void handle_dump(int n, siginfo_t * info, void *sc)
+ {
++#if 0
+ 	uncatch_segv();  uncatch_intr();
+ 	signal(SIGSEGV, SIG_DFL);
+ 	signal(SIGINT, SIG_DFL);
+@@ -586,5 +587,6 @@ static void handle_dump(int n, siginfo_t * info, void *sc)
+         char *const argv[4] = { (char*) "/bin/sh", (char*) "-c", cmd, 0 };
+         execvp(argv[0], &argv[0]);
+ #endif
++#endif
+ }
+ 
+diff --git a/cinelerra-5.1/libzmpeg3/libzmpeg3.h b/cinelerra-5.1/libzmpeg3/libzmpeg3.h
+index 430ebb4..9ebee66 100644
+--- a/cinelerra-5.1/libzmpeg3/libzmpeg3.h
++++ b/cinelerra-5.1/libzmpeg3/libzmpeg3.h
+@@ -5,7 +5,7 @@
+ /* for quicktime build */
+ #define MAXFRAMESAMPLES 65536
+ #define ZDVB
+-#define USE_FUTEX
++//#define USE_FUTEX
+ 
+ #ifndef __STDC_LIMIT_MACROS
+ #define __STDC_LIMIT_MACROS
+diff --git a/cinelerra-5.1/mplexlo/Makefile b/cinelerra-5.1/mplexlo/Makefile
+index c1a8aae..77b1c57 100644
+--- a/cinelerra-5.1/mplexlo/Makefile
++++ b/cinelerra-5.1/mplexlo/Makefile
+@@ -11,7 +11,7 @@ CFLAGS += -I$(LIBZMPEG3)
+ CFLAGS += $(static_incs)
+ 
+ LIBS := $(LIBZMPEG3)/$(OBJDIR)/libzmpeg3.a
+-LIBS += $(libraries)
++LIBS += $(libraries) 
+ 
+ OUTPUT := $(OBJDIR)/mplexlo
+ 
+diff --git a/cinelerra-5.1/thirdparty/Makefile b/cinelerra-5.1/thirdparty/Makefile
+index 0be2898..0017fc4 100644
+--- a/cinelerra-5.1/thirdparty/Makefile
++++ b/cinelerra-5.1/thirdparty/Makefile
+@@ -130,19 +130,19 @@ esound.mak_vars+= CFLAGS=""
+ esound.ldflags=" -lm -lstdc++"
+ fftw.cfg_params= --disable-fortran --enable-shared=no
+ ffmpeg.cfg_params= \
+-	--enable-pthreads --enable-gpl --disable-ffplay \
++	--enable-pthreads --disable-crystalhd --enable-gpl --disable-ffplay \
+ 	$(call if_want,VAAPI,--enable-vaapi,--disable-vaapi) \
+ 	$(call if_want,VDPAU,--enable-vdpau,--disable-vdpau) \
+ 	$(call if_want,NV, --enable-nvenc --enable-nvdec --enable-ffnvcodec) \
+ 	$(call if_ena,twolame,--enable-libtwolame) \
+ 	$(call if_ena,openjpeg,--enable-libopenjpeg) \
+-	$(call if_ena,lame,--enable-libmp3lame) \
++	$(call if_ena,lame,--disable-libmp3lame) \
+ 	$(call if_ena,libaom,--enable-libaom) \
+ 	$(call if_ena,dav1d,--enable-libdav1d) \
+ 	$(call if_ena,libwebp,--enable-libwebp) \
+ 	$(call if_ena,opus,--enable-libopus) \
+ 	$(call if_ena,libvorbis,--enable-libvorbis) \
+-	$(call if_ena,libtheora,--enable-libtheora) \
++	$(call if_ena,libtheora,--disable-libtheora) \
+ 	$(call if_ena,libvpx,--enable-libvpx) \
+ 	$(call if_ena,x264,--enable-libx264) \
+ 	$(call if_ena,x265,--enable-libx265) \
+@@ -208,7 +208,7 @@ libwebp.cfg_vars?= mkdir build && cd build && $(call cmake_config,..)
+ libwebp.mak_params?= -C build all install DESTDIR=$(call bld_path,libwebp)
+ mjpegtools.cflags?="$(call inc_path,libjpeg) $(call ld_path,libjpeg,build)"
+ mjpegtools.cfg_vars?= ./autogen.sh; 
+-mjpegtools.cfg_params?= --enable-shared=no --without-libquicktime --without-libdv \
++mjpegtools.cfg_params?= --enable-shared=no --disable-simd-accel --without-libquicktime --without-libdv \
+  --without-libpng --without-dga --without-gtk --without-libsdl --without-sdlgfx
+ mjpegtools.mak_params?= all
+ ladspa.cfg_vars?= CFLAGS+=' -Dinline="" '
+@@ -249,7 +249,7 @@ tiff.cfg_params+= --enable-shared=no --disable-zstd $(call if_pkg,libwebp,\
+  --with-webp-lib-dir=$(call pkg_libs,libwebp))\
+  $(call if_npkg,libwebp,--disable-webp)
+ twolame.cfg_params?=--enable-shared=no
+-x264.cfg_params?= --enable-static --enable-pic
++x264.cfg_params?= --enable-static --enable-pic --disable-asm
+ x265.cfg_vars?=$(call cmake_config,source)
+ x265.cfg_params?= -DENABLE_SHARED=no
+ libvpx.cfg_params?= --enable-pic

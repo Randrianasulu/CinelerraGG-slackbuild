@@ -1,0 +1,197 @@
+diff --git a/cinelerra-5.1/cinelerra/asset.C b/cinelerra-5.1/cinelerra/asset.C
+index fd6e97e..3e1778e 100644
+--- a/cinelerra-5.1/cinelerra/asset.C
++++ b/cinelerra-5.1/cinelerra/asset.C
+@@ -133,7 +133,8 @@ int Asset::init_values()
+ 	ac3_bitrate = 128;
+ 
+ 	png_use_alpha = 0;
+-
++	png_compression = 0;
++	
+ 	exr_use_alpha = 0;
+ 	exr_compression = 0;
+ 
+@@ -279,6 +280,7 @@ void Asset::copy_format(Asset *asset, int do_index)
+ 	ac3_bitrate = asset->ac3_bitrate;
+ 
+ 	png_use_alpha = asset->png_use_alpha;
++	png_compression = asset->png_compression;
+ 	exr_use_alpha = asset->exr_use_alpha;
+ 	exr_compression = asset->exr_compression;
+ 
+@@ -803,6 +805,7 @@ void Asset::load_defaults(BC_Hash *defaults,
+ 	ac3_bitrate = GET_DEFAULT("AC3_BITRATE", ac3_bitrate);
+ 
+ 	png_use_alpha = GET_DEFAULT("PNG_USE_ALPHA", png_use_alpha);
++	png_compression = GET_DEFAULT("PNG_COMPRESSION", png_compression);
+ 	exr_use_alpha = GET_DEFAULT("EXR_USE_ALPHA", exr_use_alpha);
+ 	exr_compression = GET_DEFAULT("EXR_COMPRESSION", exr_compression);
+ 	tiff_cmodel = GET_DEFAULT("TIFF_CMODEL", tiff_cmodel);
+@@ -899,6 +902,7 @@ void Asset::save_defaults(BC_Hash *defaults,
+ 
+ 
+ 		UPDATE_DEFAULT("PNG_USE_ALPHA", png_use_alpha);
++		UPDATE_DEFAULT("PNG_COMPRESSION", png_compression);
+ 		UPDATE_DEFAULT("EXR_USE_ALPHA", exr_use_alpha);
+ 		UPDATE_DEFAULT("EXR_COMPRESSION", exr_compression);
+ 		UPDATE_DEFAULT("TIFF_CMODEL", tiff_cmodel);
+diff --git a/cinelerra-5.1/cinelerra/asset.h b/cinelerra-5.1/cinelerra/asset.h
+index 096ea98..13ebaf9 100644
+--- a/cinelerra-5.1/cinelerra/asset.h
++++ b/cinelerra-5.1/cinelerra/asset.h
+@@ -189,6 +189,7 @@ public:
+ // for jpeg compression
+ 	int jpeg_quality;
+ 
++
+ // for mpeg video compression
+ 	int vmpeg_iframe_distance;
+ 	int vmpeg_progressive;
+@@ -220,7 +221,7 @@ public:
+ 
+ // PNG video compression
+ 	int png_use_alpha;
+-
++	int png_compression;
+ // EXR video compression
+ 	int exr_use_alpha;
+ 	int exr_compression;
+diff --git a/cinelerra-5.1/cinelerra/filepng.C b/cinelerra-5.1/cinelerra/filepng.C
+index f632607..a53887b 100644
+--- a/cinelerra-5.1/cinelerra/filepng.C
++++ b/cinelerra-5.1/cinelerra/filepng.C
+@@ -119,10 +119,10 @@ int FilePNG::colormodel_supported(int colormodel)
+ 
+ int FilePNG::get_best_colormodel(Asset *asset, int driver)
+ {
+-	if(asset->png_use_alpha)
+-		return BC_RGBA8888;
++	if (asset->png_use_alpha)
++		return BC_RGBA16161616;
+ 	else
+-		return BC_RGB888;
++		return BC_RGB161616;
+ }
+ 
+ 
+@@ -209,9 +209,14 @@ int FilePNG::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
+ 	png_infop info_ptr = 0;
+ 	VFrame *output_frame;
+ 	int result = 1;
++	int is_float = (frame->get_color_model() == BC_RGBA_FLOAT || frame->get_color_model() == BC_RGB_FLOAT);
++	
+ 	data->set_compressed_size(0);
+ //printf("FilePNG::write_frame 1\n");
+ 	native_cmodel = asset->png_use_alpha ? BC_RGBA8888 : BC_RGB888;
++	if (is_float)
++	native_cmodel = asset->png_use_alpha ? BC_RGBA16161616 : BC_RGB161616;
++	
+ 	if(frame->get_color_model() != native_cmodel)
+ 	{
+ 		if(!png_unit->temp_frame) png_unit->temp_frame =
+@@ -230,12 +235,15 @@ int FilePNG::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
+ 			info_ptr = png_create_info_struct(png_ptr);
+ 			png_set_write_fn(png_ptr, data,
+ 				(png_rw_ptr)write_function, (png_flush_ptr)flush_function);
+-			png_set_compression_level(png_ptr, 5);
++			png_set_compression_level(png_ptr, asset->png_compression);
+ 
+-			png_set_IHDR(png_ptr, info_ptr, asset->width, asset->height, 8,
++			png_set_IHDR(png_ptr, info_ptr, asset->width, asset->height, is_float ? 16 : 8,
+ 				asset->png_use_alpha ?  PNG_COLOR_TYPE_RGB_ALPHA : PNG_COLOR_TYPE_RGB,
+ 				PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
+ 			png_write_info(png_ptr, info_ptr);
++			if(is_float)
++/* on LE machine */
++			png_set_swap(png_ptr);
+ 			png_write_image(png_ptr, output_frame->get_rows());
+ 			png_write_end(png_ptr, info_ptr);
+ 			result = 0;
+@@ -351,21 +359,30 @@ PNGUnit::~PNGUnit()
+ PNGConfigVideo::PNGConfigVideo(BC_WindowBase *parent_window, Asset *asset)
+  : BC_Window(_(PROGRAM_NAME ": Video Compression"),
+ 	parent_window->get_abs_cursor_x(1), parent_window->get_abs_cursor_y(1),
+-	xS(200), yS(100))
++	xS(200), yS(120))
+ {
+ 	this->parent_window = parent_window;
+ 	this->asset = asset;
++	use_alpha = 0;
++	compression = 0;
+ }
+ 
+ PNGConfigVideo::~PNGConfigVideo()
+ {
++	delete compression;
+ }
+ 
+ void PNGConfigVideo::create_objects()
+ {
+ 	lock_window("PNGConfigVideo::create_objects");
++	BC_Title *title;
+ 	int x = xS(10), y = yS(10);
+-	add_subwindow(new PNGUseAlpha(this, x, y));
++	add_subwindow(use_alpha = new PNGUseAlpha(this, x, y));
++	y += use_alpha->get_h() + yS(10);
++	add_subwindow(title = new BC_Title(x,y,_("Compression:")));
++	int x1 = x + title->get_w() + xS(10);
++	compression = new PNGCompression(this, x1, y);
++	compression->create_objects();
+ 	add_subwindow(new BC_OKButton(this));
+ 	show_window(1);
+ 	unlock_window();
+@@ -390,3 +407,15 @@ int PNGUseAlpha::handle_event()
+ 	return 1;
+ }
+ 
++PNGCompression::PNGCompression(PNGConfigVideo *gui, int x, int y)
++ : BC_TumbleTextBox(gui, (int64_t)gui->asset->png_compression,
++	(int64_t)0, (int64_t)9, x, y, xS(40))
++{
++	this->gui = gui;
++}
++
++int PNGCompression::handle_event()
++{
++	gui->asset->png_compression = atol(get_text());
++	return 1;
++}
+diff --git a/cinelerra-5.1/cinelerra/filepng.h b/cinelerra-5.1/cinelerra/filepng.h
+index 2263bc3..71d123c 100644
+--- a/cinelerra-5.1/cinelerra/filepng.h
++++ b/cinelerra-5.1/cinelerra/filepng.h
+@@ -29,6 +29,10 @@
+ #include "filelist.h"
+ #include "vframe.inc"
+ 
++class PNGUseAlpha;
++class PNGCompression;
++
++
+ class FilePNG : public FileList
+ {
+ public:
+@@ -77,6 +81,9 @@ public:
+ 
+ 	BC_WindowBase *parent_window;
+ 	Asset *asset;
++	
++	PNGUseAlpha *use_alpha;
++	PNGCompression *compression;
+ };
+ 
+ 
+@@ -88,5 +95,12 @@ public:
+ 	PNGConfigVideo *gui;
+ };
+ 
++class PNGCompression : public BC_TumbleTextBox
++{
++public:
++        PNGCompression(PNGConfigVideo *gui, int x, int y);
++        int handle_event();
++        PNGConfigVideo *gui;
++};
+ 
+ #endif
