@@ -31,8 +31,8 @@ index e343f39a..c4c6c4ad 100644
  x264.cfg_params?= --enable-static --enable-pic
  x265.cfg_vars?=$(call cmake_config,source)
  x265.cfg_params?= -DENABLE_SHARED=no
--libvpx.cfg_params?= --enable-pic
-+libvpx.cfg_params?= --enable-pic --disable-unit-tests --disable-examples --disable-tools
+-libvpx.cfg_params?= --enable-pic --disable-avx512
++libvpx.cfg_params?= --enable-pic --disable-avx512 --disable-unit-tests --disable-examples --disable-tools
 +
  
  DS:=$$$$$$$$

@@ -9,6 +9,6 @@
 +x265.cfg_vars?=chmod +x ./configure; chmod +x ./multilib.sh;
 +#x265.cfg_vars?=$(call cmake_config,source)
 +#x265.cfg_params?= -DENABLE_SHARED=no
- libvpx.cfg_params?= --enable-pic --disable-unit-tests --disable-examples --disable-tools
+ libvpx.cfg_params?= --enable-pic --disable-avx512 --disable-unit-tests --disable-examples --disable-tools
  
  

@@ -11,6 +11,6 @@ index e343f39a..47ae260a 100644
 +#x265.cfg_vars?=$(call cmake_config,source)
 +x265.cfg_vars?=chmod +x ./configure; chmod +x ./multilib.sh;
 +#x265.cfg_params?= -DENABLE_SHARED=no
- libvpx.cfg_params?= --enable-pic
+ libvpx.cfg_params?= --enable-pic --disable-avx512
  
  DS:=$$$$$$$$

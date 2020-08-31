@@ -26,7 +26,7 @@ LANG=C
 
 PRGNAM=cinelerra-goodguy
 VERSION="$( date +%Y%m%d )"
-BUILD=${BUILD:-33}
+BUILD=${BUILD:-36}
 TAG=${TAG:-_cin}
 
 if [ -z "$ARCH" ]; then
@@ -43,8 +43,8 @@ PKG=$TMP/package-$PRGNAM
 OUTPUT=${OUTPUT:-/tmp}
 
 if [ "$ARCH" = "i486" ]; then
-  SLKCFLAGS="-O3 -march=i686 -mtune=i686"
-  #SLKCFLAGS="-O3 -ffast-math -mavx -march=native -mtune=native -fopenmp"
+  #SLKCFLAGS="-O3 -march=i686 -mtune=i686"
+  SLKCFLAGS="-O3 -ffast-math -mavx -march=native -mtune=native -fopenmp"
   LIBDIRSUFFIX=""
 elif [ "$ARCH" = "i686" ]; then
   SLKCFLAGS="-O3 -march=i686 -mtune=i686"
@@ -82,7 +82,9 @@ chown -R root:root .
 git apply -v $CWD/x11_nonstd_prefix_compile_fixes.diff
 git apply -v $CWD/cinelerra_dir_fixes_4.diff
 git apply -v $CWD/db_compile_fixes.diff
-cat $CWD/dri3_disable_cin51.diff | patch -p0
+
+cat $CWD/dri3_disable_cin51-new.diff | patch -p0
+
 #git apply -v $CWD/ffmpeg_disable-doc-building.patch
 #git apply -v $CWD/openexr_pthread_configure_fix.patch
 git apply -v $CWD/force_libvpx.diff
@@ -109,17 +111,24 @@ git apply -v  $CWD/I-only_files_reverse_play_speedup.diff
 #git apply -v $CWD/andrew.patch
 cp $CWD/avi_fix.patch thirdparty/src/ffmpeg.git.patch20
 
+# EXR in brender
+git apply -v  $CWD/FORMAT_brender_exr_added.diff
 
 # old gphoto fails opencv build
 #git apply -v $CWD/opencv_gphoto2.diff
 
 git apply -v $CWD/thirdparty_build_trim-full.diff
 
-#moved to dedicated x265 multidepth secction below
+#moved to dedicated x265 multidepth section below
 #cat $CWD/x265-mult/Makefile.diff | patch -p1 --verbose || exit 0
 
-# ffmpeg.git changed mpegts muxer again - 25/04/2020
-#mv thirdparty/src/ffmpeg.git.patch2  thirdparty/src/_ffmpeg.git.patch2
+# ffmpeg.git changed mpegts muxer again - 26/08/2020
+mv thirdparty/src/ffmpeg.git.patch2  thirdparty/src/_ffmpeg.git.patch2
+cp $CWD/ffmpeg.git.patch2 thirdparty/src/ffmpeg.git.patch2
+
+# .uninit was added to ffmpeg
+mv thirdparty/src/ffmpeg.git.patch4  thirdparty/src/_ffmpeg.git.patch4
+
 
 #git apply -v  $CWD/filepng_16_bit_real_fix-II.diff
 

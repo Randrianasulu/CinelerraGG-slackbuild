@@ -1,29 +1,16 @@
---- /dev/null	2020-07-19 09:07:01.788494015 +0300
-+++ ./multilib.sh	2020-08-02 02:34:58.444933214 +0300
-@@ -0,0 +1,54 @@
+--- /dev/null	2020-03-14 06:02:18.586124011 +0300
++++ ./multilib.sh	2020-03-18 00:04:59.404807407 +0300
+@@ -0,0 +1,41 @@
 +#!/bin/sh
 +
 +mkdir -p 8bit 10bit 12bit
 +
-+
 +cd 12bit
-+if [ $(uname -m) == 'x86_64' ]; then
-+  # 64-bit stuff here
-+cmake ../source -DHIGH_BIT_DEPTH=ON -DENABLE_ASSEMBLY=ON -DEXPORT_C_API=OFF -DENABLE_SHARED=OFF -DENABLE_CLI=OFF -DMAIN12=ON
-+else
-+  # 32-bit stuff here
 +cmake ../source -DHIGH_BIT_DEPTH=ON -DENABLE_ASSEMBLY=OFF -DEXPORT_C_API=OFF -DENABLE_SHARED=OFF -DENABLE_CLI=OFF -DMAIN12=ON
-+fi
 +make  -j 1
 +
 +cd ../10bit
-+if [ $(uname -m) == 'x86_64' ]; then
-+  # 64-bit stuff here
-+cmake ../source -DHIGH_BIT_DEPTH=ON -DENABLE_ASSEMBLY=ON -DEXPORT_C_API=OFF -DENABLE_SHARED=OFF -DENABLE_CLI=OFF
-+else
-+  # 32-bit stuff here
 +cmake ../source -DHIGH_BIT_DEPTH=ON -DENABLE_ASSEMBLY=OFF -DEXPORT_C_API=OFF -DENABLE_SHARED=OFF -DENABLE_CLI=OFF
-+fi
 +make -j 1
 +
 +cd ../8bit

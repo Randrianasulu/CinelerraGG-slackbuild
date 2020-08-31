@@ -1,0 +1,20 @@
+diff --git a/cinelerra-5.1/cinelerra/main.C b/cinelerra-5.1/cinelerra/main.C
+index 0def64b7..3f123b98 100644
+--- cinelerra/main.C
++++ cinelerra/main.C
+@@ -168,6 +168,15 @@ int main(int argc, char *argv[])
+ 	batch_path[0] = 0;
+ 	deamon_path[0] = 0;
+ 	Units::init();
++
++       /* disable dri3 for non_prime, it broke hw effects on nouveau as of 26-08-2020 */
++	const char *prime = getenv("DRI_PRIME");
++	if (prime)
++	setenv("LIBGL_DRI3_DISABLE", "0", 1);
++	else
++	setenv("LIBGL_DRI3_DISABLE", "1", 1);
++
++
+ 	const char *lang = getenv("LANGUAGE");
+ 	if( lang ) lang = cstrdup(lang);
+ 	File::init_cin_path();
