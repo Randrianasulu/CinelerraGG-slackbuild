@@ -26,7 +26,7 @@ LANG=C
 
 PRGNAM=cinelerra-goodguy
 VERSION="$( date +%Y%m%d )"
-BUILD=${BUILD:-36}
+BUILD=${BUILD:-39}
 TAG=${TAG:-_cin}
 
 if [ -z "$ARCH" ]; then
@@ -76,7 +76,7 @@ cp -aR $CWD/new-git/cinelerra/ $TMP/$PRGNAM-$VERSION
 # cd ../
 
 cd $PRGNAM-$VERSION/cinelerra-5.1
-git pull
+#git pull
 chown -R root:root .
 
 git apply -v $CWD/x11_nonstd_prefix_compile_fixes.diff
@@ -114,17 +114,35 @@ cp $CWD/avi_fix.patch thirdparty/src/ffmpeg.git.patch20
 # EXR in brender
 git apply -v  $CWD/FORMAT_brender_exr_added.diff
 
+# ffmpeg 4.3+ api chnage
+git apply -v $CWD/ffmpeg.git_internal_api.patch
+
+# 16:10 + formats
+git apply -v $CWD/16_10_plus_formats.patch
+
+# frei0r in plugins
+git apply $CWD/frei0r_plugins.diff
+
+# hackish mainwindow menu toggles
+git apply -v $CWD/MENU_TOGGLES-full.patch
+
+git apply -v $CWD/DEFAULT_FORMATS.patch
+
+
 # old gphoto fails opencv build
 #git apply -v $CWD/opencv_gphoto2.diff
 
 git apply -v $CWD/thirdparty_build_trim-full.diff
+
+#git apply $CWD/mainerror_gcc5.diff
 
 #moved to dedicated x265 multidepth section below
 #cat $CWD/x265-mult/Makefile.diff | patch -p1 --verbose || exit 0
 
 # ffmpeg.git changed mpegts muxer again - 26/08/2020
 mv thirdparty/src/ffmpeg.git.patch2  thirdparty/src/_ffmpeg.git.patch2
-cp $CWD/ffmpeg.git.patch2 thirdparty/src/ffmpeg.git.patch2
+#cp $CWD/ffmpeg.git.patch11 thirdparty/src/ffmpeg.git.patch11
+
 
 # .uninit was added to ffmpeg
 mv thirdparty/src/ffmpeg.git.patch4  thirdparty/src/_ffmpeg.git.patch4
@@ -185,7 +203,7 @@ export CC="ccache gcc"
 #    --with-opencv=sta,tar=https://cinelerra-gg.org/download/opencv/opencv-20200306.tgz \
 
 EXTRA_LIBS=" -lOpenCL -ldav1d -lxvidcore -lass -lbluray -lsnappy" \
-FFMPEG_EXTRA_CFG=" --enable-opencl --enable-libdav1d --enable-libxvid --enable-libass --enable-libbluray --enable-libsnappy" \
+FFMPEG_EXTRA_CFG=" --enable-opencl --enable-frei0r --enable-libdav1d --enable-libxvid --enable-libass --enable-libbluray --enable-libsnappy" \
 CFLAGS="$SLKCFLAGS -D__STDC_CONSTANT_MACROS" \
 CXXFLAGS="$SLKCFLAGS -D__STDC_CONSTANT_MACROS" \
 LDFLAGS="-L/usr/X11R7/lib -ldl -L/usr/lib${LIBDIRSUFFIX}" \
@@ -202,6 +220,7 @@ LDFLAGS="-L/usr/X11R7/lib -ldl -L/usr/lib${LIBDIRSUFFIX}" \
     --enable-opus \
     --with-jobs=4 \
     --with-booby \
+    --with-commercial \
     --build=$ARCH-slackware-linux
 
  cd thirdparty

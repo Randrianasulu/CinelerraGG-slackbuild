@@ -1,0 +1,225 @@
+diff --git a/cinelerra-5.1/cinelerra/mainmenu.C b/cinelerra-5.1/cinelerra/mainmenu.C
+index 5735f8c9..18e2466d 100644
+--- a/cinelerra-5.1/cinelerra/mainmenu.C
++++ b/cinelerra-5.1/cinelerra/mainmenu.C
+@@ -1607,9 +1607,18 @@ ShowVWindow::ShowVWindow(MWindow *mwindow)
+ }
+ int ShowVWindow::handle_event()
+ {
+-	mwindow->gui->unlock_window();
+-	mwindow->show_vwindow(1);
+-	mwindow->gui->lock_window("ShowVWindow::handle_event");
++
++		mwindow->gui->unlock_window();
++		if( !mwindow->session->show_vwindow )
++			mwindow->show_vwindow(1);
++		else
++			mwindow->hide_vwindow();
++		mwindow->gui->lock_window("ShowVWindow::handle_event");
++		set_checked(mwindow->session->show_vwindow);
++
++//	mwindow->gui->unlock_window();
++//	mwindow->show_vwindow(1);
++//	mwindow->gui->lock_window("ShowVWindow::handle_event");
+ 	return 1;
+ }
+ 
+@@ -1621,9 +1630,18 @@ ShowAWindow::ShowAWindow(MWindow *mwindow)
+ }
+ int ShowAWindow::handle_event()
+ {
+-	mwindow->gui->unlock_window();
+-	mwindow->show_awindow();
+-	mwindow->gui->lock_window("ShowAWindow::handle_event");
++		mwindow->gui->unlock_window();
++		if( !mwindow->session->show_awindow )
++			mwindow->show_awindow();
++		else
++			mwindow->hide_awindow();
++		mwindow->gui->lock_window("ShowAWindow::handle_event");
++		set_checked(mwindow->session->show_awindow);
++
++
++//	mwindow->gui->unlock_window();
++//	mwindow->show_awindow();
++//	mwindow->gui->lock_window("ShowAWindow::handle_event");
+ 	return 1;
+ }
+ 
+@@ -1635,9 +1653,17 @@ ShowCWindow::ShowCWindow(MWindow *mwindow)
+ }
+ int ShowCWindow::handle_event()
+ {
+-	mwindow->gui->unlock_window();
+-	mwindow->show_cwindow();
+-	mwindow->gui->lock_window("ShowCWindow::handle_event");
++		mwindow->gui->unlock_window();
++		if( !mwindow->session->show_cwindow )
++			mwindow->show_cwindow();
++		else
++			mwindow->hide_cwindow();
++		mwindow->gui->lock_window("ShowCWindow::handle_event");
++		set_checked(mwindow->session->show_cwindow);
++
++//	mwindow->gui->unlock_window();
++//	mwindow->show_cwindow();
++//	mwindow->gui->lock_window("ShowCWindow::handle_event");
+ 	return 1;
+ }
+ 
+@@ -1672,9 +1698,18 @@ ShowLWindow::ShowLWindow(MWindow *mwindow)
+ }
+ int ShowLWindow::handle_event()
+ {
+-	mwindow->gui->unlock_window();
+-	mwindow->show_lwindow();
+-	mwindow->gui->lock_window("ShowLWindow::handle_event");
++
++		mwindow->gui->unlock_window();
++		if( !mwindow->session->show_lwindow )
++			mwindow->show_lwindow();
++		else
++			mwindow->hide_lwindow();
++		mwindow->gui->lock_window("ShowLWindow::handle_event");
++		set_checked(mwindow->session->show_lwindow);
++
++//	mwindow->gui->unlock_window();
++//	mwindow->show_lwindow();
++//	mwindow->gui->lock_window("ShowLWindow::handle_event");
+ 	return 1;
+ }
+ 
+diff --git a/cinelerra-5.1/cinelerra/mwindow.C b/cinelerra-5.1/cinelerra/mwindow.C
+index f245018a..c25c2bdf 100644
+--- a/cinelerra-5.1/cinelerra/mwindow.C
++++ b/cinelerra-5.1/cinelerra/mwindow.C
+@@ -2997,6 +2997,36 @@ void MWindow::show_vwindow(int raise)
+ 	gui->mainmenu->show_vwindow->set_checked(1);
+ }
+ 
++
++void MWindow::hide_vwindow()
++{
++	session->show_vwindow = 0;
++	int total_running = 0;
++
++	for(int j = 0; j < vwindows.size(); j++) {
++		VWindow *vwindow = vwindows[j];
++		if( !vwindow->is_running() ) continue;
++		total_running++;
++		if( !raise && !vwindow->gui->is_hidden() ) continue;
++		vwindow->gui->lock_window("MWindow::show_vwindow");
++		vwindow->gui->hide_window(0);
++		//vwindow->gui->raise_window();
++		//vwindow->gui->flush();
++		vwindow->gui->unlock_window();
++	}
++// If no windows visible
++	if( !total_running )
++		get_viewer(1, DEFAULT_VWINDOW);
++
++	gui->mainmenu->show_vwindow->set_checked(0);
++
++//
++//	vwindow->gui->lock_window("MWindow::show_vwindow");
++//	vwindow->gui->hide_window();
++//	vwindow->gui->unlock_window();
++}
++
++
+ void MWindow::show_awindow()
+ {
+ 	session->show_awindow = 1;
+@@ -3008,6 +3038,18 @@ void MWindow::show_awindow()
+ 	gui->mainmenu->show_awindow->set_checked(1);
+ }
+ 
++void MWindow::hide_awindow()
++{
++	session->show_awindow = 0;
++
++	awindow->gui->lock_window("MWindow::show_awindow");
++	awindow->gui->hide_window();
++	awindow->gui->unlock_window();
++	gui->mainmenu->show_awindow->set_checked(0);
++}
++
++
++
+ char *MWindow::get_cwindow_display()
+ {
+ 	char *x11_host = screens < 2 || session->window_config == 0 ?
+@@ -3023,6 +3065,18 @@ void MWindow::show_cwindow()
+ 	gui->mainmenu->show_cwindow->set_checked(1);
+ }
+ 
++
++void MWindow::hide_cwindow()
++{
++	session->show_cwindow = 0;
++
++	cwindow->gui->lock_window("MWindow::show_cwindow");
++	cwindow->gui->hide_window();
++	cwindow->gui->unlock_window();
++	gui->mainmenu->show_cwindow->set_checked(0);
++}
++
++
+ void MWindow::show_gwindow()
+ {
+ 	session->show_gwindow = 1;
+@@ -3035,6 +3089,7 @@ void MWindow::show_gwindow()
+ 
+ 	gui->mainmenu->show_gwindow->set_checked(1);
+ }
++
+ void MWindow::hide_gwindow()
+ {
+ 	session->show_gwindow = 0;
+@@ -3042,6 +3097,8 @@ void MWindow::hide_gwindow()
+ 	gwindow->gui->lock_window("MWindow::show_gwindow");
+ 	gwindow->gui->hide_window();
+ 	gwindow->gui->unlock_window();
++	
++	gui->mainmenu->show_gwindow->set_checked(0);
+ }
+ 
+ void MWindow::show_lwindow()
+@@ -3055,6 +3112,18 @@ void MWindow::show_lwindow()
+ 	gui->mainmenu->show_lwindow->set_checked(1);
+ }
+ 
++void MWindow::hide_lwindow()
++{
++	session->show_lwindow = 0;
++
++	lwindow->gui->lock_window("MWindow::show_lwindow");
++	lwindow->gui->hide_window();
++	lwindow->gui->unlock_window();
++	gui->mainmenu->show_lwindow->set_checked(0);
++}
++
++
++
+ void MWindow::restore_windows()
+ {
+ 	gui->unlock_window();
+diff --git a/cinelerra-5.1/cinelerra/mwindow.h b/cinelerra-5.1/cinelerra/mwindow.h
+index 6a4e2fb6..a4508e67 100644
+--- a/cinelerra-5.1/cinelerra/mwindow.h
++++ b/cinelerra-5.1/cinelerra/mwindow.h
+@@ -210,9 +210,13 @@ public:
+ 	int create_ref(Asset *asset, EDL *ref);
+ // Show windows
+ 	void show_vwindow(int raise);
++	void hide_vwindow();
+ 	void show_awindow();
+-	void show_lwindow();
++	void hide_awindow();
+ 	void show_cwindow();
++	void hide_cwindow();
++	void show_lwindow();
++	void hide_lwindow();
+ 	void show_gwindow();
+ 	void hide_gwindow();
+ 	void restore_windows();

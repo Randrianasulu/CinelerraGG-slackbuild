@@ -1,0 +1,10 @@
+diff --git a/cinelerra-5.1/ffmpeg/plugin.opts b/cinelerra-5.1/ffmpeg/plugin.opts
+index 845a2545..98b35d53 100644
+--- a/cinelerra-5.1/ffmpeg/plugin.opts
++++ b/cinelerra-5.1/ffmpeg/plugin.opts
+@@ -394,3 +394,4 @@ vibrance
+ #ass
+ #drawtext
+ #subtitles
++frei0r filter_name=vignette
+\ No newline at end of file

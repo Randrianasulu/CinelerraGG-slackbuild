@@ -1,0 +1,47 @@
+diff --git a/cinelerra-5.1/cinelerra/ffmpeg.C b/cinelerra-5.1/cinelerra/ffmpeg.C
+index 97b6698a..652cac54 100644
+--- a/cinelerra-5.1/cinelerra/ffmpeg.C
++++ b/cinelerra-5.1/cinelerra/ffmpeg.C
+@@ -25,6 +25,7 @@
+ #include "edlsession.h"
+ #include "file.h"
+ #include "fileffmpeg.h"
++#include "libavformat/internal.h"
+ #include "filesystem.h"
+ #include "ffmpeg.h"
+ #include "indexfile.h"
+@@ -720,7 +721,7 @@ int FFStream::seek(int64_t no, double rate)
+ 	AVRational time_base = st->time_base;
+ 	int64_t tstmp = time_base.num > 0 ? secs * time_base.den/time_base.num : 0;
+ 	if( !tstmp ) {
+-		if( st->nb_index_entries > 0 ) tstmp = st->index_entries[0].timestamp;
++		if( st->internal->nb_index_entries > 0 ) tstmp = st->internal->index_entries[0].timestamp;
+ 		else if( st->start_time != AV_NOPTS_VALUE ) tstmp = st->start_time;
+ 		else if( st->first_dts != AV_NOPTS_VALUE ) tstmp = st->first_dts;
+ 		else tstmp = INT64_MIN+1;
+@@ -3943,10 +3944,10 @@ void FFStream::load_markers(IndexMarks &marks, double rate)
+ 	int in = 0;
+ 	int64_t sz = marks.size();
+ 	int max_entries = fmt_ctx->max_index_size / sizeof(AVIndexEntry) - 1;
+-	int nb_ent = st->nb_index_entries;
++	int nb_ent = st->internal->nb_index_entries;
+ // some formats already have an index
+ 	if( nb_ent > 0 ) {
+-		AVIndexEntry *ep = &st->index_entries[nb_ent-1];
++		AVIndexEntry *ep = &st->internal->index_entries[nb_ent-1];
+ 		int64_t tstmp = ep->timestamp;
+ 		if( nudge != AV_NOPTS_VALUE ) tstmp -= nudge;
+ 		double secs = ffmpeg->to_secs(tstmp, st->time_base);
+diff --git a/cinelerra-5.1/cinelerra/mainerror.h b/cinelerra-5.1/cinelerra/mainerror.h
+index 766f1e66..69700807 100644
+--- a/cinelerra-5.1/cinelerra/mainerror.h
++++ b/cinelerra-5.1/cinelerra/mainerror.h
+@@ -89,7 +89,7 @@ private:
+ 
+ // format text to error dialog listbox
+ 
+-static inline void eprint1(const char *func, const char *fmt, ...)
++static  void eprint1(const char *func, const char *fmt, ...)
+ {
+ 	char err_msg[1024], *cp = err_msg, *ep = cp + sizeof(err_msg)-1;
+ 	va_list va;
