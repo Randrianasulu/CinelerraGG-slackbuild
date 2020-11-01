@@ -1,4 +1,4 @@
-%define ver 20200331
+%define ver 20201031
 %define cin cinelerra
 Summary: Multimedia Editing and construction
 
@@ -60,6 +60,7 @@ BuildRequires: udftools
 BuildRequires: gtk2-devel
 BuildRequires: lib64va-devel
 BuildRequires: lib64vdpau-devel
+BuildRequires: lib64glu-devel
 %{?rhat:BuildRequires: alsa-lib-devel}
 %{?rhat:BuildRequires: bzip2-devel}
 %{?rhat:BuildRequires: xorg-x11-fonts-cyrillic}
@@ -77,6 +78,7 @@ BuildRequires: lib64vdpau-devel
 %{?suse:BuildRequires: libnuma-devel}
 #BuildRequires: xz-devel
 BuildRequires: yasm
+BuildRequires: xdm
 BuildRequires: zlib-devel
 
 %description
