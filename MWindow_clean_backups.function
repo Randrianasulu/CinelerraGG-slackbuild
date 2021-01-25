@@ -1,0 +1,52 @@
+void MWindow::clean_backups()
+{
+    FileSystem fs;
+    int total_excess;
+    long oldest = 0;
+    int oldest_item = -1;
+    int result;
+    char string[BCTEXTLEN];
+
+// Delete extra backups
+    fs.set_filter("backup_*.xml");
+    fs.complete_path(preferences->index_directory);
+    fs.update(preferences->index_directory);
+
+    total_excess = fs.dir_list.total - preferences->index_count;
+    printf("Total excess of backups: %i \n", total_excess);
+
+//printf("MWindow::clean_backups 1 %d\n", fs.dir_list.total);
+
+    while(total_excess > 0)
+    {
+// Get oldest
+       for(int i = 0; i < fs.dir_list.total; i++)
+       {
+           fs.join_names(string, preferences->index_directory, fs.dir_list[i]->name);
+
+           if(i == 0 || fs.get_date(string) <= oldest)
+           {
+               oldest = fs.get_date(string);
+               oldest_item = i;
+           }
+       }
+
+       if(oldest_item >= 0)
+       {
+// Remove backup file
+           fs.join_names(string,
+               preferences->index_directory,
+               fs.dir_list[oldest_item]->name);
+//printf("MWindow::clean_backups 1 %s\n", string);
+           if(remove(string))
+               perror("delete_backups");
+           delete fs.dir_list[oldest_item];
+           fs.dir_list.remove_number(oldest_item);
+
+       }
+
+       total_excess--;
+    }
+}
+
+
