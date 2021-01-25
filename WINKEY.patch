@@ -1,0 +1,115 @@
+diff --git a/cinelerra-5.1/cinelerra/mwindowgui.C b/cinelerra-5.1/cinelerra/mwindowgui.C
+index 6381fa07..b8b601bf 100644
+--- a/cinelerra-5.1/cinelerra/mwindowgui.C
++++ b/cinelerra-5.1/cinelerra/mwindowgui.C
+@@ -1090,23 +1090,23 @@ int MWindowGUI::keypress_event()
+ 
+ 	switch( get_keypress() ) {
+ 	case 'A':
+-		if( !alt_down() && ctrl_down() ) {
+-			mwindow->edl->tracks->clear_selected_edits();
+-			draw_overlays(1);
+-			result = 1;
+-		}
+-		break;
++//		if( !alt_down() && ctrl_down() ) {
++//			mwindow->edl->tracks->clear_selected_edits();
++//			draw_overlays(1);
++//			result = 1;
++//		}
++//		break;
+ 	case 'a':
+-		if( !ctrl_down() && alt_down() ) {
++		if( ctrl_down && winkey_down() ) {
+ 			stop_transport("MWindowGUI::keypress_event 1");
+ 			mwindow->nearest_auto_keyframe(shift_down(),
+ 				!ctrl_down() ? PLAY_FORWARD : PLAY_REVERSE);
+ 			result = 1;
+ 		}
+-		else if( ctrl_down() && alt_down() ) {
+-			mwindow->select_edits(1);
+-			result = 1;
+-		}
++//		else if( ctrl_down() && alt_down() ) {
++//			mwindow->select_edits(1);
++//			result = 1;
++//		}
+ 		break;
+ 
+ 	case 'e':
+@@ -1115,7 +1115,7 @@ int MWindowGUI::keypress_event()
+ 		result = 1;
+ 		break;
+ 
+-	case 'k': case 'K':
++	case 'k': case 'K': 
+ 		if( alt_down() ) break;
+ 		stop_transport("MWindowGUI::keypress_event 2");
+ 		mwindow->nearest_plugin_keyframe(shift_down(),
+diff --git a/cinelerra-5.1/guicast/bcwindowbase.C b/cinelerra-5.1/guicast/bcwindowbase.C
+index 9f3e2123..93cdf15b 100644
+--- a/cinelerra-5.1/guicast/bcwindowbase.C
++++ b/cinelerra-5.1/guicast/bcwindowbase.C
+@@ -274,7 +274,7 @@ int BC_WindowBase::initialize()
+ 	motion_events = 0;
+ 	resize_events = 0;
+ 	translation_events = 0;
+-	ctrl_mask = shift_mask = alt_mask = 0;
++	ctrl_mask = shift_mask = alt_mask = winkey_mask = 0;
+ 	cursor_x = cursor_y = button_number = 0;
+ 	button_down = 0;
+ 	button_pressed = 0;
+@@ -764,6 +764,7 @@ int BC_WindowBase::get_key_masks(unsigned int key_state)
+ 	ctrl_mask = (key_state & ControlMask) ? 1 : 0;  // ctrl key down
+ 	shift_mask = (key_state & ShiftMask) ? 1 : 0;   // shift key down
+ 	alt_mask = (key_state & Mod1Mask) ? 1 : 0;      // alt key down
++	winkey_mask = (key_state & Mod4Mask) ? 1 : 0;      // windows key down
+ 	return 0;
+ }
+ 
+@@ -4071,6 +4072,11 @@ int BC_WindowBase::ctrl_down()
+ 	return top_level->ctrl_mask;
+ }
+ 
++int BC_WindowBase::winkey_down()
++{
++	return top_level->winkey_mask;
++}
++
+ wchr_t* BC_WindowBase::get_wkeystring(int *length)
+ {
+ 	if(length)
+diff --git a/cinelerra-5.1/guicast/bcwindowbase.h b/cinelerra-5.1/guicast/bcwindowbase.h
+index e4eb8ba4..c682d2cc 100644
+--- a/cinelerra-5.1/guicast/bcwindowbase.h
++++ b/cinelerra-5.1/guicast/bcwindowbase.h
+@@ -347,6 +347,7 @@ public:
+ 	int alt_down();
+ 	int shift_down();
+ 	int ctrl_down();
++	int winkey_down();
+ 	int get_double_click();
+ 	int get_triple_click();
+ // Bottom right corner
+@@ -728,7 +729,7 @@ private:
+ // key data
+ 	KeySym keysym;
+ // Key masks
+-	int ctrl_mask, shift_mask, alt_mask;
++	int ctrl_mask, shift_mask, alt_mask, winkey_mask;
+ // Cursor motion information
+ 	int cursor_x, cursor_y;
+ // Button status information
+diff --git a/cinelerra-5.1/guicast/bcwindowbase.inc b/cinelerra-5.1/guicast/bcwindowbase.inc
+index 046e7dd8..87bebace 100644
+--- a/cinelerra-5.1/guicast/bcwindowbase.inc
++++ b/cinelerra-5.1/guicast/bcwindowbase.inc
+@@ -27,7 +27,7 @@ class BC_WindowBase;
+ class BC_WindowList;
+ class Shuttle;
+ 
+-#define BCTEXTLEN 1024
++#define BCTEXTLEN 1536
+ #define BCSTRLEN 64
+ #define KEYPRESSLEN 6
+ // Milliseconds before cursor disappears during video playback

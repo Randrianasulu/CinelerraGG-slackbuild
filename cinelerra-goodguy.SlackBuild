@@ -26,7 +26,7 @@ LANG=C
 
 PRGNAM=cinelerra-goodguy
 VERSION="$( date +%Y%m%d )"
-BUILD=${BUILD:-39}
+BUILD=${BUILD:-41}
 TAG=${TAG:-_cin}
 
 if [ -z "$ARCH" ]; then
@@ -43,8 +43,8 @@ PKG=$TMP/package-$PRGNAM
 OUTPUT=${OUTPUT:-/tmp}
 
 if [ "$ARCH" = "i486" ]; then
-  #SLKCFLAGS="-O3 -march=i686 -mtune=i686"
-  SLKCFLAGS="-O3 -ffast-math -mavx -march=native -mtune=native -fopenmp"
+  SLKCFLAGS="-O3 -march=i686 -mtune=i686"
+  #SLKCFLAGS="-O3 -ffast-math -mavx -march=native -mtune=native -fopenmp"
   LIBDIRSUFFIX=""
 elif [ "$ARCH" = "i686" ]; then
   SLKCFLAGS="-O3 -march=i686 -mtune=i686"
@@ -117,16 +117,28 @@ git apply -v  $CWD/FORMAT_brender_exr_added.diff
 # ffmpeg 4.3+ api chnage
 git apply -v $CWD/ffmpeg.git_internal_api.patch
 
+git apply -v $CWD/batchrender_postmerge_xml_check.diff
+
+#git apply -v $CWD/fix_menuattachtransition_3.diff
+
+git apply -v $CWD/TITLER_reset_plus_eng_tags-3.2.diff
+
+git apply -v $CWD/formattools_fix.diff
+
+git apply -v $CWD/backups_hardcoded_unsure.diff
+
+git apply -v $CWD/fix_brender_direct_x11_jpeg.diff
+
 # 16:10 + formats
-git apply -v $CWD/16_10_plus_formats.patch
+#git apply -v $CWD/16_10_plus_formats.patch
 
 # frei0r in plugins
 git apply $CWD/frei0r_plugins.diff
 
 # hackish mainwindow menu toggles
-git apply -v $CWD/MENU_TOGGLES-full.patch
+#git apply -v $CWD/MENU_TOGGLES-full-2.patch
 
-git apply -v $CWD/DEFAULT_FORMATS.patch
+#git apply -v $CWD/DEFAULT_FORMATS.patch
 
 
 # old gphoto fails opencv build

@@ -1,0 +1,15 @@
+diff --git a/cinelerra-5.1/cinelerra/filejpeg.C b/cinelerra-5.1/cinelerra/filejpeg.C
+index 42dd2189..010fc2c9 100644
+--- a/cinelerra-5.1/cinelerra/filejpeg.C
++++ b/cinelerra-5.1/cinelerra/filejpeg.C
+@@ -101,6 +101,10 @@ int FileJPEG::can_copy_from(Asset *asset, int64_t position)
+ 
+ int FileJPEG::colormodel_supported(int colormodel)
+ {
++// HACK, because otherwise we crash with background jpeg render and X11 direct
++// at least on 32-bit Slackware in BC_Xfer::xfer_yuv420p_to_bgr8888
++	if (colormodel == BC_BGR8888 )
++		return colormodel = BC_RGB888;
+ 	return colormodel;
+ }
+ 

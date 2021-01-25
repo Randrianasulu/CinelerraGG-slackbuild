@@ -1,0 +1,216 @@
+diff --git a/cinelerra-5.1/cinelerra/batchrender.C b/cinelerra-5.1/cinelerra/batchrender.C
+index 8a89c925..530361af 100644
+--- a/cinelerra-5.1/cinelerra/batchrender.C
++++ b/cinelerra-5.1/cinelerra/batchrender.C
+@@ -60,6 +60,7 @@
+ #include "dvdcreate.h"
+ #include "bdcreate.h"
+ 
++
+ int BatchRenderThread::column_widths[] = { 42, 42, 42, 222, 222, 150 };
+ const char *BatchRenderThread::column_titles[] = {
+ 	N_("Enabled"), N_("Labeled"), N_("Farmed"), N_("Output"), N_("EDL"), N_("Elapsed")
+@@ -254,23 +255,64 @@ BC_Window* BatchRenderThread::new_gui()
+ 	return this->gui;
+ }
+ 
++int BatchRenderThread::probe(const char *path)
++{
++	FILE *fp = fopen(path, "rb");
++	if( !fp ) return FILE_NOT_FOUND;
++	char data[16];
++	memset(data,0,sizeof(data));
++	int ret = fread(data, 1, 16, fp);
++	fclose(fp);
++	if( !ret ) return FILE_NOT_FOUND;
++	
++	
++	if ( !strncmp(&data[0],"<",1) &&
++	    ( !strncmp(&data[1],"EDL>",4) ||
++	        !strncmp(&data[1],"HTAL>",5) ||
++	        !strncmp(&data[1],"?xml",4) ))
++		return FILE_IS_XML;
++	return FILE_UNRECOGNIZED_CODEC;
++}
+ 
+ void BatchRenderThread::load_jobs(char *path, Preferences *preferences)
+ {
+ 	FileXML file;
+ 	int result = 0;
++	
+ 
+ 	jobs.remove_all_objects();
+ 	if( !path ) path = batch_path;
+ 	if( !path[0] ) create_path(path);
+ 	file.read_from_file(path);
+ 
++	int fileprobe = probe(path);
++	if (fileprobe == FILE_IS_XML) {
++
++
++	    const char *cin_version = 0;
++	    while( !file.read_tag() ) {
++		if( file.tag.title_is("EDL") ) {
++		    cin_version = file.tag.get_property("VERSION");
++		    break;
++		}
++	    }
++	    
++	    file.rewind();
++	    if( cin_version ) {
++		printf(_("XML file %s\n IS project from cinelerra. \n You need batchrender-specific XML as argument for -r !!!! \n"), path);
++		if (!mwindow)
++		exit(1);
++	    }
++	    
++	    file.rewind();
++
++
+ 	while( !result ) {
+ 		if( !(result = file.read_tag()) ) {
+ 			if( file.tag.title_is("JOBS") ) {
+-				if (mwindow->preferences->unsafe_gui)
++				if (mwindow && mwindow->preferences->unsafe_gui)
+ 				warn = file.tag.get_property("WARN", 1);
+-				if (!mwindow->preferences->unsafe_gui)
++				if (mwindow && !mwindow->preferences->unsafe_gui)
+ 				warn = 0;
+ 			}
+ 			else if( file.tag.title_is("JOB") ) {
+@@ -290,13 +332,18 @@ void BatchRenderThread::load_jobs(char *path, Preferences *preferences)
+ 			}
+ 		}
+ 	}
++	}
++	if (!mwindow && fileprobe != FILE_IS_XML) {
++		printf ("Not XML file! \n");
++		exit(1);
++	}
+ }
+ 
+ void BatchRenderThread::save_jobs(char *path)
+ {
+ 	FileXML file;
+ 	file.tag.set_title("JOBS");
+-	if (mwindow->preferences->unsafe_gui)
++	if (mwindow && mwindow->preferences->unsafe_gui)
+ 	file.tag.set_property("WARN", warn);
+ 	file.append_tag();
+ 	file.append_newline();
+@@ -458,6 +505,9 @@ int BatchRenderThread::test_edl_files()
+ 		int is_script = *path == '@' ? 1 : 0;
+ 		if( is_script ) ++path;
+ 		FILE *fp = fopen(path, "r");
++		
++		int fileprobe = probe(path);
++		
+ 		if( fp ) {
+ 			if( mwindow && !is_script ) {
+ 				char *bfr = 0;  size_t sz = 0;
+@@ -470,7 +520,7 @@ int BatchRenderThread::test_edl_files()
+ 					else
+ 						bfr[sz] = 0;
+ 				}
+-				if( !ret ) {
++				if( !ret && fileprobe == FILE_IS_XML) {
+ 					EDL *edl = new EDL; edl->create_objects();
+ 					XMLBuffer data(bfr, sz, 0);
+ 					{ FileXML file;
+@@ -764,7 +814,7 @@ void BatchRenderGUI::create_objects()
+ 	int x = mwindow->theme->batchrender_x1;
+ 	int y = ys5;
+ 	int x1 = x, x2 = get_w()/2 + xs30; // mwindow->theme->batchrender_x2;
+-	int y1 = ys5, y2 = ys5;
++	int y1 = ys5, y2 = ys5, y3 = ys5;
+ 
+ // output file
+ 	add_subwindow(output_path_title = new BC_Title(x1, y1, _("Output path:")));
+@@ -786,6 +836,7 @@ void BatchRenderGUI::create_objects()
+ 			use_renderfarm->disable();
+ 	}
+ 
++
+ // input EDL
+ 	add_subwindow(edl_path_title = new BC_Title(x2, y2, _("EDL Path:")));
+ 	y2 += edl_path_title->get_h() + mwindow->theme->widget_border;
+@@ -819,8 +870,16 @@ void BatchRenderGUI::create_objects()
+ 	add_subwindow(warning = new BatchRenderWarning(thread, x2, y));
+ 	y2 = y + warning->get_h() + mwindow->theme->widget_border;
+ 	}
++
+ 	if( y2 > y1 ) y1 = y2;
+ 	x = mwindow->theme->batchrender_x1, y = y1;
++	
++	// add IOpoints checkbox 		
++	y3 += y1 + 1;
++	add_subwindow(use_iopoints = new BatchRenderUseIOpoints(thread, x1, y3));
++	y = y1 + use_iopoints->get_h() + 10 + mwindow->theme->widget_border;
++	
++
+ 
+ 	add_subwindow(list_title = new BC_Title(x, y, _("Batches to render:")));
+ 	x1 = x + list_title->get_w() + mwindow->theme->widget_border;;
+@@ -1389,6 +1448,19 @@ int BatchRenderStop::handle_event()
+ }
+ 
+ 
++BatchRenderUseIOpoints::BatchRenderUseIOpoints(BatchRenderThread *thread, int x, int y)
++ : BC_CheckBox(x, y, thread->iopoints, _("Respect In/Out points in projects"))
++{
++	this->thread = thread;
++	set_tooltip(_("Respect In/Out points in projects"));
++}
++
++int BatchRenderUseIOpoints::handle_event()
++{
++	thread->iopoints = get_value();
++	return 1;
++}
++
+ BatchRenderWarning::BatchRenderWarning(BatchRenderThread *thread, int x, int y)
+  : BC_CheckBox(x, y, thread->warn, _("warn if jobs/session mismatched"))
+ {
+diff --git a/cinelerra-5.1/cinelerra/batchrender.h b/cinelerra-5.1/cinelerra/batchrender.h
+index 57309895..8f86458c 100644
+--- a/cinelerra-5.1/cinelerra/batchrender.h
++++ b/cinelerra-5.1/cinelerra/batchrender.h
+@@ -116,6 +116,7 @@ public:
+ 	void reset(const char *path=0);
+ // Load batch rendering jobs
+ 	void load_jobs(char *path, Preferences *preferences);
++	int probe(const char *path);
+ // Not applicable to western civilizations
+ 	void save_jobs(char *path=0);
+ 	void load_defaults(BC_Hash *defaults);
+@@ -158,6 +159,7 @@ public:
+ 	int list_width[BATCHRENDER_COLUMNS];
+ 	int do_farmed;
+ 	int do_labeled;
++	int iopoints;
+ // job being edited
+ 	int current_job;
+ // job being rendered
+@@ -314,6 +316,15 @@ public:
+ 	int *output;
+ };
+ 
++class BatchRenderUseIOpoints : public BC_CheckBox
++{
++public:
++	BatchRenderUseIOpoints(BatchRenderThread *thread, int x, int y);
++	int handle_event();
++	BatchRenderThread *thread;
++
++};
++
+ 
+ class BatchRenderGUI : public BC_Window
+ {
+@@ -363,6 +374,7 @@ public:
+ 	BatchRenderCurrentEDL *use_current_edl;
+ 	BatchRenderUpdateEDL *update_selected_edl;
+ 	BatchRenderUseFarm *use_renderfarm;
++	BatchRenderUseIOpoints *use_iopoints;
+ };
+ 
+ 

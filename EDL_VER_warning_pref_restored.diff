@@ -1,0 +1,18 @@
+diff --git a/cinelerra-5.1/cinelerra/mwindow.C b/cinelerra-5.1/cinelerra/mwindow.C
+index 04549fde..8551c2e3 100644
+--- a/cinelerra-5.1/cinelerra/mwindow.C
++++ b/cinelerra-5.1/cinelerra/mwindow.C
+@@ -2211,8 +2211,11 @@ if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
+ 			if( strcmp(cin_version, CINELERRA_VERSION) &&
+ 			    strcmp(cin_version, "Unify") &&
+ 			    strcmp(cin_version, "5.1") ) {
+-				eprintf(_("Warning: XML from cinelerra version %s\n"
+-					"Session data may be incompatible."), cin_version);
++				char string[BCTEXTLEN];
++                                snprintf(string, sizeof(string),
++                                      _("Warning: XML from cinelerra version %s\n"
++                                     "Session data may be incompatible."), cin_version);
++                                show_warning(&preferences->warn_version, string);
+ 			}
+ 			if( new_edl->load_xml(&xml_file, LOAD_ALL) ) {
+ 				eprintf(_("Error: unable to load:\n  %s"), filename);

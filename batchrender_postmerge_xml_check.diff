@@ -1,0 +1,103 @@
+diff --git a/cinelerra-5.1/cinelerra/batchrender.C b/cinelerra-5.1/cinelerra/batchrender.C
+index b83f2d63..dce6f4ba 100644
+--- a/cinelerra-5.1/cinelerra/batchrender.C
++++ b/cinelerra-5.1/cinelerra/batchrender.C
+@@ -254,6 +254,25 @@ BC_Window* BatchRenderThread::new_gui()
+ 	return this->gui;
+ }
+ 
++int BatchRenderThread::probe(const char *path)
++{
++	FILE *fp = fopen(path, "rb");
++	if( !fp ) return FILE_NOT_FOUND;
++	char data[16];
++	memset(data,0,sizeof(data));
++	int ret = fread(data, 1, 16, fp);
++	fclose(fp);
++	if( !ret ) return FILE_NOT_FOUND;
++
++
++	if ( !strncmp(&data[0],"<",1) &&
++	    ( !strncmp(&data[1],"EDL>",4) ||
++	        !strncmp(&data[1],"HTAL>",5) ||
++	        !strncmp(&data[1],"?xml",4) ))
++		return FILE_IS_XML;
++	return FILE_UNRECOGNIZED_CODEC;
++}
++
+ 
+ void BatchRenderThread::load_jobs(char *path, Preferences *preferences)
+ {
+@@ -265,6 +284,29 @@ void BatchRenderThread::load_jobs(char *path, Preferences *preferences)
+ 	if( !path[0] ) create_path(path);
+ 	file.read_from_file(path);
+ 
++	int fileprobe = probe(path);
++	if (fileprobe == FILE_IS_XML) {
++
++
++	    const char *cin_version = 0;
++	    while( !file.read_tag() ) {
++		if( file.tag.title_is("EDL") ) {
++		    cin_version = file.tag.get_property("VERSION");
++		    break;
++		}
++	    }
++
++	    file.rewind();
++	    if( cin_version ) {
++		printf(_("XML file %s\n IS project from cinelerra. \n You need batchrender-specific XML as argument for -r !!!! \n"), path);
++		if (!mwindow)
++		exit(1);
++	    }
++
++	    file.rewind();
++
++
++
+ 	while( !result ) {
+ 		if( !(result = file.read_tag()) ) {
+ 			if( file.tag.title_is("JOBS") ) {
+@@ -290,6 +332,11 @@ void BatchRenderThread::load_jobs(char *path, Preferences *preferences)
+ 			}
+ 		}
+ 	}
++	}
++	if (!mwindow && fileprobe != FILE_IS_XML) {
++		printf ("Not XML file! \n");
++		exit(1);
++	}
+ }
+ 
+ void BatchRenderThread::save_jobs(char *path)
+@@ -458,6 +505,9 @@ int BatchRenderThread::test_edl_files()
+ 		int is_script = *path == '@' ? 1 : 0;
+ 		if( is_script ) ++path;
+ 		FILE *fp = fopen(path, "r");
++
++		int fileprobe = probe(path);
++
+ 		if( fp ) {
+ 			if( mwindow && !is_script ) {
+ 				char *bfr = 0;  size_t sz = 0;
+@@ -470,7 +520,7 @@ int BatchRenderThread::test_edl_files()
+ 					else
+ 						bfr[sz] = 0;
+ 				}
+-				if( !ret ) {
++				if( !ret && fileprobe == FILE_IS_XML) {
+ 					EDL *edl = new EDL; edl->create_objects();
+ 					XMLBuffer data(bfr, sz, 0);
+ 					{ FileXML file;
+diff --git a/cinelerra-5.1/cinelerra/batchrender.h b/cinelerra-5.1/cinelerra/batchrender.h
+index 57309895..c46144de 100644
+--- a/cinelerra-5.1/cinelerra/batchrender.h
++++ b/cinelerra-5.1/cinelerra/batchrender.h
+@@ -116,6 +116,7 @@ public:
+ 	void reset(const char *path=0);
+ // Load batch rendering jobs
+ 	void load_jobs(char *path, Preferences *preferences);
++	int probe(const char *path);
+ // Not applicable to western civilizations
+ 	void save_jobs(char *path=0);
+ 	void load_defaults(BC_Hash *defaults);

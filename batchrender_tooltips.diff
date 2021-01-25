@@ -1,0 +1,31 @@
+diff --git a/cinelerra-5.1/cinelerra/batchrender.C b/cinelerra-5.1/cinelerra/batchrender.C
+index 6dcdbc62..81d47f6e 100644
+--- a/cinelerra-5.1/cinelerra/batchrender.C
++++ b/cinelerra-5.1/cinelerra/batchrender.C
+@@ -1044,6 +1044,8 @@ BatchRenderNew::BatchRenderNew(BatchRenderThread *thread,
+  : BC_GenericButton(x, y, _("New"))
+ {
+ 	this->thread = thread;
++	set_tooltip(_("Create a new batch"));
++
+ }
+ 
+ int BatchRenderNew::handle_event()
+@@ -1056,6 +1058,8 @@ BatchRenderDelete::BatchRenderDelete(BatchRenderThread *thread, int x, int y)
+  : BC_GenericButton(x, y, _("Delete"))
+ {
+ 	this->thread = thread;
++	set_tooltip(_("Delete loaded (highlighted) batch"));
++
+ }
+ 
+ int BatchRenderDelete::handle_event()
+@@ -1242,6 +1246,8 @@ BatchRenderUpdateEDL::BatchRenderUpdateEDL(BatchRenderThread *thread,
+  : BC_GenericButton(x, y, _("Save to EDL Path"))
+ {
+ 	this->thread = thread;
++	set_tooltip(_("Save to loaded EDL (highlighted), will *overwrite* nighlighted proj!"));
++
+ }
+ 
+ int BatchRenderUpdateEDL::handle_event()

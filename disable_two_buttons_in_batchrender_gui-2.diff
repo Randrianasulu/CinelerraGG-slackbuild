@@ -1,0 +1,105 @@
+diff --git a/cinelerra-5.1/cinelerra/batchrender.C b/cinelerra-5.1/cinelerra/batchrender.C
+index 6dcdbc62..79e7c697 100644
+--- a/cinelerra-5.1/cinelerra/batchrender.C
++++ b/cinelerra-5.1/cinelerra/batchrender.C
+@@ -382,6 +382,7 @@ void BatchRenderThread::use_current_edl()
+ 	gui->edl_path_text->update(get_current_edl());
+ }
+ 
++/*
+ void BatchRenderThread::update_selected_edl()
+ {
+         FileXML xml_file;
+@@ -396,6 +397,8 @@ void BatchRenderThread::update_selected_edl()
+ 	}
+ }
+ 
++*/
++
+ BatchRenderJob* BatchRenderThread::get_current_job()
+ {
+ 	return current_job >= 0 && current_job < jobs.total ?
+@@ -792,8 +795,9 @@ void BatchRenderGUI::create_objects()
+ 	y2 = y + edl_path_browse->get_h() + mwindow->theme->widget_border;
+ 
+ 	x = x2;  y = y2;
+-	add_subwindow(update_selected_edl = new BatchRenderUpdateEDL(thread, x, y));
+-	y += update_selected_edl->get_h() + mwindow->theme->widget_border;
++//	add_subwindow(update_selected_edl = new BatchRenderUpdateEDL(thread, x, y));
++//	y += update_selected_edl->get_h() + mwindow->theme->widget_border;
++
+ 	add_subwindow(use_current_edl = new BatchRenderCurrentEDL(thread, x, y));
+ 	y += use_current_edl->get_h() + mwindow->theme->widget_border;
+ 	if( !mwindow->edl || !mwindow->edl->path[0] ) use_current_edl->disable();
+@@ -835,7 +839,7 @@ void BatchRenderGUI::button_disable()
+ 	new_batch->disable();
+ 	delete_batch->disable();
+ 	use_current_edl->disable();
+-	update_selected_edl->disable();
++//	update_selected_edl->disable();
+ }
+ 
+ void BatchRenderGUI::button_enable()
+@@ -844,7 +848,7 @@ void BatchRenderGUI::button_enable()
+ 	delete_batch->enable();
+ 	if( mwindow->edl && mwindow->edl->path[0] )
+ 		use_current_edl->enable();
+-	update_selected_edl->enable();
++//	update_selected_edl->enable();
+ }
+ 
+ int BatchRenderGUI::resize_event(int w, int h)
+@@ -876,8 +880,8 @@ int BatchRenderGUI::resize_event(int w, int h)
+ 	y2 = y + edl_path_browse->get_h() + mwindow->theme->widget_border;
+ 
+ 	x = x2;  y = y2;
+-	update_selected_edl->reposition_window(x, y);
+-	y += update_selected_edl->get_h() + mwindow->theme->widget_border;
++//	update_selected_edl->reposition_window(x, y);
++//	y += update_selected_edl->get_h() + mwindow->theme->widget_border;
+ 	use_current_edl->reposition_window(x, y);
+ 	y += use_current_edl->get_h() + mwindow->theme->widget_border;
+ 	new_batch->reposition_window(x, y);
+@@ -1236,6 +1240,7 @@ int BatchRenderCurrentEDL::handle_event()
+ 	return 1;
+ }
+ 
++/*
+ BatchRenderUpdateEDL::BatchRenderUpdateEDL(BatchRenderThread *thread,
+ 	int x,
+ 	int y)
+@@ -1243,10 +1248,11 @@ BatchRenderUpdateEDL::BatchRenderUpdateEDL(BatchRenderThread *thread,
+ {
+ 	this->thread = thread;
+ }
++*/
+ 
+ int BatchRenderUpdateEDL::handle_event()
+ {
+-	thread->update_selected_edl();
++//	thread->update_selected_edl();
+ 	return 1;
+ }
+ 
+diff --git a/cinelerra-5.1/cinelerra/batchrender.h b/cinelerra-5.1/cinelerra/batchrender.h
+index 57309895..b1d8494c 100644
+--- a/cinelerra-5.1/cinelerra/batchrender.h
++++ b/cinelerra-5.1/cinelerra/batchrender.h
+@@ -124,7 +124,7 @@ public:
+ 	char* create_path(char *string);
+ 	void new_job();
+ 	void delete_job();
+-	void update_selected_edl();
++//	void update_selected_edl();
+ 	void use_current_edl();
+ // Conditionally returns the job or the default job based on current_job
+ 	BatchRenderJob* get_current_job();
+@@ -361,7 +361,7 @@ public:
+ 	BatchRenderStop *stop_button;
+ 	BatchRenderCancel *cancel_button;
+ 	BatchRenderCurrentEDL *use_current_edl;
+-	BatchRenderUpdateEDL *update_selected_edl;
++//	BatchRenderUpdateEDL *update_selected_edl;
+ 	BatchRenderUseFarm *use_renderfarm;
+ };
+ 

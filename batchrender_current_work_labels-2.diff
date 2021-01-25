@@ -1,0 +1,416 @@
+diff --git a/cinelerra-5.1/cinelerra/batchrender.C b/cinelerra-5.1/cinelerra/batchrender.C
+index 8a89c925..825d6706 100644
+--- a/cinelerra-5.1/cinelerra/batchrender.C
++++ b/cinelerra-5.1/cinelerra/batchrender.C
+@@ -60,6 +60,7 @@
+ #include "dvdcreate.h"
+ #include "bdcreate.h"
+ 
++
+ int BatchRenderThread::column_widths[] = { 42, 42, 42, 222, 222, 150 };
+ const char *BatchRenderThread::column_titles[] = {
+ 	N_("Enabled"), N_("Labeled"), N_("Farmed"), N_("Output"), N_("EDL"), N_("Elapsed")
+@@ -74,16 +75,17 @@ BatchRenderMenuItem::BatchRenderMenuItem(MWindow *mwindow)
+ 
+ int BatchRenderMenuItem::handle_event()
+ {
+-	mwindow->batch_render->start(1, 1);
++	mwindow->batch_render->start(1, 1, 0);
+ 	return 1;
+ }
+ 
+ BatchRenderJob::BatchRenderJob(const char *tag,
+-		Preferences *preferences, int labeled, int farmed)
++		Preferences *preferences, int labeled, int farmed, int iopointed)
+ {
+ 	this->tag = tag;
+ 	this->preferences = preferences;
+ 	this->labeled = labeled;
++	this->iopointed = iopointed;
+ 	this->farmed = farmed >= 0 ? farmed : preferences->use_renderfarm;
+ 	asset = new Asset;
+ 	edl_path[0] = 0;
+@@ -91,8 +93,8 @@ BatchRenderJob::BatchRenderJob(const char *tag,
+ 	elapsed = 0;
+ }
+ 
+-BatchRenderJob::BatchRenderJob(Preferences *preferences, int labeled, int farmed)
+- : BatchRenderJob("JOB", preferences, labeled, farmed)
++BatchRenderJob::BatchRenderJob(Preferences *preferences, int labeled, int farmed, int iopointed)
++ : BatchRenderJob("JOB", preferences, labeled, farmed, iopointed)
+ {
+ }
+ 
+@@ -106,6 +108,7 @@ void BatchRenderJob::copy_from(BatchRenderJob *src)
+ 	enabled = src->enabled;
+ 	farmed = src->farmed;
+ 	labeled = src->labeled;
++	iopointed = src->iopointed;
+ 	asset->copy_from(src->asset, 0);
+ 	strcpy(edl_path, src->edl_path);
+ 	elapsed = 0;
+@@ -113,7 +116,7 @@ void BatchRenderJob::copy_from(BatchRenderJob *src)
+ 
+ BatchRenderJob *BatchRenderJob::copy()
+ {
+-	BatchRenderJob *t = new BatchRenderJob(tag, preferences, labeled, farmed);
++	BatchRenderJob *t = new BatchRenderJob(tag, preferences, labeled, farmed, iopointed);
+ 	t->copy_from(this);
+ 	return t;
+ }
+@@ -127,6 +130,7 @@ void BatchRenderJob::load(FileXML *file)
+ 	enabled = file->tag.get_property("ENABLED", enabled);
+ 	farmed = file->tag.get_property("FARMED", farmed);
+ 	labeled = file->tag.get_property("LABELED", labeled);
++	iopointed = file->tag.get_property("IOPOINTED", iopointed);
+ 	edl_path[0] = 0;
+ 	file->tag.get_property("EDL_PATH", edl_path);
+ 	elapsed = file->tag.get_property("ELAPSED", elapsed);
+@@ -154,6 +158,7 @@ void BatchRenderJob::save(FileXML *file)
+ 	file->tag.set_property("ENABLED", enabled);
+ 	file->tag.set_property("FARMED", farmed);
+ 	file->tag.set_property("LABELED", labeled);
++	file->tag.set_property("IOPOINTED", iopointed);
+ 	file->tag.set_property("EDL_PATH", edl_path);
+ 	file->tag.set_property("ELAPSED", elapsed);
+ 	file->append_tag();
+@@ -183,6 +188,11 @@ int BatchRenderJob::get_strategy()
+ {
+ 	int range = File::is_image_render(asset->format) ?
+ 		RANGE_1FRAME : RANGE_SELECTION;
++		
++	if (iopointed) 
++		range = RANGE_INOUT;
++		
++	printf("Range-strategy: %i \n", range);
+ 	return Render::get_strategy(farmed, labeled, range);
+ }
+ 
+@@ -202,6 +212,7 @@ BatchRenderThread::BatchRenderThread(MWindow *mwindow)
+ 	batch_path[0] = 0;
+ 	do_farmed = 0;
+ 	do_labeled = 0;
++	do_iopointed = 0;
+ }
+ 
+ BatchRenderThread::~BatchRenderThread()
+@@ -225,8 +236,9 @@ void BatchRenderThread::reset(const char *path)
+ 	jobs.remove_all_objects();
+ }
+ 
+-void BatchRenderThread::start(int do_farmed, int do_labeled)
++void BatchRenderThread::start(int do_farmed, int do_labeled, int do_iopointed)
+ {
++	this->do_iopointed = do_iopointed;
+ 	this->do_farmed = do_farmed;
+ 	this->do_labeled = do_labeled;
+ 	BC_DialogThread::start();
+@@ -244,7 +256,7 @@ BC_Window* BatchRenderThread::new_gui()
+ {
+ 	current_start = 0.0;
+ 	current_end = 0.0;
+-	default_job = new BatchRenderJob(mwindow->preferences, 0, -1);
++	default_job = new BatchRenderJob(mwindow->preferences, 0, -1, 0);
+ 	load_jobs(batch_path, mwindow->preferences);
+ 	load_defaults(mwindow->defaults);
+ 	this->gui = new BatchRenderGUI(mwindow, this,
+@@ -254,27 +266,68 @@ BC_Window* BatchRenderThread::new_gui()
+ 	return this->gui;
+ }
+ 
++int BatchRenderThread::probe(const char *path)
++{
++	FILE *fp = fopen(path, "rb");
++	if( !fp ) return FILE_NOT_FOUND;
++	char data[16];
++	memset(data,0,sizeof(data));
++	int ret = fread(data, 1, 16, fp);
++	fclose(fp);
++	if( !ret ) return FILE_NOT_FOUND;
++	
++	
++	if ( !strncmp(&data[0],"<",1) &&
++	    ( !strncmp(&data[1],"EDL>",4) ||
++	        !strncmp(&data[1],"HTAL>",5) ||
++	        !strncmp(&data[1],"?xml",4) ))
++		return FILE_IS_XML;
++	return FILE_UNRECOGNIZED_CODEC;
++}
+ 
+ void BatchRenderThread::load_jobs(char *path, Preferences *preferences)
+ {
+ 	FileXML file;
+ 	int result = 0;
++	
+ 
+ 	jobs.remove_all_objects();
+ 	if( !path ) path = batch_path;
+ 	if( !path[0] ) create_path(path);
+ 	file.read_from_file(path);
+ 
++	int fileprobe = probe(path);
++	if (fileprobe == FILE_IS_XML) {
++
++
++	    const char *cin_version = 0;
++	    while( !file.read_tag() ) {
++		if( file.tag.title_is("EDL") ) {
++		    cin_version = file.tag.get_property("VERSION");
++		    break;
++		}
++	    }
++	    
++	    file.rewind();
++	    if( cin_version ) {
++		printf(_("XML file %s\n IS project from cinelerra. \n You need batchrender-specific XML as argument for -r !!!! \n"), path);
++		if (!mwindow)
++		exit(1);
++	    }
++	    
++	    file.rewind();
++
++
+ 	while( !result ) {
+ 		if( !(result = file.read_tag()) ) {
+ 			if( file.tag.title_is("JOBS") ) {
+-				if (mwindow->preferences->unsafe_gui)
++				if (mwindow && mwindow->preferences->unsafe_gui)
+ 				warn = file.tag.get_property("WARN", 1);
+-				if (!mwindow->preferences->unsafe_gui)
++				if (mwindow && !mwindow->preferences->unsafe_gui)
+ 				warn = 0;
+ 			}
+ 			else if( file.tag.title_is("JOB") ) {
+-				BatchRenderJob *job =  new BatchRenderJob(preferences, 0,0);
++				BatchRenderJob *job =  new BatchRenderJob(preferences, 0,0,0);
+ 				jobs.append(job);
+ 				job->load(&file);
+ 			}
+@@ -290,13 +343,18 @@ void BatchRenderThread::load_jobs(char *path, Preferences *preferences)
+ 			}
+ 		}
+ 	}
++	}
++	if (!mwindow && fileprobe != FILE_IS_XML) {
++		printf ("Not XML file! \n");
++		exit(1);
++	}
+ }
+ 
+ void BatchRenderThread::save_jobs(char *path)
+ {
+ 	FileXML file;
+ 	file.tag.set_title("JOBS");
+-	if (mwindow->preferences->unsafe_gui)
++	if (mwindow && mwindow->preferences->unsafe_gui)
+ 	file.tag.set_property("WARN", warn);
+ 	file.append_tag();
+ 	file.append_newline();
+@@ -458,6 +516,9 @@ int BatchRenderThread::test_edl_files()
+ 		int is_script = *path == '@' ? 1 : 0;
+ 		if( is_script ) ++path;
+ 		FILE *fp = fopen(path, "r");
++		
++		int fileprobe = probe(path);
++		
+ 		if( fp ) {
+ 			if( mwindow && !is_script ) {
+ 				char *bfr = 0;  size_t sz = 0;
+@@ -470,7 +531,7 @@ int BatchRenderThread::test_edl_files()
+ 					else
+ 						bfr[sz] = 0;
+ 				}
+-				if( !ret ) {
++				if( !ret && fileprobe == FILE_IS_XML) {
+ 					EDL *edl = new EDL; edl->create_objects();
+ 					XMLBuffer data(bfr, sz, 0);
+ 					{ FileXML file;
+@@ -764,7 +825,7 @@ void BatchRenderGUI::create_objects()
+ 	int x = mwindow->theme->batchrender_x1;
+ 	int y = ys5;
+ 	int x1 = x, x2 = get_w()/2 + xs30; // mwindow->theme->batchrender_x2;
+-	int y1 = ys5, y2 = ys5;
++	int y1 = ys5, y2 = ys5, y3 = ys5;
+ 
+ // output file
+ 	add_subwindow(output_path_title = new BC_Title(x1, y1, _("Output path:")));
+@@ -786,6 +847,7 @@ void BatchRenderGUI::create_objects()
+ 			use_renderfarm->disable();
+ 	}
+ 
++
+ // input EDL
+ 	add_subwindow(edl_path_title = new BC_Title(x2, y2, _("EDL Path:")));
+ 	y2 += edl_path_title->get_h() + mwindow->theme->widget_border;
+@@ -819,8 +881,16 @@ void BatchRenderGUI::create_objects()
+ 	add_subwindow(warning = new BatchRenderWarning(thread, x2, y));
+ 	y2 = y + warning->get_h() + mwindow->theme->widget_border;
+ 	}
++
+ 	if( y2 > y1 ) y1 = y2;
+ 	x = mwindow->theme->batchrender_x1, y = y1;
++	
++	// add IOpoints checkbox 		
++	y3 += y1 + 1;
++	add_subwindow(use_iopoints = new BatchRenderUseIOpoints(thread, x1, y3));
++	y = y1 + use_iopoints->get_h() + 10 + mwindow->theme->widget_border;
++	
++
+ 
+ 	add_subwindow(list_title = new BC_Title(x, y, _("Batches to render:")));
+ 	x1 = x + list_title->get_w() + mwindow->theme->widget_border;;
+@@ -1389,6 +1459,19 @@ int BatchRenderStop::handle_event()
+ }
+ 
+ 
++BatchRenderUseIOpoints::BatchRenderUseIOpoints(BatchRenderThread *thread, int x, int y)
++ : BC_CheckBox(x, y, thread->do_iopointed, _("Respect In/Out points in projects"))
++{
++	this->thread = thread;
++	set_tooltip(_("Respect In/Out points in projects"));
++}
++
++int BatchRenderUseIOpoints::handle_event()
++{
++	thread->do_iopointed = get_value();
++	return 1;
++}
++
+ BatchRenderWarning::BatchRenderWarning(BatchRenderThread *thread, int x, int y)
+  : BC_CheckBox(x, y, thread->warn, _("warn if jobs/session mismatched"))
+ {
+diff --git a/cinelerra-5.1/cinelerra/batchrender.h b/cinelerra-5.1/cinelerra/batchrender.h
+index 57309895..f606c9bf 100644
+--- a/cinelerra-5.1/cinelerra/batchrender.h
++++ b/cinelerra-5.1/cinelerra/batchrender.h
+@@ -57,8 +57,8 @@ class BatchRenderJob
+ {
+ public:
+ 	BatchRenderJob(const char *tag,
+-		Preferences *preferences, int labeled, int farmed);
+-	BatchRenderJob(Preferences *preferences, int labeled, int farmed);
++		Preferences *preferences, int labeled, int farmed, int iopointed);
++	BatchRenderJob(Preferences *preferences, int labeled, int farmed, int iopointed);
+ 	BatchRenderJob(const char *tag);
+ 	virtual ~BatchRenderJob();
+ 	virtual BatchRenderJob *copy();
+@@ -73,7 +73,7 @@ public:
+ 	char edl_path[BCTEXTLEN];
+ // Destination file for output
+ 	Asset *asset;
+-	int labeled, farmed;
++	int labeled, farmed, iopointed;
+ 	int enabled;
+ // Amount of time elapsed in last render operation
+ 	double elapsed;
+@@ -116,6 +116,7 @@ public:
+ 	void reset(const char *path=0);
+ // Load batch rendering jobs
+ 	void load_jobs(char *path, Preferences *preferences);
++	int probe(const char *path);
+ // Not applicable to western civilizations
+ 	void save_jobs(char *path=0);
+ 	void load_defaults(BC_Hash *defaults);
+@@ -139,7 +140,7 @@ public:
+ 	void update_active(int number);
+ 	void update_done(int number, int create_list, double elapsed_time);
+ 	void move_batch(int src, int dst);
+-	void start(int do_farmed, int do_labeled);
++	void start(int do_farmed, int do_labeled, int do_iopointed);
+ 	static void trap_hook(FILE *fp, void *vp);
+ 
+ 	MWindow *mwindow;
+@@ -158,6 +159,7 @@ public:
+ 	int list_width[BATCHRENDER_COLUMNS];
+ 	int do_farmed;
+ 	int do_labeled;
++	int do_iopointed;
+ // job being edited
+ 	int current_job;
+ // job being rendered
+@@ -314,6 +316,15 @@ public:
+ 	int *output;
+ };
+ 
++class BatchRenderUseIOpoints : public BC_CheckBox
++{
++public:
++	BatchRenderUseIOpoints(BatchRenderThread *thread, int x, int y);
++	int handle_event();
++	BatchRenderThread *thread;
++
++};
++
+ 
+ class BatchRenderGUI : public BC_Window
+ {
+@@ -363,6 +374,7 @@ public:
+ 	BatchRenderCurrentEDL *use_current_edl;
+ 	BatchRenderUpdateEDL *update_selected_edl;
+ 	BatchRenderUseFarm *use_renderfarm;
++	BatchRenderUseIOpoints *use_iopoints;
+ };
+ 
+ 
+diff --git a/cinelerra-5.1/cinelerra/bdcreate.C b/cinelerra-5.1/cinelerra/bdcreate.C
+index 93794d51..fedc5648 100644
+--- a/cinelerra-5.1/cinelerra/bdcreate.C
++++ b/cinelerra-5.1/cinelerra/bdcreate.C
+@@ -94,7 +94,7 @@ int CreateBD_MenuItem::handle_event()
+ }
+ 
+ BD_BatchRenderJob::BD_BatchRenderJob(Preferences *preferences, int labeled, int farmed)
+- : BatchRenderJob("BD_JOB", preferences, labeled, farmed)
++ : BatchRenderJob("BD_JOB", preferences, labeled, farmed, iopointed)
+ {
+ }
+ 
+@@ -425,7 +425,7 @@ void CreateBD_Thread::handle_close_event(int result)
+ 	mwindow->resync_guis();
+ 	if( ret ) return;
+ 	mwindow->batch_render->save_jobs();
+-	mwindow->batch_render->start(-use_farmed, -use_labeled);
++	mwindow->batch_render->start(-use_farmed, -use_labeled, 0);
+ }
+ 
+ BC_Window* CreateBD_Thread::new_gui()
+diff --git a/cinelerra-5.1/cinelerra/dvdcreate.C b/cinelerra-5.1/cinelerra/dvdcreate.C
+index 4c8ab188..5b0e335f 100644
+--- a/cinelerra-5.1/cinelerra/dvdcreate.C
++++ b/cinelerra-5.1/cinelerra/dvdcreate.C
+@@ -98,7 +98,7 @@ int CreateDVD_MenuItem::handle_event()
+ 
+ DVD_BatchRenderJob::DVD_BatchRenderJob(Preferences *preferences,
+ 		int labeled, int farmed, int standard, int muxed)
+- : BatchRenderJob("DVD_JOB", preferences, labeled, farmed)
++ : BatchRenderJob("DVD_JOB", preferences, labeled, farmed, iopointed)
+ {
+ 	this->standard = standard;
+ 	this->muxed = muxed;
+@@ -412,7 +412,7 @@ int CreateDVD_Thread::create_dvd_jobs(ArrayList<BatchRenderJob*> *jobs, const ch
+ 		asset->ff_video_quality = -1;
+ 		use_farmed = job->farmed;
+ 
+-		job = new BatchRenderJob(mwindow->preferences, 0, 0);
++		job = new BatchRenderJob(mwindow->preferences, 0, 0, 0);
+ 		jobs->append(job);
+ 		strcpy(&job->edl_path[0], xml_filename);
+ 		asset = job->asset;
+@@ -441,7 +441,7 @@ int CreateDVD_Thread::create_dvd_jobs(ArrayList<BatchRenderJob*> *jobs, const ch
+ 		asset->vmpeg_field_order = 0;
+ 		asset->vmpeg_pframe_distance = 0;
+ 		use_farmed = job->farmed;
+-		job = new BatchRenderJob(mwindow->preferences, 0, 0);
++		job = new BatchRenderJob(mwindow->preferences, 0, 0, 0);
+ 		jobs->append(job);
+ 		strcpy(&job->edl_path[0], xml_filename);
+ 		asset = job->asset;
+@@ -547,7 +547,7 @@ void CreateDVD_Thread::handle_close_event(int result)
+ 	mwindow->resync_guis();
+ 	if( ret ) return;
+ 	mwindow->batch_render->save_jobs();
+-	mwindow->batch_render->start(-use_farmed, -use_labeled);
++	mwindow->batch_render->start(-use_farmed, -use_labeled, 0);
+ }
+ 
+ BC_Window* CreateDVD_Thread::new_gui()

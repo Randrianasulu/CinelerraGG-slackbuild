@@ -1,0 +1,12 @@
+diff --git a/cinelerra-5.1/cinelerra/theme.C b/cinelerra-5.1/cinelerra/theme.C
+index d89c789f..ea96309c 100644
+--- a/cinelerra-5.1/cinelerra/theme.C
++++ b/cinelerra-5.1/cinelerra/theme.C
+@@ -274,6 +274,7 @@ void Theme::build_menus()
+ 	aspect_ratios.append(new BC_ListBoxItem("3:2"));
+ 	aspect_ratios.append(new BC_ListBoxItem("4:3"));
+ 	aspect_ratios.append(new BC_ListBoxItem("16:9"));
++	aspect_ratios.append(new BC_ListBoxItem("16:10"));
+ 	aspect_ratios.append(new BC_ListBoxItem("2.10:1"));
+ 	aspect_ratios.append(new BC_ListBoxItem("2.20:1"));
+ 	aspect_ratios.append(new BC_ListBoxItem("2.25:1"));

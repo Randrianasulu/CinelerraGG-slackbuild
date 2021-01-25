@@ -1,0 +1,55 @@
+diff --git a/cinelerra-5.1/cinelerra/ffmpeg.C b/cinelerra-5.1/cinelerra/ffmpeg.C
+index 97b6698a..55812012 100644
+--- a/cinelerra-5.1/cinelerra/ffmpeg.C
++++ b/cinelerra-5.1/cinelerra/ffmpeg.C
+@@ -3509,6 +3509,25 @@ int FFMPEG::ff_video_mpeg_color_range(int stream)
+ 	return ffvideo[stream]->st->codecpar->color_range == AVCOL_RANGE_MPEG ? 1 : 0;
+ }
+ 
++int FFMPEG::ff_interlace(int stream)
++{
++	int interlace = ffvideo[stream]->st->codecpar->field_order;
++	printf("interlace: %i\n", interlace);
++	switch (interlace)
++	{
++	case AV_FIELD_TT:
++	    return ILACE_MODE_TOP_FIRST;
++	case AV_FIELD_BB:
++	    return ILACE_MODE_BOTTOM_FIRST;
++	case AV_FIELD_PROGRESSIVE:
++	    return ILACE_MODE_NOTINTERLACED;
++	default:
++	    return ILACE_MODE_UNDETECTED;
++	}
++}
++
++
++
+ int FFMPEG::ff_cpus()
+ {
+ 	return !file_base ? 1 : file_base->file->cpus;
+diff --git a/cinelerra-5.1/cinelerra/ffmpeg.h b/cinelerra-5.1/cinelerra/ffmpeg.h
+index 2e1f201f..d4bef2fd 100644
+--- a/cinelerra-5.1/cinelerra/ffmpeg.h
++++ b/cinelerra-5.1/cinelerra/ffmpeg.h
+@@ -463,6 +463,7 @@ public:
+ 	float ff_aspect_ratio(int stream);
+ 	int ff_color_range(int stream);
+ 	int ff_color_space(int stream);
++	int ff_interlace(int sream);
+ 	double ff_frame_rate(int stream);
+ 	const char *ff_video_codec(int stream);
+ 	int64_t ff_video_frames(int stream);
+diff --git a/cinelerra-5.1/cinelerra/fileffmpeg.C b/cinelerra-5.1/cinelerra/fileffmpeg.C
+index ff206b10..48c1ca7d 100644
+--- a/cinelerra-5.1/cinelerra/fileffmpeg.C
++++ b/cinelerra-5.1/cinelerra/fileffmpeg.C
+@@ -342,6 +342,8 @@ int FileFFMPEG::open_file(int rd, int wr)
+ 			int video_layers = ff->ff_total_video_layers();
+ 			if( video_layers > 0 ) {
+ 				asset->video_data = 1;
++				asset->aspect_ratio = ff->ff_aspect_ratio(0);
++				if (!asset->interlace_mode) asset->interlace_mode = ff->ff_interlace(0);
+ 				if( !asset->layers ) asset->layers = video_layers;
+ 				asset->actual_width = ff->ff_video_width(0);
+ 				asset->actual_height = ff->ff_video_height(0);

@@ -1,0 +1,13 @@
+diff --git a/cinelerra-5.1/cinelerra/setformat.C b/cinelerra-5.1/cinelerra/setformat.C
+index cfd43685..1a71b036 100644
+--- a/cinelerra-5.1/cinelerra/setformat.C
++++ b/cinelerra-5.1/cinelerra/setformat.C
+@@ -418,7 +418,7 @@ void SetFormatWindow::create_objects()
+ 	y += mwindow->theme->setformat_margin;
+ 	add_subwindow(new BC_Title(mwindow->theme->setformat_x3,
+ 		y,
+-		_("Aspect ratio:")));
++		_("Display Aspect Ratio:")));
+ 	y += mwindow->theme->setformat_margin;
+ 	x = mwindow->theme->setformat_x3;
+ 	add_subwindow(aspect_w = new ScaleAspectText(x, y, thread,

@@ -1,0 +1,43 @@
+--- batchrender.C	2021-01-19 00:27:16.201521879 +0300
++++ batchrender.C	2021-01-19 03:57:26.719171564 +0300
+@@ -265,12 +268,29 @@
+ 	if( !path[0] ) create_path(path);
+ 	file.read_from_file(path);
+ 
++
++	    const char *cin_version = 0;
++	    while( !file.read_tag() ) {
++		if( file.tag.title_is("EDL") ) {
++		    cin_version = file.tag.get_property("VERSION");
++		    break;
++		}
++	    }
++	    file.rewind();
++	    if( cin_version ) {
++		printf(_("XML file %s\n IS project from cinelerra. \n You need batchrender-specific XML as argument for -r !!!! \n"), path);
++		if (!mwindow)
++		exit(1);
++	    }
++	    file.rewind();
++
++
+ 	while( !result ) {
+ 		if( !(result = file.read_tag()) ) {
+ 			if( file.tag.title_is("JOBS") ) {
+-				if (mwindow->preferences->unsafe_gui)
++				if (mwindow && mwindow->preferences->unsafe_gui)
+ 				warn = file.tag.get_property("WARN", 1);
+-				if (!mwindow->preferences->unsafe_gui)
++				if (mwindow && !mwindow->preferences->unsafe_gui)
+ 				warn = 0;
+ 			}
+ 			else if( file.tag.title_is("JOB") ) {
+@@ -296,7 +316,7 @@
+ {
+ 	FileXML file;
+ 	file.tag.set_title("JOBS");
+-	if (mwindow->preferences->unsafe_gui)
++	if (mwindow && mwindow->preferences->unsafe_gui)
+ 	file.tag.set_property("WARN", warn);
+ 	file.append_tag();
+ 	file.append_newline();

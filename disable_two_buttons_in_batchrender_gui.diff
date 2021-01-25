@@ -1,0 +1,26 @@
+diff --git a/cinelerra-5.1/cinelerra/batchrender.C b/cinelerra-5.1/cinelerra/batchrender.C
+index 6dcdbc62..35822142 100644
+--- a/cinelerra-5.1/cinelerra/batchrender.C
++++ b/cinelerra-5.1/cinelerra/batchrender.C
+@@ -792,8 +792,8 @@ void BatchRenderGUI::create_objects()
+ 	y2 = y + edl_path_browse->get_h() + mwindow->theme->widget_border;
+ 
+ 	x = x2;  y = y2;
+-	add_subwindow(update_selected_edl = new BatchRenderUpdateEDL(thread, x, y));
+-	y += update_selected_edl->get_h() + mwindow->theme->widget_border;
++//	add_subwindow(update_selected_edl = new BatchRenderUpdateEDL(thread, x, y));
++//	y += update_selected_edl->get_h() + mwindow->theme->widget_border;
+ 	add_subwindow(use_current_edl = new BatchRenderCurrentEDL(thread, x, y));
+ 	y += use_current_edl->get_h() + mwindow->theme->widget_border;
+ 	if( !mwindow->edl || !mwindow->edl->path[0] ) use_current_edl->disable();
+@@ -805,8 +805,8 @@ void BatchRenderGUI::create_objects()
+ 	x += savelist_batch->get_w() + mwindow->theme->widget_border;
+ 	add_subwindow(loadlist_batch = new BatchRenderLoadList(thread, x, y));
+ 	y += loadlist_batch->get_h() + mwindow->theme->widget_border;
+-	add_subwindow(warning = new BatchRenderWarning(thread, x2, y));
+-	y2 = y + warning->get_h() + mwindow->theme->widget_border;
++//	add_subwindow(warning = new BatchRenderWarning(thread, x2, y));
++//	y2 = y + warning->get_h() + mwindow->theme->widget_border;
+ 	if( y2 > y1 ) y1 = y2;
+ 	x = mwindow->theme->batchrender_x1, y = y1;
+ 

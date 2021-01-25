@@ -1,0 +1,179 @@
+diff --git a/cinelerra-5.1/plugins/titler/titlerwindow.C b/cinelerra-5.1/plugins/titler/titlerwindow.C
+index f8705dfd..480ba73b 100644
+--- a/cinelerra-5.1/plugins/titler/titlerwindow.C
++++ b/cinelerra-5.1/plugins/titler/titlerwindow.C
+@@ -44,6 +44,7 @@
+ #include "titlerwindow.h"
+ #include "bcfontentry.h"
+ 
++
+ static const int timeunit_formats[] =
+ {
+ 	TIME_HMS,
+@@ -1447,11 +1448,89 @@ TitleCurSubMenuItem::TitleCurSubMenuItem(TitleCurSubMenu *submenu, const char *t
+ TitleCurSubMenuItem::~TitleCurSubMenuItem()
+ {
+ }
++
++// from https://stackoverflow.com/questions/779875/what-function-is-to-replace-a-substring-from-a-string-in-c
++void strreplace(char *src, char *str, char *rep)
++{
++	    char *p = strstr(src, str);
++	    if (p)
++	    {
++	        int len = strlen(src)+strlen(rep)-strlen(str);
++	        char r[len];
++	        memset(r, 0, len);
++	        if ( p >= src ){
++	            strncpy(r, src, p-src);
++	            r[p-src]='\0';
++	            strncat(r, rep, strlen(rep));
++	            strncat(r, p+strlen(str), p+strlen(str)-src+strlen(src));
++	            strcpy(src, r);
++	            strreplace(p+strlen(rep), str, rep);
++	        }
++	    }
++}
++
++
+ int TitleCurSubMenuItem::handle_event()
+ {
+ 	TitleCurPopup *popup = submenu->cur_item->popup;
+ 	TitleWindow *window = popup->window;
+-	const char *item_text = get_text();
++	char *item_text = N_(get_text());
++	
++	
++	if (strstr(item_text, _(KW_NUDGE))) {
++		//printf("Found _(KW_NUDGE)! %s \n", N_(KW_NUDGE));
++		strreplace(item_text, _(KW_NUDGE), N_(KW_NUDGE));
++		}
++	else if (strstr(item_text, _(KW_COLOR))) {
++		//printf("Found _(KW_COLOR)! %s \n", N_(KW_COLOR));
++		strreplace(item_text, _(KW_COLOR), N_(KW_COLOR));
++		}
++	else if (strstr(item_text, _(KW_ALPHA))) {
++		//printf("Found _(KW_ALPHA)! %s \n", N_(KW_ALPHA));
++		strreplace(item_text, _(KW_ALPHA), N_(KW_ALPHA));
++		}
++	else if (strstr(item_text, _(KW_FONT))) {
++		//printf("Found _(KW_FONT)! \n");
++		strreplace(item_text, _(KW_FONT), N_(KW_FONT));
++		}
++	else if (strstr(item_text, _(KW_SIZE))) {
++		//printf("Found _(KW_SIZE)! \n");
++		strreplace(item_text, _(KW_SIZE), N_(KW_SIZE));
++		}
++	else if (strstr(item_text, _(KW_BOLD))) {
++		//printf("Found _(KW_BOLD)! \n");
++		strreplace(item_text, _(KW_BOLD), N_(KW_BOLD));
++		}
++	else if (strstr(item_text, _(KW_ITALIC))) {
++		//printf("Found _(KW_ITALIC)! \n");
++		strreplace(item_text, _(KW_ITALIC), N_(KW_ITALIC));
++		}
++	else if (strstr(item_text, _(KW_CAPS))) {
++		//printf("Found _(KW_CAPS)! \n");
++		strreplace(item_text, _(KW_CAPS), N_(KW_CAPS));
++		}
++	else if (strstr(item_text, _(KW_UL))) {
++		//printf("Found _(KW_UL)! \n");
++		strreplace(item_text, _(KW_UL), N_(KW_UL));
++		}
++	else if (strstr(item_text, _(KW_BLINK))) {
++		//printf("Found _(KW_BLINK)! \n");
++		strreplace(item_text, _(KW_BLINK), N_(KW_BLINK));
++		}
++	else if (strstr(item_text, _(KW_FIXED))) {
++		//printf("Found _(KW_FIXED)! \n");
++		strreplace(item_text, _(KW_FIXED), N_(KW_FIXED));
++		}
++	else if (strstr(item_text, _(KW_ALIAS))) {
++		//printf("Found _(KW_ALIAS)! \n");
++		strreplace(item_text, _(KW_ALIAS), N_(KW_ALIAS));
++		}
++	else if (strstr(item_text, _(KW_SUP))) {
++		//printf("Found _(KW_SUP)! \n");
++		strreplace(item_text, _(KW_SUP), N_(KW_SUP));
++		}
++	
++
+ 	int ofs = *item_text == '/' ? 0 : -1;
+ 	switch( popup_type ) {
+ 	case POPUP_FONT: {
+@@ -1470,8 +1549,64 @@ int TitleCurSubMenuItem::handle_event()
+ 		break;
+ 	}
+ 	char txt[BCSTRLEN];
+-	sprintf(txt, "<%s>", item_text);
+-	return window->insert_ibeam(txt, ofs);
++	sprintf(txt, "<%s>", N_(item_text));
++	//printf("Item text: %s \n", N_(item_text));
++	
++	if (strstr(item_text, N_(KW_NUDGE))) {
++		//printf("Found _(KW_NUDGE)! %s \n", N_(KW_NUDGE));
++		strreplace(item_text, N_(KW_NUDGE), _(KW_NUDGE));
++		}
++	else if (strstr(item_text, N_(KW_COLOR))) {
++		//printf("Found _(KW_COLOR)! %s \n", N_(KW_COLOR));
++		strreplace(item_text, N_(KW_COLOR), _(KW_COLOR));
++		}
++	else if (strstr(item_text, N_(KW_ALPHA))) {
++		//printf("Found _(KW_ALPHA)! %s \n", N_(KW_ALPHA));
++		strreplace(item_text, N_(KW_ALPHA), _(KW_ALPHA));
++		}
++	else if (strstr(item_text, N_(KW_FONT))) {
++		//printf("Found _(KW_FONT)! \n");
++		strreplace(item_text, N_(KW_FONT), _(KW_FONT));
++		}
++	else if (strstr(item_text, N_(KW_SIZE))) {
++		//printf("Found _(KW_SIZE)! \n");
++		strreplace(item_text, N_(KW_SIZE), _(KW_SIZE));
++		}
++	else if (strstr(item_text, N_(KW_BOLD))) {
++		//printf("Found _(KW_BOLD)! \n");
++		strreplace(item_text, N_(KW_BOLD), _(KW_BOLD));
++		}
++	else if (strstr(item_text, N_(KW_ITALIC))) {
++		//printf("Found _(KW_ITALIC)! \n");
++		strreplace(item_text, N_(KW_ITALIC), _(KW_ITALIC));
++		}
++	else if (strstr(item_text, N_(KW_CAPS))) {
++		//printf("Found _(KW_CAPS)! \n");
++		strreplace(item_text, N_(KW_CAPS), _(KW_CAPS));
++		}
++	else if (strstr(item_text, N_(KW_UL))) {
++		//printf("Found _(KW_UL)! \n");
++		strreplace(item_text, N_(KW_UL), _(KW_UL));
++		}
++	else if (strstr(item_text, N_(KW_BLINK))) {
++		//printf("Found _(KW_BLINK)! \n");
++		strreplace(item_text, N_(KW_BLINK), _(KW_BLINK));
++		}
++	else if (strstr(item_text, N_(KW_FIXED))) {
++		//printf("Found _(KW_FIXED)! \n");
++		strreplace(item_text, N_(KW_FIXED), _(KW_FIXED));
++		}
++	else if (strstr(item_text, N_(KW_ALIAS))) {
++		//printf("Found _(KW_ALIAS)! \n");
++		strreplace(item_text, N_(KW_ALIAS), _(KW_ALIAS));
++		}
++	else if (strstr(item_text, N_(KW_SUP))) {
++		//printf("Found _(KW_SUP)! \n");
++		strreplace(item_text, N_(KW_SUP), _(KW_SUP));
++		}
++	
++	
++	return window->insert_ibeam(N_(txt), ofs);
+ }
+ 
+ TitleFontsPopup::TitleFontsPopup(TitleMain *client, TitleWindow *window)
+@@ -1505,7 +1640,7 @@ int TitleFontsPopup::handle_event()
+ 	BC_ListBoxItem *item = get_selection(0, 0);
+ 	if( !item ) return 1;
+ 	const char *item_text = item->get_text();
+-	char txt[BCTEXTLEN];  sprintf(txt, "<%s %s>", _(KW_FONT), item_text);
++	char txt[BCTEXTLEN];  sprintf(txt, "<%s %s>", N_(KW_FONT), item_text);
+ 	return window->insert_ibeam(txt);
+ }
+ 

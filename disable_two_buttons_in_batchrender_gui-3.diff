@@ -1,0 +1,88 @@
+diff --git a/cinelerra-5.1/cinelerra/batchrender.C b/cinelerra-5.1/cinelerra/batchrender.C
+index 6dcdbc62..d85d0e8c 100644
+--- a/cinelerra-5.1/cinelerra/batchrender.C
++++ b/cinelerra-5.1/cinelerra/batchrender.C
+@@ -60,6 +60,8 @@
+ #include "dvdcreate.h"
+ #include "bdcreate.h"
+ 
++#define UNSAFE_BUTTON 0
++
+ int BatchRenderThread::column_widths[] = { 42, 42, 42, 222, 222, 150 };
+ const char *BatchRenderThread::column_titles[] = {
+ 	N_("Enabled"), N_("Labeled"), N_("Farmed"), N_("Output"), N_("EDL"), N_("Elapsed")
+@@ -382,6 +384,7 @@ void BatchRenderThread::use_current_edl()
+ 	gui->edl_path_text->update(get_current_edl());
+ }
+ 
++
+ void BatchRenderThread::update_selected_edl()
+ {
+         FileXML xml_file;
+@@ -396,6 +399,8 @@ void BatchRenderThread::update_selected_edl()
+ 	}
+ }
+ 
++
++
+ BatchRenderJob* BatchRenderThread::get_current_job()
+ {
+ 	return current_job >= 0 && current_job < jobs.total ?
+@@ -792,8 +797,11 @@ void BatchRenderGUI::create_objects()
+ 	y2 = y + edl_path_browse->get_h() + mwindow->theme->widget_border;
+ 
+ 	x = x2;  y = y2;
++	if (UNSAFE_BUTTON) {
+ 	add_subwindow(update_selected_edl = new BatchRenderUpdateEDL(thread, x, y));
+ 	y += update_selected_edl->get_h() + mwindow->theme->widget_border;
++}
++
+ 	add_subwindow(use_current_edl = new BatchRenderCurrentEDL(thread, x, y));
+ 	y += use_current_edl->get_h() + mwindow->theme->widget_border;
+ 	if( !mwindow->edl || !mwindow->edl->path[0] ) use_current_edl->disable();
+@@ -835,6 +843,7 @@ void BatchRenderGUI::button_disable()
+ 	new_batch->disable();
+ 	delete_batch->disable();
+ 	use_current_edl->disable();
++	if (UNSAFE_BUTTON)
+ 	update_selected_edl->disable();
+ }
+ 
+@@ -844,6 +853,7 @@ void BatchRenderGUI::button_enable()
+ 	delete_batch->enable();
+ 	if( mwindow->edl && mwindow->edl->path[0] )
+ 		use_current_edl->enable();
++	if (UNSAFE_BUTTON)
+ 	update_selected_edl->enable();
+ }
+ 
+@@ -876,8 +886,10 @@ int BatchRenderGUI::resize_event(int w, int h)
+ 	y2 = y + edl_path_browse->get_h() + mwindow->theme->widget_border;
+ 
+ 	x = x2;  y = y2;
++	if (UNSAFE_BUTTON) {
+ 	update_selected_edl->reposition_window(x, y);
+ 	y += update_selected_edl->get_h() + mwindow->theme->widget_border;
++}
+ 	use_current_edl->reposition_window(x, y);
+ 	y += use_current_edl->get_h() + mwindow->theme->widget_border;
+ 	new_batch->reposition_window(x, y);
+@@ -1236,6 +1248,7 @@ int BatchRenderCurrentEDL::handle_event()
+ 	return 1;
+ }
+ 
++
+ BatchRenderUpdateEDL::BatchRenderUpdateEDL(BatchRenderThread *thread,
+ 	int x,
+ 	int y)
+@@ -1244,8 +1257,10 @@ BatchRenderUpdateEDL::BatchRenderUpdateEDL(BatchRenderThread *thread,
+ 	this->thread = thread;
+ }
+ 
++
+ int BatchRenderUpdateEDL::handle_event()
+ {
++	if (UNSAFE_BUTTON)
+ 	thread->update_selected_edl();
+ 	return 1;
+ }

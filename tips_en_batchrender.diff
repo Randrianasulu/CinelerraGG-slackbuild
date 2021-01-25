@@ -1,0 +1,17 @@
+diff --git a/cinelerra-5.1/tips/tips.en b/cinelerra-5.1/tips/tips.en
+index 781df953..8b2dc4fc 100644
+--- a/cinelerra-5.1/tips/tips.en
++++ b/cinelerra-5.1/tips/tips.en
+@@ -26,6 +26,12 @@ Use the +/- keys in the Compositor window to zoom in and out.
+ Pressing Alt while clicking in the cropping window causes translation of
+ all 4 points.
+ 
++Batch jobs in batchrender respect their saved playhead position, so set it at
++very beginning if you want whole project to be rendered.
++
++You can batchrender only region of project by defining selection with mouse
++highlight or setting in/out points before saving it as EDL (Shift-S).
++
+ Pressing Tab over a track toggles the Record status.
+ Pressing Shift-Tab over a track toggles the Record status of all the other tracks.
+ 

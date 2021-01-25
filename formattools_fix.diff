@@ -1,0 +1,14 @@
+diff --git a/cinelerra-5.1/cinelerra/formattools.C b/cinelerra-5.1/cinelerra/formattools.C
+index 643655e3..68dd6afd 100644
+--- a/cinelerra-5.1/cinelerra/formattools.C
++++ b/cinelerra-5.1/cinelerra/formattools.C
+@@ -129,6 +129,9 @@ void FormatTools::create_objects(
+ 	this->prompt_video_compression = prompt_video_compression;
+ 	this->file_per_label = file_per_label;
+ 
++
++	if(asset->format == FILE_UNKNOWN)
++		asset->format = FILE_FFMPEG;
+ //printf("FormatTools::create_objects 1\n");
+ 
+ 	if(!recording)

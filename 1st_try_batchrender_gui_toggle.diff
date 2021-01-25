@@ -1,0 +1,152 @@
+diff --git a/cinelerra-5.1/cinelerra/batchrender.C b/cinelerra-5.1/cinelerra/batchrender.C
+index 6dcdbc62..93000d47 100644
+--- a/cinelerra-5.1/cinelerra/batchrender.C
++++ b/cinelerra-5.1/cinelerra/batchrender.C
+@@ -60,6 +60,8 @@
+ #include "dvdcreate.h"
+ #include "bdcreate.h"
+ 
++#define UNSAFE_BUTTON 0
++
+ int BatchRenderThread::column_widths[] = { 42, 42, 42, 222, 222, 150 };
+ const char *BatchRenderThread::column_titles[] = {
+ 	N_("Enabled"), N_("Labeled"), N_("Farmed"), N_("Output"), N_("EDL"), N_("Elapsed")
+@@ -197,7 +199,8 @@ BatchRenderThread::BatchRenderThread(MWindow *mwindow)
+ 	default_job = 0;
+ 	boot_defaults = 0;
+ 	preferences = 0;
+-	warn = 1;
++	warn = 0;
++
+ 	render = 0;
+ 	batch_path[0] = 0;
+ 	do_farmed = 0;
+@@ -217,7 +220,8 @@ void BatchRenderThread::reset(const char *path)
+ {
+ 	if( path ) {
+ 		strcpy(batch_path, path);
+-		warn = 1;
++		if (mwindow->preferences->warn_version)
++		warn = 0;
+ 	}
+ 	current_job = 0;
+ 	rendering_job = -1;
+@@ -268,6 +272,7 @@ void BatchRenderThread::load_jobs(char *path, Preferences *preferences)
+ 	while( !result ) {
+ 		if( !(result = file.read_tag()) ) {
+ 			if( file.tag.title_is("JOBS") ) {
++				if (mwindow->preferences->warn_version)
+ 				warn = file.tag.get_property("WARN", 1);
+ 			}
+ 			else if( file.tag.title_is("JOB") ) {
+@@ -293,6 +298,7 @@ void BatchRenderThread::save_jobs(char *path)
+ {
+ 	FileXML file;
+ 	file.tag.set_title("JOBS");
++	if (mwindow->preferences->warn_version)
+ 	file.tag.set_property("WARN", warn);
+ 	file.append_tag();
+ 	file.append_newline();
+@@ -382,6 +388,7 @@ void BatchRenderThread::use_current_edl()
+ 	gui->edl_path_text->update(get_current_edl());
+ }
+ 
++
+ void BatchRenderThread::update_selected_edl()
+ {
+         FileXML xml_file;
+@@ -792,8 +799,12 @@ void BatchRenderGUI::create_objects()
+ 	y2 = y + edl_path_browse->get_h() + mwindow->theme->widget_border;
+ 
+ 	x = x2;  y = y2;
++
++	if (mwindow->preferences->warn_version) {
+ 	add_subwindow(update_selected_edl = new BatchRenderUpdateEDL(thread, x, y));
+ 	y += update_selected_edl->get_h() + mwindow->theme->widget_border;
++	}
++
+ 	add_subwindow(use_current_edl = new BatchRenderCurrentEDL(thread, x, y));
+ 	y += use_current_edl->get_h() + mwindow->theme->widget_border;
+ 	if( !mwindow->edl || !mwindow->edl->path[0] ) use_current_edl->disable();
+@@ -805,8 +816,12 @@ void BatchRenderGUI::create_objects()
+ 	x += savelist_batch->get_w() + mwindow->theme->widget_border;
+ 	add_subwindow(loadlist_batch = new BatchRenderLoadList(thread, x, y));
+ 	y += loadlist_batch->get_h() + mwindow->theme->widget_border;
++
++	if (mwindow->preferences->warn_version) {
+ 	add_subwindow(warning = new BatchRenderWarning(thread, x2, y));
+ 	y2 = y + warning->get_h() + mwindow->theme->widget_border;
++	}
++	
+ 	if( y2 > y1 ) y1 = y2;
+ 	x = mwindow->theme->batchrender_x1, y = y1;
+ 
+@@ -835,6 +850,7 @@ void BatchRenderGUI::button_disable()
+ 	new_batch->disable();
+ 	delete_batch->disable();
+ 	use_current_edl->disable();
++	if (mwindow->preferences->warn_version)
+ 	update_selected_edl->disable();
+ }
+ 
+@@ -844,6 +860,7 @@ void BatchRenderGUI::button_enable()
+ 	delete_batch->enable();
+ 	if( mwindow->edl && mwindow->edl->path[0] )
+ 		use_current_edl->enable();
++	if (mwindow->preferences->warn_version)
+ 	update_selected_edl->enable();
+ }
+ 
+@@ -876,8 +893,12 @@ int BatchRenderGUI::resize_event(int w, int h)
+ 	y2 = y + edl_path_browse->get_h() + mwindow->theme->widget_border;
+ 
+ 	x = x2;  y = y2;
++
++	if (mwindow->preferences->warn_version) {
+ 	update_selected_edl->reposition_window(x, y);
+ 	y += update_selected_edl->get_h() + mwindow->theme->widget_border;
++	}
++
+ 	use_current_edl->reposition_window(x, y);
+ 	y += use_current_edl->get_h() + mwindow->theme->widget_border;
+ 	new_batch->reposition_window(x, y);
+@@ -889,9 +910,12 @@ int BatchRenderGUI::resize_event(int w, int h)
+ 	x += savelist_batch->get_w() + mwindow->theme->widget_border;
+ 	loadlist_batch->reposition_window(x, y);
+ 	y += loadlist_batch->get_h() + mwindow->theme->widget_border;
++	if (mwindow->preferences->warn_version) {
+ 	warning->reposition_window(x2, y);
+ 
+ 	y1 = ys15 + BC_GenericButton::calculate_h() + mwindow->theme->widget_border;
++	}
++	
+ 	y2 = get_h() - y1 - batch_list->get_h();
+ 	y2 -= list_title->get_h() + mwindow->theme->widget_border;
+ 
+@@ -1236,6 +1260,7 @@ int BatchRenderCurrentEDL::handle_event()
+ 	return 1;
+ }
+ 
++
+ BatchRenderUpdateEDL::BatchRenderUpdateEDL(BatchRenderThread *thread,
+ 	int x,
+ 	int y)
+@@ -1244,8 +1269,10 @@ BatchRenderUpdateEDL::BatchRenderUpdateEDL(BatchRenderThread *thread,
+ 	this->thread = thread;
+ }
+ 
++
+ int BatchRenderUpdateEDL::handle_event()
+ {
++	//if (mwindow->preferences->warn_version)
+ 	thread->update_selected_edl();
+ 	return 1;
+ }
+@@ -1374,6 +1401,7 @@ BatchRenderWarning::BatchRenderWarning(BatchRenderThread *thread, int x, int y)
+ 
+ int BatchRenderWarning::handle_event()
+ {
++	//if (thread->preferences->warn_version)
+ 	thread->warn = get_value();
+ 	return 1;
+ }

@@ -1,0 +1,13 @@
+diff --git a/cinelerra-5.1/po/ru.po b/cinelerra-5.1/po/ru.po
+index 82f76a24..60f34ccb 100644
+--- a/cinelerra-5.1/po/ru.po
++++ b/cinelerra-5.1/po/ru.po
+@@ -8579,7 +8579,7 @@ msgstr "Секунд предрендеринга:"
+ 
+ #: cinelerra/performanceprefs.C:98
+ msgid "Project SMP cpus:"
+-msgstr "Количество CPU (SMP), используемых плагинами:"
++msgstr "Кол-во CPU (SMP), исп. плагинами:"
+ 
+ #: cinelerra/performanceprefs.C:113
+ msgid "Background Rendering (Video only)"

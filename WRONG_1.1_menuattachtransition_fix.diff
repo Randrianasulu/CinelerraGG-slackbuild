@@ -1,0 +1,141 @@
+diff --git a/cinelerra-5.1/cinelerra/menuattachtransition.C b/cinelerra-5.1/cinelerra/menuattachtransition.C
+index efd0a823..d8da2e62 100644
+--- a/cinelerra-5.1/cinelerra/menuattachtransition.C
++++ b/cinelerra-5.1/cinelerra/menuattachtransition.C
+@@ -82,8 +82,10 @@ void TransitionDialogThread::start()
+ 		mwindow->search_plugindb(data_type == TRACK_AUDIO,
+ 			data_type == TRACK_VIDEO, 0, 1, 0, plugindb);
+ 		for(int i = 0; i < plugindb.total; i++) {
+-			const char *title = plugindb.values[i]->title;
+-			if( !strcmp(transition_title, title) ) number = i;
++			char *title = _(plugindb.get(i)->title);
++			//printf("title: %s \n", _(title));
++			mwindow->fix_plugin_title(title);
++			if( !strcmp(transition_title, _(title))) number = i;
+ 			transition_names.append(new BC_ListBoxItem(_(title)));
+ 		}
+ 	}
+diff --git a/cinelerra-5.1/cinelerra/mwindow.C b/cinelerra-5.1/cinelerra/mwindow.C
+index 04549fde..0fc51d63 100644
+--- a/cinelerra-5.1/cinelerra/mwindow.C
++++ b/cinelerra-5.1/cinelerra/mwindow.C
+@@ -138,6 +138,11 @@
+ #include "zwindowgui.h"
+ #include "exportedl.h"
+ 
++#include <cwctype>
++#include <locale>
++#include <vector>
++#include <iostream>
++
+ #include "defaultformats.h"
+ #include "ntsczones.h"
+ 
+@@ -930,12 +935,44 @@ PluginServer* MWindow::scan_plugindb(char *title,
+ // repair session files with xlated plugin titles
+ void MWindow::fix_plugin_title(char *title)
+ {
++	
++	const char* my_title= title;
++	//printf("My_title: %s \n", my_title);
++	  std::mbstate_t state = std::mbstate_t();
++	  std::size_t len = 1 + std::mbsrtowcs(NULL, &my_title, 0, &state);
++	  std::vector<wchar_t> wtitle(len);
++	  
++	int ret = std::mbsrtowcs(&wtitle[0], &my_title, wtitle.size(), &state);
++	//printf ("mbsrtowcs returns, %i \n", ret);
++//	 std::wcout << "Wide string: " << &wtitle[0] << '\n';
++
+ 	for(int i = 0; i < plugindb->total; i++) {
+ 		PluginServer *server = plugindb->get(i);
+ 		if( !server->title ) continue;
+-		const char *server_title = server->title;
+-		if( !bstrcasecmp(title, _(server_title)) ) {
+-			strcpy(title, server_title);
++		const char *server_title = _(server->title);
++		
++		 std::mbstate_t state1 = std::mbstate_t();
++	         std::size_t len1 = 1 + std::mbsrtowcs(NULL, &server_title, 0, &state1);
++		 std::vector<wchar_t> wserver_title(len1);
++		int ret1 = std::mbsrtowcs(&wserver_title[0], &server_title, wserver_title.size(), &state1);
++
++//		std::wcout << "Wide string 2: " << &wserver_title[0] << '\n';
++		
++		//printf("in fix_plugin_title 1 \n");
++		if(!wcscasecmp (&wtitle[0], &wserver_title[0]) ) {
++//		if( !bstrcasecmp(title, _(server_title)) ) {
++//			strcpy(title, server_title);
++			std::wcout << "Wide string 3: " << &wserver_title[0] << '\n';
++			
++			std::mbstate_t state3 = std::mbstate_t();
++			const wchar_t* my_wserver_title = &wserver_title[0];
++			std::size_t len2 = 1 + std::wcsrtombs(nullptr, &my_wserver_title, 0, &state3);
++			std::vector<char > fixed_title(len2);
++			std::wcsrtombs(&fixed_title[0], &my_wserver_title, fixed_title.size(), &state3);
++			
++			char* title1 = &fixed_title[0];
++			
++			printf("in fix_plugin_title 2, %s \n", _(title1));
+ 			return;
+ 		}
+ 	}
+@@ -2212,7 +2249,7 @@ if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
+ 			    strcmp(cin_version, "Unify") &&
+ 			    strcmp(cin_version, "5.1") ) {
+ 				eprintf(_("Warning: XML from cinelerra version %s\n"
+-					"Session data may be incompatible."), cin_version);
++                                        "Session data may be incompatible."), cin_version);
+ 			}
+ 			if( new_edl->load_xml(&xml_file, LOAD_ALL) ) {
+ 				eprintf(_("Error: unable to load:\n  %s"), filename);
+@@ -2656,8 +2693,9 @@ void MWindow::test_plugins(EDL *new_edl, const char *path)
+ 					plugin; plugin = (Plugin*)plugin->next ) {
+ 				if( plugin->plugin_type != PLUGIN_STANDALONE ) continue;
+ // ok we need to find it in plugindb
++				fix_plugin_title(_(plugin->title));
+ 				PluginServer *server =
+-					scan_plugindb(plugin->title, track->data_type);
++					scan_plugindb(_(plugin->title), track->data_type);
+ 				if( !server || server->transition ) {
+ 					sprintf(string,
+ 	_("The %s '%s' in file '%s' is not part of your installation of Cinelerra.\n"
+@@ -2671,8 +2709,9 @@ void MWindow::test_plugins(EDL *new_edl, const char *path)
+ 		for( Edit *edit=track->edits->first; edit; edit=edit->next ) {
+ 			if( !edit->transition ) continue;
+ // ok we need to find transition in plugindb
++			fix_plugin_title(_(edit->transition->title));
+ 			PluginServer *server =
+-				scan_plugindb(edit->transition->title, track->data_type);
++				scan_plugindb(_(edit->transition->title), track->data_type);
+ 			if( !server || !server->transition ) {
+ 				sprintf(string,
+ 	_("The %s '%s' in file '%s' is not part of your installation of Cinelerra.\n"
+@@ -4276,10 +4315,27 @@ void MWindow::save_backup()
+ 	edl->optimize();
+ 	edl->set_path(session->filename);
+ 
+-	char backup_path[BCTEXTLEN], backup_path1[BCTEXTLEN];
++	char backup_path[BCTEXTLEN], backup_path1[BCTEXTLEN], backup_path2[BCTEXTLEN];
++
++	time_t t = time(NULL);
++        struct tm tm = *localtime(&t);
++	char BACKUP_FILE2[BCTEXTLEN] ;
++	sprintf(BACKUP_FILE2, _("backup_%02d%02d%02d-%02d%02d%02d.xml"),
++	    tm.tm_year+1900, tm.tm_mon+1, tm.tm_mday,
++	    tm.tm_hour, tm.tm_min, tm.tm_sec);
++	    
++	snprintf(backup_path2, sizeof(backup_path2), "%s/%s",
++		File::get_config_path(), BACKUP_FILE2);
++
+ 	snprintf(backup_path1, sizeof(backup_path1), "%s/%s",
+ 		File::get_config_path(), BACKUP_FILE1);
+ 	get_backup_path(backup_path, sizeof(backup_path));
++	
++	char cmd[1024], *cp = cmd;
++	cp += sprintf(cp, "cp %s %s &", backup_path, backup_path2);
++	system(cmd);
++	
++	
+ 	rename(backup_path, backup_path1);
+ 	edl->save_xml(&file, backup_path);
+ 	file.terminate_string();

@@ -1,0 +1,47 @@
+diff --git a/cinelerra-5.1/cinelerra/menuattachtransition.C b/cinelerra-5.1/cinelerra/menuattachtransition.C
+index efd0a823..4ce1fcbf 100644
+--- a/cinelerra-5.1/cinelerra/menuattachtransition.C
++++ b/cinelerra-5.1/cinelerra/menuattachtransition.C
+@@ -29,11 +29,13 @@
+ #include "mwindowgui.h"
+ #include "plugindialog.h"
+ #include "pluginserver.h"
++#include <clocale>
+ 
+ 
+ 
+ #include <string.h>
+ 
++ char *old_locale, *saved_locale;
+ 
+ 
+ MenuAttachTransition::MenuAttachTransition(MWindow *mwindow, int data_type)
+@@ -78,6 +80,19 @@ void TransitionDialogThread::start()
+ 			mwindow->edl->session->default_vtransition);
+ 
+ // Construct listbox names
++		
++		
++		  /* Get the name of the current locale.  */
++		  old_locale = setlocale (LC_ALL, NULL);
++
++		    /* Copy the name so it won't be clobbered by setlocale. */
++		saved_locale = strdup (old_locale);
++		if (old_locale == NULL)
++		printf ("Out of memory\n");
++
++  /* Now change the locale and do some stuff with it. */
++		setlocale (LC_ALL, "C");
++		
+ 		ArrayList<PluginServer*> plugindb;
+ 		mwindow->search_plugindb(data_type == TRACK_AUDIO,
+ 			data_type == TRACK_VIDEO, 0, 1, 0, plugindb);
+@@ -113,6 +128,8 @@ void TransitionDialogThread::handle_close_event(int result)
+ 	if(!result)
+ 	{
+ 		mwindow->paste_transitions(data_type, transition_title);
++		/* estore the original locale. */
++		setlocale (LC_ALL, saved_locale);
+ 	}
+ }
+ 

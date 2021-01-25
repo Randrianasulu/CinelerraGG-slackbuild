@@ -1,0 +1,13 @@
+diff --git a/cinelerra-5.1/cinelerra/menuattachtransition.C b/cinelerra-5.1/cinelerra/menuattachtransition.C
+index efd0a823..587cdc27 100644
+--- a/cinelerra-5.1/cinelerra/menuattachtransition.C
++++ b/cinelerra-5.1/cinelerra/menuattachtransition.C
+@@ -84,7 +84,7 @@ void TransitionDialogThread::start()
+ 		for(int i = 0; i < plugindb.total; i++) {
+ 			const char *title = plugindb.values[i]->title;
+ 			if( !strcmp(transition_title, title) ) number = i;
+-			transition_names.append(new BC_ListBoxItem(_(title)));
++			transition_names.append(new BC_ListBoxItem(N_(title)));
+ 		}
+ 	}
+ 

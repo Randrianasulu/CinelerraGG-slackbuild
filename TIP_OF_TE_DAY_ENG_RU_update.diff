@@ -1,0 +1,34 @@
+diff --git a/cinelerra-5.1/tips/tips.en b/cinelerra-5.1/tips/tips.en
+index 9549d344..781df953 100644
+--- a/cinelerra-5.1/tips/tips.en
++++ b/cinelerra-5.1/tips/tips.en
+@@ -38,3 +38,10 @@ Alt + right moves to the next edit handle.
+ Settings->typeless keyframes allows keyframes from any track to be pasted on either
+ audio or video tracks.
+ 
++If colors in Compositor looks wrong, check "Setting/Preferences/Appearance" tab
++options YUV color space and YUV color range
++
++If you mistakingly saved empty backup, you still have  $HOME/.bcast5/backup.prev
++
++You can have more than one instance of Cinelerra-GG running.
++
+diff --git a/cinelerra-5.1/tips/tips.ru b/cinelerra-5.1/tips/tips.ru
+index 7bdd6866..34ed12de 100644
+--- a/cinelerra-5.1/tips/tips.ru
++++ b/cinelerra-5.1/tips/tips.ru
+@@ -43,6 +43,14 @@ Треки должны быть доступны для редактирова
+ Alt + стрелка вправо - переход курсора вправо к границе редактирования.
+ Alt + стрелка влево - переход курсора влево к границе редактирования.
+ 
++Если цвета в окне Композитора выглядят неверно, проверьте настройки 
++YUV color range / YUV color space
++
++Если вы сохранили нежелательные изменения в backup.xml у вас есть шанс
++восстановить всё загрузив  $HOME/.bcast5/backup.prev
++
++Вы можете запускать более чем одну копию Cinelerra-GG
++
+ `Установки -> Бестиповые ключевые кадры` позволяет копировать ключевые кадры
+ между аудио и видеодорожками.
+ 

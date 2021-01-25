@@ -1,0 +1,386 @@
+diff --git a/cinelerra-5.1/cinelerra/appearanceprefs.C b/cinelerra-5.1/cinelerra/appearanceprefs.C
+index 1f878835..9c4b9feb 100644
+--- a/cinelerra-5.1/cinelerra/appearanceprefs.C
++++ b/cinelerra-5.1/cinelerra/appearanceprefs.C
+@@ -214,15 +214,25 @@ void AppearancePrefs::create_objects()
+ 	UseWarnIndecies *idx_warn = new UseWarnIndecies(pwindow, x, y);
+ 	add_subwindow(idx_warn);
+ 	y += idx_warn->get_h() + ys5;
+-	UseWarnVersion *ver_warn = new UseWarnVersion(pwindow, x, y);
+-	add_subwindow(ver_warn);
+-	y += ver_warn->get_h() + ys5;
+ 	BD_WarnRoot *bdwr_warn = new BD_WarnRoot(pwindow, x, y);
+ 	add_subwindow(bdwr_warn);
+ 	y += bdwr_warn->get_h() + ys5;
+ 	UseWarnFileRef *warn_ref = new UseWarnFileRef(pwindow, x, y);
+ 	add_subwindow(warn_ref);
+ 	y += warn_ref->get_h() + ys5;
++	
++	add_subwindow(new BC_Bar(x0, y, warn_ref->get_w()-x0 - xs30));
++	y += ys15;
++
++	add_subwindow(title = new BC_Title(x, y, _("Dangerous:"), LARGEFONT,
++		resources->text_default));
++	y += title->get_h() + ys10;
++
++	
++	UseUnsafeGUI *unsafe_gui = new UseUnsafeGUI(pwindow, x, y);
++	add_subwindow(unsafe_gui);
++	y += unsafe_gui->get_h() + ys5;
++
+ 
+ 	x = get_w() / 3 + xs30;
+ 	y = y1;
+@@ -648,16 +658,16 @@ int UseWarnIndecies::handle_event()
+ 	return 1;
+ }
+ 
+-UseWarnVersion::UseWarnVersion(PreferencesWindow *pwindow, int x, int y)
+- : BC_CheckBox(x, y, pwindow->thread->preferences->warn_version,
+-	_("EDL version warns if mismatched"))
++UseUnsafeGUI::UseUnsafeGUI(PreferencesWindow *pwindow, int x, int y)
++ : BC_CheckBox(x, y, pwindow->thread->preferences->unsafe_gui,
++	_("Unsafe GUI in batchrender"))
+ {
+ 	this->pwindow = pwindow;
+ }
+ 
+-int UseWarnVersion::handle_event()
++int UseUnsafeGUI::handle_event()
+ {
+-	pwindow->thread->preferences->warn_version = get_value();
++	pwindow->thread->preferences->unsafe_gui = get_value();
+ 	return 1;
+ }
+ 
+@@ -751,6 +761,7 @@ AutoRotate::AutoRotate(PreferencesWindow *pwindow, int x, int y)
+ 	_("Auto rotate ffmpeg media"))
+ {
+ 	this->pwindow = pwindow;
++	set_tooltip(_("Automatically rotate media {FFMPEG decoders only} if it has relevant rotation metadata"));
+ }
+ 
+ int AutoRotate::handle_event()
+@@ -777,6 +788,7 @@ AutocolorAssets::AutocolorAssets(PreferencesWindow *pwindow, int x, int y)
+ 	_("Autocolor assets"))
+ {
+ 	this->pwindow = pwindow;
++	set_tooltip(_("Shows automatically colored bars on your edits on timeline, \n so you can easily see to that asset/media each piece belongs"));
+ }
+ 
+ int AutocolorAssets::handle_event()
+@@ -896,6 +908,7 @@ PerpetualSession::PerpetualSession(int x, int y, PreferencesWindow *pwindow)
+ 	pwindow->thread->preferences->perpetual_session, _("Perpetual session"))
+ {
+ 	this->pwindow = pwindow;
++	set_tooltip(_("Saves session data on app quit, autoreloads on startup, NOT saves your changes continuously!"));
+ }
+ 
+ int PerpetualSession::handle_event()
+@@ -909,6 +922,7 @@ CtrlToggle::CtrlToggle(int x, int y, PreferencesWindow *pwindow)
+ 	pwindow->thread->preferences->ctrl_toggle, _("Clears before toggle"))
+ {
+ 	this->pwindow = pwindow;
++	set_tooltip(_("Set selection of clips on timeline to ctrl-LKM"));
+ }
+ 
+ int CtrlToggle::handle_event()
+@@ -922,6 +936,7 @@ RectifyAudioToggle::RectifyAudioToggle(int x, int y, PreferencesWindow *pwindow)
+ 	pwindow->thread->preferences->rectify_audio, _("Timeline Rectify Audio"))
+ {
+ 	this->pwindow = pwindow;
++	set_tooltip(_("Only shows upper half of audio waveform (saves space)"));
+ }
+ 
+ int RectifyAudioToggle::handle_event()
+diff --git a/cinelerra-5.1/cinelerra/appearanceprefs.h b/cinelerra-5.1/cinelerra/appearanceprefs.h
+index c7d95ecb..5bde37be 100644
+--- a/cinelerra-5.1/cinelerra/appearanceprefs.h
++++ b/cinelerra-5.1/cinelerra/appearanceprefs.h
+@@ -278,10 +278,10 @@ public:
+ 	PreferencesWindow *pwindow;
+ };
+ 
+-class UseWarnVersion : public BC_CheckBox
++class UseUnsafeGUI : public BC_CheckBox
+ {
+ public:
+-	UseWarnVersion(PreferencesWindow *pwindow, int x, int y);
++	UseUnsafeGUI(PreferencesWindow *pwindow, int x, int y);
+ 	int handle_event();
+ 	PreferencesWindow *pwindow;
+ };
+diff --git a/cinelerra-5.1/cinelerra/batchrender.C b/cinelerra-5.1/cinelerra/batchrender.C
+index 6dcdbc62..d2023bdb 100644
+--- a/cinelerra-5.1/cinelerra/batchrender.C
++++ b/cinelerra-5.1/cinelerra/batchrender.C
+@@ -60,6 +60,7 @@
+ #include "dvdcreate.h"
+ #include "bdcreate.h"
+ 
++
+ int BatchRenderThread::column_widths[] = { 42, 42, 42, 222, 222, 150 };
+ const char *BatchRenderThread::column_titles[] = {
+ 	N_("Enabled"), N_("Labeled"), N_("Farmed"), N_("Output"), N_("EDL"), N_("Elapsed")
+@@ -198,6 +199,7 @@ BatchRenderThread::BatchRenderThread(MWindow *mwindow)
+ 	boot_defaults = 0;
+ 	preferences = 0;
+ 	warn = 1;
++
+ 	render = 0;
+ 	batch_path[0] = 0;
+ 	do_farmed = 0;
+@@ -268,7 +270,10 @@ void BatchRenderThread::load_jobs(char *path, Preferences *preferences)
+ 	while( !result ) {
+ 		if( !(result = file.read_tag()) ) {
+ 			if( file.tag.title_is("JOBS") ) {
++				if (mwindow->preferences->unsafe_gui)
+ 				warn = file.tag.get_property("WARN", 1);
++				if (!mwindow->preferences->unsafe_gui)
++				warn = 0;
+ 			}
+ 			else if( file.tag.title_is("JOB") ) {
+ 				BatchRenderJob *job =  new BatchRenderJob(preferences, 0,0);
+@@ -293,6 +298,7 @@ void BatchRenderThread::save_jobs(char *path)
+ {
+ 	FileXML file;
+ 	file.tag.set_title("JOBS");
++	if (mwindow->preferences->unsafe_gui)
+ 	file.tag.set_property("WARN", warn);
+ 	file.append_tag();
+ 	file.append_newline();
+@@ -382,11 +388,15 @@ void BatchRenderThread::use_current_edl()
+ 	gui->edl_path_text->update(get_current_edl());
+ }
+ 
++
+ void BatchRenderThread::update_selected_edl()
+ {
+         FileXML xml_file;
+ 	char *path = get_current_edl();
+ 	EDL *edl = mwindow->edl;
++	// result = 1 if user cancelled operation
++	int result = ConfirmSave::test_file(mwindow, path);
++	if (!result) {
+         edl->save_xml(&xml_file, path);
+         xml_file.terminate_string();
+         if( xml_file.write_to_file(path) ) {
+@@ -394,6 +404,7 @@ void BatchRenderThread::update_selected_edl()
+ 		sprintf(msg, _("Unable to save: %s"), path);
+ 		MainError::show_error(msg);
+ 	}
++	}
+ }
+ 
+ BatchRenderJob* BatchRenderThread::get_current_job()
+@@ -508,10 +519,13 @@ int BatchRenderThread::test_edl_files()
+ 		ret = 1;
+ 	}
+ 
++
+ 	if( !ret && warn && mwindow ) {
+ 		ret = test_errmsg(not_equiv, _("%d job EDLs do not match session edl\n"), &warn);
+ 		if( !warn ) gui->warning->update(0);
+ 	}
++	
++	
+ 	if( !ret && mwindow )
+ 		ret = test_errmsg(empty_jobs, _("%d job EDLs begin position beyond end of media\n"), 0);
+ 	if( !ret && mwindow )
+@@ -792,8 +806,12 @@ void BatchRenderGUI::create_objects()
+ 	y2 = y + edl_path_browse->get_h() + mwindow->theme->widget_border;
+ 
+ 	x = x2;  y = y2;
++
++	if (mwindow->preferences->unsafe_gui) {
+ 	add_subwindow(update_selected_edl = new BatchRenderUpdateEDL(thread, x, y));
+ 	y += update_selected_edl->get_h() + mwindow->theme->widget_border;
++	}
++
+ 	add_subwindow(use_current_edl = new BatchRenderCurrentEDL(thread, x, y));
+ 	y += use_current_edl->get_h() + mwindow->theme->widget_border;
+ 	if( !mwindow->edl || !mwindow->edl->path[0] ) use_current_edl->disable();
+@@ -805,8 +823,12 @@ void BatchRenderGUI::create_objects()
+ 	x += savelist_batch->get_w() + mwindow->theme->widget_border;
+ 	add_subwindow(loadlist_batch = new BatchRenderLoadList(thread, x, y));
+ 	y += loadlist_batch->get_h() + mwindow->theme->widget_border;
++
++	if (mwindow->preferences->unsafe_gui) {
+ 	add_subwindow(warning = new BatchRenderWarning(thread, x2, y));
+ 	y2 = y + warning->get_h() + mwindow->theme->widget_border;
++	}
++	
+ 	if( y2 > y1 ) y1 = y2;
+ 	x = mwindow->theme->batchrender_x1, y = y1;
+ 
+@@ -835,6 +857,7 @@ void BatchRenderGUI::button_disable()
+ 	new_batch->disable();
+ 	delete_batch->disable();
+ 	use_current_edl->disable();
++	if (mwindow->preferences->unsafe_gui)
+ 	update_selected_edl->disable();
+ }
+ 
+@@ -844,6 +867,7 @@ void BatchRenderGUI::button_enable()
+ 	delete_batch->enable();
+ 	if( mwindow->edl && mwindow->edl->path[0] )
+ 		use_current_edl->enable();
++	if (mwindow->preferences->unsafe_gui)
+ 	update_selected_edl->enable();
+ }
+ 
+@@ -876,8 +900,12 @@ int BatchRenderGUI::resize_event(int w, int h)
+ 	y2 = y + edl_path_browse->get_h() + mwindow->theme->widget_border;
+ 
+ 	x = x2;  y = y2;
++
++	if (mwindow->preferences->unsafe_gui) {
+ 	update_selected_edl->reposition_window(x, y);
+ 	y += update_selected_edl->get_h() + mwindow->theme->widget_border;
++	}
++	
+ 	use_current_edl->reposition_window(x, y);
+ 	y += use_current_edl->get_h() + mwindow->theme->widget_border;
+ 	new_batch->reposition_window(x, y);
+@@ -889,9 +917,13 @@ int BatchRenderGUI::resize_event(int w, int h)
+ 	x += savelist_batch->get_w() + mwindow->theme->widget_border;
+ 	loadlist_batch->reposition_window(x, y);
+ 	y += loadlist_batch->get_h() + mwindow->theme->widget_border;
++	
++	if (mwindow->preferences->unsafe_gui) {
+ 	warning->reposition_window(x2, y);
+-
++	}
+ 	y1 = ys15 + BC_GenericButton::calculate_h() + mwindow->theme->widget_border;
++	
++	
+ 	y2 = get_h() - y1 - batch_list->get_h();
+ 	y2 -= list_title->get_h() + mwindow->theme->widget_border;
+ 
+@@ -1044,6 +1076,7 @@ BatchRenderNew::BatchRenderNew(BatchRenderThread *thread,
+  : BC_GenericButton(x, y, _("New"))
+ {
+ 	this->thread = thread;
++	set_tooltip(_("Create a new batch"));
+ }
+ 
+ int BatchRenderNew::handle_event()
+@@ -1056,6 +1089,7 @@ BatchRenderDelete::BatchRenderDelete(BatchRenderThread *thread, int x, int y)
+  : BC_GenericButton(x, y, _("Delete"))
+ {
+ 	this->thread = thread;
++	set_tooltip(_("Delete loaded (highlighted) batch"));
+ }
+ 
+ int BatchRenderDelete::handle_event()
+@@ -1228,6 +1262,7 @@ BatchRenderCurrentEDL::BatchRenderCurrentEDL(BatchRenderThread *thread,
+  : BC_GenericButton(x, y, _("Use Current EDL"))
+ {
+ 	this->thread = thread;
++	set_tooltip(_("Replaces highlighted batch job with session you currently have on timeline. File on disk NOT changed!"));
+ }
+ 
+ int BatchRenderCurrentEDL::handle_event()
+@@ -1236,14 +1271,17 @@ int BatchRenderCurrentEDL::handle_event()
+ 	return 1;
+ }
+ 
++
+ BatchRenderUpdateEDL::BatchRenderUpdateEDL(BatchRenderThread *thread,
+ 	int x,
+ 	int y)
+  : BC_GenericButton(x, y, _("Save to EDL Path"))
+ {
+ 	this->thread = thread;
++	set_tooltip(_("Save to loaded EDL (highlighted), will *overwrite* nighlighted proj!"));
+ }
+ 
++
+ int BatchRenderUpdateEDL::handle_event()
+ {
+ 	thread->update_selected_edl();
+@@ -1343,6 +1381,7 @@ BatchRenderStart::BatchRenderStart(BatchRenderThread *thread, int x, int y)
+  : BC_GenericButton(x, y, _("Start"))
+ {
+ 	this->thread = thread;
++	set_tooltip(_("Start batch rendering"));
+ }
+ 
+ int BatchRenderStart::handle_event()
+@@ -1355,6 +1394,7 @@ BatchRenderStop::BatchRenderStop(BatchRenderThread *thread, int x, int y)
+  : BC_GenericButton(x, y, _("Stop"))
+ {
+ 	this->thread = thread;
++	set_tooltip(_("Stops currently active batch rendering"));
+ }
+ 
+ int BatchRenderStop::handle_event()
+@@ -1370,6 +1410,7 @@ BatchRenderWarning::BatchRenderWarning(BatchRenderThread *thread, int x, int y)
+  : BC_CheckBox(x, y, thread->warn, _("warn if jobs/session mismatched"))
+ {
+ 	this->thread = thread;
++	set_tooltip(_("Prevents rendering if loaded session and batch job(s) differ"));
+ }
+ 
+ int BatchRenderWarning::handle_event()
+@@ -1382,6 +1423,7 @@ BatchRenderCancel::BatchRenderCancel(BatchRenderThread *thread, int x, int y)
+  : BC_GenericButton(x, y, _("Close"))
+ {
+ 	this->thread = thread;
++	set_tooltip(_("Closes this window"));
+ }
+ 
+ int BatchRenderCancel::handle_event()
+diff --git a/cinelerra-5.1/cinelerra/preferences.C b/cinelerra-5.1/cinelerra/preferences.C
+index ad92bac8..e517f2f3 100644
+--- a/cinelerra-5.1/cinelerra/preferences.C
++++ b/cinelerra-5.1/cinelerra/preferences.C
+@@ -93,7 +93,7 @@ Preferences::Preferences()
+ 	ffmpeg_marker_indexes = 1;
+ 	memset(&use_hw_dev, 0, sizeof(use_hw_dev));
+ 	warn_indexes = 1;
+-	warn_version = 1;
++	unsafe_gui = 0;
+ 	warn_fileref = 1;
+ 	bd_warn_root = 1;
+ 	popupmenu_btnup = 1;
+@@ -220,7 +220,7 @@ void Preferences::copy_from(Preferences *that)
+ 	ffmpeg_marker_indexes = that->ffmpeg_marker_indexes;
+ 	strcpy(use_hw_dev, &that->use_hw_dev[0]);
+ 	warn_indexes = that->warn_indexes;
+-	warn_version = that->warn_version;
++	unsafe_gui = that->unsafe_gui;
+ 	warn_fileref = that->warn_fileref;
+ 	bd_warn_root = that->bd_warn_root;
+ 	popupmenu_btnup = that->popupmenu_btnup;
+@@ -371,7 +371,7 @@ int Preferences::load_defaults(BC_Hash *defaults)
+ 	memset(&use_hw_dev, 0, sizeof(use_hw_dev));
+ 	defaults->get("USE_HW_DEV", use_hw_dev);
+ 	warn_indexes = defaults->get("WARN_INDEXES", warn_indexes);
+-	warn_version = defaults->get("WARN_VERSION", warn_version);
++	unsafe_gui = defaults->get("UNSAFE_GUI", unsafe_gui);
+ 	warn_fileref = defaults->get("WARN_FILEREF", warn_fileref);
+ 	bd_warn_root = defaults->get("BD_WARN_ROOT", bd_warn_root);
+ 	popupmenu_btnup = defaults->get("POPUPMENU_BTNUP", popupmenu_btnup);
+@@ -522,7 +522,7 @@ int Preferences::save_defaults(BC_Hash *defaults)
+ 	defaults->update("FFMPEG_MARKER_INDEXES", ffmpeg_marker_indexes);
+ 	defaults->update("USE_HW_DEV", use_hw_dev);
+ 	defaults->update("WARN_INDEXES", warn_indexes);
+-	defaults->update("WARN_VERSION", warn_version);
++	defaults->update("UNSAFE_GUI", unsafe_gui);
+ 	defaults->update("WARN_FILEREF", warn_fileref);
+ 	defaults->update("BD_WARN_ROOT", bd_warn_root);
+ 	defaults->update("POPUPMENU_BTNUP", popupmenu_btnup);
+diff --git a/cinelerra-5.1/cinelerra/preferences.h b/cinelerra-5.1/cinelerra/preferences.h
+index 4b60577a..980e55e0 100644
+--- a/cinelerra-5.1/cinelerra/preferences.h
++++ b/cinelerra-5.1/cinelerra/preferences.h
+@@ -118,7 +118,7 @@ public:
+ 	char use_hw_dev[BCSTRLEN];
+ // warning
+ 	int warn_indexes;
+-	int warn_version;
++	int unsafe_gui;
+ 	int warn_stack;
+ 	int warn_fileref;
+ 	int bd_warn_root;
