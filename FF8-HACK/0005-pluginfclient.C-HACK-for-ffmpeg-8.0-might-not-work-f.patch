@@ -1,0 +1,73 @@
+From 3dc34e7c953f2e833176a742b3888e65ba59dedd Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <randrianasulu@gmail.com>
+Date: Sun, 25 May 2025 18:36:15 +0300
+Subject: [PATCH 5/5] pluginfclient.C HACK for ffmpeg 8.0 (might not work for
+ prev. versions)
+
+---
+ cinelerra-5.1/cinelerra/pluginfclient.C | 21 +++++++++++++++++----
+ 1 file changed, 17 insertions(+), 4 deletions(-)
+
+diff --git a/cinelerra-5.1/cinelerra/pluginfclient.C b/cinelerra-5.1/cinelerra/pluginfclient.C
+index 764ba121..7ff7bad9 100644
+--- a/cinelerra-5.1/cinelerra/pluginfclient.C
++++ b/cinelerra-5.1/cinelerra/pluginfclient.C
+@@ -864,18 +864,25 @@ int PluginFAClient::activate()
+ 			"in", args, NULL, graph);
+ 		if(ret <0) printf("abuffer failed!\n");
+ 	}
+-	if( ret >= 0 )
++/* 	if( ret >= 0 )
+ 		ret = avfilter_graph_create_filter(&fsink, avfilter_get_by_name("abuffersink"),
+-			"out", NULL, NULL, graph);
++			"out", NULL, NULL, graph); */
++	/*
+ 	if( ret >= 0 )
+ 		ret = av_opt_set_bin(fsink, "sample_fmts",
+ 			(uint8_t*)&sample_fmt, sizeof(sample_fmt), AV_OPT_SEARCH_CHILDREN);
+-	if( ret >= 0 )
++	
++	 if( ret >= 0 )
+ 		ret = av_opt_set(fsink, "ch_layouts",
+ 			chLayoutDescription, AV_OPT_SEARCH_CHILDREN);
+ 	if( ret >= 0 )
+ 		ret = av_opt_set_bin(fsink, "sample_rates",
+ 			(uint8_t*)&sample_rate, sizeof(sample_rate), AV_OPT_SEARCH_CHILDREN);
++	*/
++	if( ret >= 0 ) 
++	    ret = avfilter_graph_create_filter(&fsink, avfilter_get_by_name("abuffersink"),
++		"out", NULL, NULL, graph);
++	
+ 	if( ret >= 0 )
+ 		ret = PluginFClient::activate();
+ 	if( ret < 0 && activated >= 0 ) {
+@@ -943,9 +950,11 @@ int PluginFVClient::activate(int width, int height, int color_model)
+ 	if( ret >= 0 )
+ 		ret = avfilter_graph_create_filter(&fsink, avfilter_get_by_name("buffersink"),
+ 			"out", NULL, NULL, graph);
++	/*
+ 	if( ret >= 0 )
+ 		ret = av_opt_set_bin(fsink, "pix_fmts",
+ 			(uint8_t*)&pix_fmt, sizeof(pix_fmt), AV_OPT_SEARCH_CHILDREN);
++	*/
+ 	if( ret >= 0 )
+ 		ret = PluginFClient::activate();
+ 	if( ret < 0 && activated >= 0 ) {
+@@ -1096,9 +1105,13 @@ int PluginFVClient::process_buffer(VFrame **frames, int64_t position, double fra
+ 
+ 	int colormodel = vframe->get_color_model();
+ 	int ret = activate(width, height, colormodel);
+-	AVPixelFormat pix_fmt = fsrc ?
++	AVPixelFormat pix_fmt;
++	if (fsrc && fsrc->outputs[0]) {
++		pix_fmt =  fsrc ?
+ 		(AVPixelFormat) fsrc->outputs[0]->format :
+ 		color_model_to_pix_fmt(colormodel);
++	} else {
++	pix_fmt = color_model_to_pix_fmt(colormodel);}
+ 	if( pix_fmt <= AV_PIX_FMT_NONE || pix_fmt >= AV_PIX_FMT_NB )
+ 		pix_fmt = AV_PIX_FMT_RGBA;
+ 
+-- 
+2.46.3
+
