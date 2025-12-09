@@ -1,0 +1,35 @@
+From 4cb230f8ee5865773f96f5f6df639cbb5499b177 Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <randrianasulu@gmail.com>
+Date: Tue, 5 Dec 2023 05:52:10 +0000
+Subject: [PATCH] Fix makeimagetool on Slackware -current
+
+---
+ cinelerra-5.1/tools/makeappimagetool/appdir_root_setup.cpp | 1 +
+ cinelerra-5.1/tools/makeappimagetool/subprocess.cpp        | 1 +
+ 2 files changed, 2 insertions(+)
+
+diff --git a/cinelerra-5.1/tools/makeappimagetool/appdir_root_setup.cpp b/cinelerra-5.1/tools/makeappimagetool/appdir_root_setup.cpp
+index a8576093..9ddf551e 100644
+--- a/cinelerra-5.1/tools/makeappimagetool/appdir_root_setup.cpp
++++ b/cinelerra-5.1/tools/makeappimagetool/appdir_root_setup.cpp
+@@ -1,4 +1,5 @@
+ // local headers
++#include <fstream>
+ #include "includes/util.h"
+ #include "includes/log.h"
+ #include "includes/appdir_root_setup.h"
+diff --git a/cinelerra-5.1/tools/makeappimagetool/subprocess.cpp b/cinelerra-5.1/tools/makeappimagetool/subprocess.cpp
+index 0dcfd6b4..bd3ee62b 100644
+--- a/cinelerra-5.1/tools/makeappimagetool/subprocess.cpp
++++ b/cinelerra-5.1/tools/makeappimagetool/subprocess.cpp
+@@ -6,6 +6,7 @@
+ #include <utility>
+ #include <unistd.h>
+ #include <thread>
++#include <array>
+ 
+ // local headers
+ #include "includes/subprocess.h"
+-- 
+2.42.1
+

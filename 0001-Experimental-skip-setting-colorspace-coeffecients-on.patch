@@ -1,0 +1,26 @@
+From dcfed3d6cf6e101ebeadb7eeb6ba7a6a0806a9ce Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <randrianasulu@gmail.com>
+Date: Thu, 5 Sep 2024 21:54:19 +0300
+Subject: [PATCH] Experimental: skip setting colorspace coeffecients on
+ ffmpeg-based enc in yuv modes
+
+---
+ cinelerra-5.1/cinelerra/ffmpeg.C | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/cinelerra-5.1/cinelerra/ffmpeg.C b/cinelerra-5.1/cinelerra/ffmpeg.C
+index e89d1fa1..d9e86a4f 100644
+--- a/cinelerra-5.1/cinelerra/ffmpeg.C
++++ b/cinelerra-5.1/cinelerra/ffmpeg.C
+@@ -1810,7 +1810,7 @@ int FFVideoConvert::convert_vframe_picture(VFrame *frame, AVFrame *op, AVFrame *
+ 	if( !sws_getColorspaceDetails(convert_ctx,
+ 			&inv_table, &src_range, &table, &dst_range,
+ 			&brightness, &contrast, &saturation) ) {
+-		if( dst_range != color_range || table != color_table )
++		if(( dst_range != color_range || table != color_table ) && (cmodel !=  27 && cmodel != 17))
+ 			sws_setColorspaceDetails(convert_ctx,
+ 					inv_table, src_range, color_table, color_range,
+ 					brightness, contrast, saturation);
+-- 
+2.39.4
+

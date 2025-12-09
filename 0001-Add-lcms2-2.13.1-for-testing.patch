@@ -1,0 +1,94 @@
+From 557cf0691c1b25b6c7da4db12c5d90f8ad2cba08 Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <randrianasulu@gmail.com>
+Date: Sun, 12 Nov 2023 03:59:48 +0300
+Subject: [PATCH] Add lcms2 2.13.1 for testing
+
+---
+ cinelerra-5.1/configure.ac        |  6 ++++++
+ cinelerra-5.1/thirdparty/Makefile | 11 +++++++++--
+ 2 files changed, 15 insertions(+), 2 deletions(-)
+
+diff --git a/cinelerra-5.1/configure.ac b/cinelerra-5.1/configure.ac
+index 180764bd..b3a7d415 100644
+--- a/cinelerra-5.1/configure.ac
++++ b/cinelerra-5.1/configure.ac
+@@ -496,6 +496,11 @@ PKG_3RD([libbthread],[auto],
+   [ . ])
+ fi
+ 
++PKG_3RD([lcms2],[auto],
++  [lcms2-2.13.1],
++  [ src/.libs/liblcms2.a ],
++  [ include ])
++
+ 
+ AC_SUBST(STATIC_PKGS)
+ 
+@@ -1045,6 +1050,7 @@ PKG_PROVIDE([sord], [$WANT_LV2])
+ PKG_PROVIDE([suil], [$WANT_LV2])
+ PKG_PROVIDE([ffnvcodec], [$WANT_NV])
+ PKG_PROVIDE([libdpx])
++PKG_PROVIDE([lcms2])
+ 
+ if test "x$WANT_LV2" = "xyes"; then
+   if test "x$HAVE_lv2" = "xyes" -a "x$BUILD_lilv" = "x0"; then
+diff --git a/cinelerra-5.1/thirdparty/Makefile b/cinelerra-5.1/thirdparty/Makefile
+index 659ab3fe..eeb64ace 100644
+--- a/cinelerra-5.1/thirdparty/Makefile
++++ b/cinelerra-5.1/thirdparty/Makefile
+@@ -131,7 +131,8 @@ esound.ldflags=" -lm -lstdc++"
+ fftw.cfg_params= --disable-fortran --enable-shared=no
+ ffmpeg.cfg_vars?= PKG_CONFIG_PATH="$(call bld_path,libwebp)/usr/local/lib/pkgconfig"
+ ffmpeg.cfg_params= \
+-	--enable-pthreads --disable-avdevice --enable-gpl --disable-ffplay \
++	--enable-pthreads --disable-avdevice --enable-gpl --disable-doc --disable-ffplay \
++	$(call if_ena,lcms2,--enable-lcms2,--disable-lcms2) \
+ 	$(call if_want,VAAPI,--enable-vaapi,--disable-vaapi) \
+ 	$(call if_want,VDPAU,--enable-vdpau,--disable-vdpau) \
+ 	$(call if_want,NV, --enable-nvenc --enable-nvdec --enable-ffnvcodec) \
+@@ -160,6 +161,7 @@ ffmpeg.cfg_params= \
+ 		$(call inc_path,libvorbis) \
+ 		$(call inc_path,libtheora) \
+ 		$(call inc_path,libvpx) \
++		$(call inc_path,lcms2) \
+ 		$(call inc_path,x264) \
+ 		$(call inc_path,x265)" \
+ 	--extra-cxxflags="-D__STDC_CONSTANT_MACROS" \
+@@ -178,6 +180,7 @@ ffmpeg.cfg_params= \
+ 		$(call ld_path,libvpx) \
+ 		$(call ld_path,x264) \
+ 		$(call ld_path,x265) \
++		$(call ld_path,lcms2) \
+ 		$(shared_libs) \
+ 		-Wl,--end-group -lm -lstdc++ -pthread \
+ 		$(EXTRA_LIBS)" $(FFMPEG_EXTRA_CFG) \
+@@ -269,6 +272,8 @@ x265.cfg_params?= -DENABLE_SHARED=no
+ libvpx.cfg_params?= --enable-pic --disable-avx512 --enable-vp9-highbitdepth --disable-examples --disable-unit_tests
+ libdpx.cfg_vars?= libtoolize; aclocal; autoconf; automake -a;
+ 
++lcms2.cfg_params?= --disable-shared
++
+ DS:=$$$$$$$$
+ pkg_cfg=$(call bld_path,$(1),usr/local/lib/pkgconfig):
+ LV2_PKGCFG:=$(subst : ,:,$(foreach p,lv2 serd sord sratom lilv suil,$(call pkg_cfg,$(p))))
+@@ -340,7 +345,7 @@ $(call rules,$(call std-build,djbfft))
+ $(call rules,$(call std-build,audiofile))
+ $(call rules,$(call std-build,encore))
+ $(call rules,$(call std-build,esound,audiofile))
+-$(call rules,$(call std-build,ffmpeg, twolame lame openjpeg opus \
++$(call rules,$(call std-build,ffmpeg, lcms2 twolame lame openjpeg opus \
+ 	libtheora x264 x265 libvpx libaom dav1d libwebp \
+ 	$(call if_want,NV, ffnvcodec)))
+ $(call rules,$(call std-build,fftw))
+@@ -382,6 +387,8 @@ $(call rules,$(call std-build,lilv, lv2 sratom serd sord))
+ $(call rules,$(call std-build,suil, lv2))
+ $(call rules,$(call std-build,ffnvcodec))
+ $(call rules,$(call std-build,libdpx))
++$(call rules,$(call std-build,lcms2))
++
+ 
+ # specialize festival, multiple tarballs
+ festival:
+-- 
+2.42.0
+

@@ -1,0 +1,152 @@
+From 74a93aeadd279a9a5db775e2e2d8d0426e8e642f Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <randrianasulu@gmail.com>
+Date: Tue, 26 Jan 2021 02:35:45 +0300
+Subject: [PATCH] My thirdparty patches for e2k
+
+---
+ .../thirdparty/src/lame-3.100.patch1          | 19 ++++++++++
+ .../thirdparty/src/libogg-1.3.4.patch1        | 22 ++++++++++++
+ .../thirdparty/src/mjpegtools-2.1.0.patch4    | 13 +++++++
+ .../thirdparty/src/openexr-2.4.1.patch2       | 35 +++++++++++++++++++
+ .../x264-snapshot-20191217-2245-stable.patch2 | 12 +++++++
+ 5 files changed, 101 insertions(+)
+ create mode 100644 cinelerra-5.1/thirdparty/src/lame-3.100.patch1
+ create mode 100644 cinelerra-5.1/thirdparty/src/libogg-1.3.4.patch1
+ create mode 100644 cinelerra-5.1/thirdparty/src/mjpegtools-2.1.0.patch4
+ create mode 100644 cinelerra-5.1/thirdparty/src/openexr-2.4.1.patch2
+ create mode 100644 cinelerra-5.1/thirdparty/src/x264-snapshot-20191217-2245-stable.patch2
+
+diff --git a/cinelerra-5.1/thirdparty/src/lame-3.100.patch1 b/cinelerra-5.1/thirdparty/src/lame-3.100.patch1
+new file mode 100644
+index 0000000..fda70d4
+--- /dev/null
++++ b/cinelerra-5.1/thirdparty/src/lame-3.100.patch1
+@@ -0,0 +1,19 @@
++--- a/libmp3lame/quantize.c	2017-08-15 16:40:45.000000000 +0300
+++++ b/libmp3lame/quantize.c	2020-04-14 18:14:23.650000000 +0300
++@@ -94,12 +94,14 @@
++ {
++     gfc->init_xrpow_core = init_xrpow_core_c;
++ 
++-#if defined(HAVE_XMMINTRIN_H)
+++#ifdef 0
+++//#if defined(HAVE_XMMINTRIN_H)
++     if (gfc->CPU_features.SSE)
++         gfc->init_xrpow_core = init_xrpow_core_sse;
++ #endif
++ #ifndef HAVE_NASM
++-#ifdef MIN_ARCH_SSE
+++#ifdef 0
+++//#ifdef MIN_ARCH_SSE
++     gfc->init_xrpow_core = init_xrpow_core_sse;
++ #endif
++ #endif
+diff --git a/cinelerra-5.1/thirdparty/src/libogg-1.3.4.patch1 b/cinelerra-5.1/thirdparty/src/libogg-1.3.4.patch1
+new file mode 100644
+index 0000000..b53ae2c
+--- /dev/null
++++ b/cinelerra-5.1/thirdparty/src/libogg-1.3.4.patch1
+@@ -0,0 +1,22 @@
++--- a/configure.ac	2019-08-31 18:38:39.000000000 +0300
+++++ b/configure.ac	2020-04-13 18:47:04.550000000 +0300
++@@ -46,7 +46,7 @@
++         case $host in 
++         *-*-linux*)
++                 DEBUG="-g -Wall -fsigned-char"
++-                CFLAGS="-O20 -Wall -ffast-math -fsigned-char"
+++                CFLAGS="-O2 -Wall -ffast-math -fsigned-char"
++                 PROFILE="-Wall -W -pg -g -O20 -ffast-math -fsigned-char"
++ 		;;
++         sparc-sun-*)
++@@ -61,8 +61,8 @@
++ 		;;
++         *)
++                 DEBUG="-g -Wall -fsigned-char"
++-                CFLAGS="-O20 -fsigned-char"
++-                PROFILE="-O20 -g -pg -fsigned-char" 
+++                CFLAGS="-O2 -fsigned-char"
+++                PROFILE="-O2 -g -pg -fsigned-char" 
++ 		;;
++         esac
++ fi
+diff --git a/cinelerra-5.1/thirdparty/src/mjpegtools-2.1.0.patch4 b/cinelerra-5.1/thirdparty/src/mjpegtools-2.1.0.patch4
+new file mode 100644
+index 0000000..9f1a9cb
+--- /dev/null
++++ b/cinelerra-5.1/thirdparty/src/mjpegtools-2.1.0.patch4
+@@ -0,0 +1,13 @@
++--- mjpegtools-2.1.0/yuvdenoise/main.c	2011-02-13 13:46:02.000000000 +0300
+++++ mjpegtools-2.1.0/yuvdenoise/main.c	2020-04-15 02:13:28.880000000 +0300
++@@ -1327,8 +1327,8 @@
++ 	filter_plane_median = filter_plane_median_p;
++ 	temporal_filter_planes = temporal_filter_planes_p;
++ 	uint32_t tmp;
++-
++-#if defined(__SSE2__)
+++#if 0
+++//#if defined(__SSE2__)
++ 	int d = 0;
++ /*	__asm__ volatile("cpuid" : "=d"(d) : "a"(1) : "ebx", "ecx"); */
++ 	__asm__ volatile("movl %%ebx, %1; cpuid; movl %1, %%ebx" : "=d"(d), "=&g"(tmp) : "a"(1) : "ecx");
+diff --git a/cinelerra-5.1/thirdparty/src/openexr-2.4.1.patch2 b/cinelerra-5.1/thirdparty/src/openexr-2.4.1.patch2
+new file mode 100644
+index 0000000..0e2a71d
+--- /dev/null
++++ b/cinelerra-5.1/thirdparty/src/openexr-2.4.1.patch2
+@@ -0,0 +1,35 @@
++--- openexr-2.4.1/OpenEXR/IlmImf/ImfSystemSpecific.cpp.orig	2021-01-26 02:08:42.483134900 +0300
+++++ openexr-2.4.1/OpenEXR/IlmImf/ImfSystemSpecific.cpp	2021-01-26 02:08:53.283134900 +0300
++@@ -40,6 +40,7 @@
++ OPENEXR_IMF_INTERNAL_NAMESPACE_SOURCE_ENTER
++ 
++ namespace {
+++#if 0
++ #if defined(IMF_HAVE_SSE2) &&  defined(__GNUC__)
++ 
++     // Helper functions for gcc + SSE enabled
++@@ -83,6 +84,8 @@
++ 
++ #endif //  OPENEXR_IMF_HAVE_GCC_INLINE_ASM_AVX
++ 
+++#endif /* no x86 on e2k  */
+++
++ } // namespace 
++ 
++ CpuId::CpuId():
++@@ -94,6 +97,7 @@
++     avx(false), 
++     f16c(false)
++ {
+++#if 0
++     bool osxsave = false;
++     int  max     = 0;
++     int  eax, ebx, ecx, edx;
++@@ -125,6 +129,7 @@
++             }
++         }
++     }
+++#endif /* no x86 cpuid on e2k */
++ }
++ 
++ OPENEXR_IMF_INTERNAL_NAMESPACE_SOURCE_EXIT
+diff --git a/cinelerra-5.1/thirdparty/src/x264-snapshot-20191217-2245-stable.patch2 b/cinelerra-5.1/thirdparty/src/x264-snapshot-20191217-2245-stable.patch2
+new file mode 100644
+index 0000000..7fafe08
+--- /dev/null
++++ b/cinelerra-5.1/thirdparty/src/x264-snapshot-20191217-2245-stable.patch2
+@@ -0,0 +1,12 @@
++--- a/common/rectangle.h	2019-12-18 00:45:07.000000000 +0300
+++++ b/common/rectangle.h	2020-04-13 21:40:14.880000000 +0300
++@@ -80,7 +80,8 @@
++     {
++         /* height 1, width 16 doesn't occur */
++         assert( h != 1 );
++-#if HAVE_VECTOREXT && defined(__SSE__)
+++#if 0
+++//#if HAVE_VECTOREXT && defined(__SSE__)
++         v4si v16 = {v,v,v,v};
++ 
++         M128( d+s*0+0 ) = (__m128)v16;
+-- 
+2.28.0
+
