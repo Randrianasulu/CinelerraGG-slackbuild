@@ -1,0 +1,109 @@
+From 2529a0958907229874a30ec50e5bab2028666f1c Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <randrianasulu@gmail.com>
+Date: Thu, 12 Jan 2023 08:07:00 +0000
+Subject: [PATCH 1/3] D build fixes
+
+---
+ cinelerra-5.1/blds/netbsd.bld       | 2 +-
+ cinelerra-5.1/cinelerra/bdcreate.C  | 9 +++++++++
+ cinelerra-5.1/cinelerra/dvdcreate.C | 9 +++++++++
+ cinelerra-5.1/cinelerra/exportedl.C | 2 +-
+ cinelerra-5.1/guicast/filesystem.h  | 2 +-
+ 5 files changed, 21 insertions(+), 3 deletions(-)
+ mode change 100644 => 100755 cinelerra-5.1/blds/netbsd.bld
+
+diff --git a/cinelerra-5.1/blds/netbsd.bld b/cinelerra-5.1/blds/netbsd.bld
+old mode 100644
+new mode 100755
+index b6c5f96b..5d961ee9
+--- a/cinelerra-5.1/blds/netbsd.bld
++++ b/cinelerra-5.1/blds/netbsd.bld
+@@ -17,6 +17,6 @@ alias make=gmake
+     --without-video4linux2 --without-xxf86vm --without-ladspa-build \
+     --without-libzmpeg --without-commercial --without-thirdparty \
+     --without-vaapi --without-openexr --with-jobs=4 --without-vdpau --without-shuttle --without-shuttle-usb \
+-    --without-x10tv --without-wintv
++    --without-x10tv --without-wintv --without-libdpx
+    gmake
+    gmake install ) 2>&1 | tee log
+diff --git a/cinelerra-5.1/cinelerra/bdcreate.C b/cinelerra-5.1/cinelerra/bdcreate.C
+index 16c655a5..cc6b40b7 100644
+--- a/cinelerra-5.1/cinelerra/bdcreate.C
++++ b/cinelerra-5.1/cinelerra/bdcreate.C
+@@ -26,12 +26,21 @@
+ #include <errno.h>
+ #if !defined(__FreeBSD__)
+ #include <sys/stat.h>
++#if !defined(__NetBSD__)
+ #include <sys/statfs.h>
++#endif
+ #else
+ #include <sys/param.h>
+ #include <sys/mount.h>
+ #endif
+ 
++#if defined(__NetBSD__)
++#include <sys/statvfs.h>
++#ifndef statfs
++#define statfs statvfs
++#endif
++#endif
++
+ // BD Creation
+ 
+ // selected by timezone
+diff --git a/cinelerra-5.1/cinelerra/dvdcreate.C b/cinelerra-5.1/cinelerra/dvdcreate.C
+index 175ef547..72259b27 100644
+--- a/cinelerra-5.1/cinelerra/dvdcreate.C
++++ b/cinelerra-5.1/cinelerra/dvdcreate.C
+@@ -26,12 +26,21 @@
+ #include <errno.h>
+ #if !defined(__FreeBSD__)
+ #include <sys/stat.h>
++#if !defined(__NetBSD__)
+ #include <sys/statfs.h>
++#endif
+ #else
+ #include <sys/param.h>
+ #include <sys/mount.h>
+ #endif
+ 
++#if defined(__NetBSD__)
++#include <sys/statvfs.h>
++#ifndef statfs
++#define statfs statvfs
++#endif
++#endif
++
+ #define DVD_PAL_4x3	0
+ #define DVD_PAL_16x9	1
+ #define DVD_NTSC_4x3	2
+diff --git a/cinelerra-5.1/cinelerra/exportedl.C b/cinelerra-5.1/cinelerra/exportedl.C
+index 108c2ad6..69174635 100644
+--- a/cinelerra-5.1/cinelerra/exportedl.C
++++ b/cinelerra-5.1/cinelerra/exportedl.C
+@@ -39,7 +39,7 @@
+ #include "exportedl.h"
+ #include "tracks.h"
+ #include "transition.h"
+-#if defined (__FreeBSD__)
++#if defined (__FreeBSD__) || defined (__NetBSD__)
+ #include <libgen.h>
+ #endif
+ #include <ctype.h>
+diff --git a/cinelerra-5.1/guicast/filesystem.h b/cinelerra-5.1/guicast/filesystem.h
+index b6cece2d..90885554 100644
+--- a/cinelerra-5.1/guicast/filesystem.h
++++ b/cinelerra-5.1/guicast/filesystem.h
+@@ -26,7 +26,7 @@
+ #include "bcwindowbase.inc"
+ #include "sizes.h"
+ 
+-#if defined (__FreeBSD__)
++#if defined (__FreeBSD__) || (__NetBSD__)
+ #define dirent64 dirent
+ #define readdir64 readdir
+ #endif
+-- 
+2.34.1
+

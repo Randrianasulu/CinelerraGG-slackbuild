@@ -1,0 +1,26 @@
+From 87376eef0478b0483f08bde5b957734bee6467f1 Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <randrianasulu@gmail.com>
+Date: Tue, 9 Dec 2025 14:40:15 +0300
+Subject: [PATCH] Remove linux-firmware from debian/control file, does not
+ exist in debian 13
+
+---
+ cinelerra-5.1/blds/debian/control | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/cinelerra-5.1/blds/debian/control b/cinelerra-5.1/blds/debian/control
+index 62bc980d..d78f12ed 100644
+--- a/cinelerra-5.1/blds/debian/control
++++ b/cinelerra-5.1/blds/debian/control
+@@ -11,7 +11,7 @@ Build-Depends:
+  libflac-dev, libfreetype6-dev, liblzma-dev, libncurses5-dev,
+  libpng-dev, libtool, libusb-1.0-0-dev, libva-dev, libvdpau-dev,
+  libxft-dev, libxinerama-dev, libxml2-utils, libxv-dev,
+- libz-dev, linux-firmware, nasm, texinfo, ttf-bitstream-vera,
++ libz-dev, nasm, texinfo, ttf-bitstream-vera,
+  udftools, xfonts-100dpi, xfonts-75dpi, yasm, libpulse-dev
+ 
+ Package: cin
+-- 
+2.46.4
+

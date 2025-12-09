@@ -1,0 +1,27 @@
+From 09b0aa9e87f5f03e613650a943cde350631ce1f9 Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <andrewrandrianasulu@Andrews-MacBook-Pro.local>
+Date: Wed, 19 Jun 2024 18:15:35 +0300
+Subject: [PATCH 10/11] Hack for macosx in theme.C not working yet
+
+---
+ cinelerra-5.1/cinelerra/theme.C | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/cinelerra-5.1/cinelerra/theme.C b/cinelerra-5.1/cinelerra/theme.C
+index 8a667b5c..eb99b999 100644
+--- a/cinelerra-5.1/cinelerra/theme.C
++++ b/cinelerra-5.1/cinelerra/theme.C
+@@ -210,8 +210,8 @@ void Theme::initialize()
+ 	message_error = RED;
+ 
+ // Force to use local data for images
+-	extern unsigned char _binary_theme_data_start[];
+-	set_data(_binary_theme_data_start);
++	extern unsigned char binary_theme_data_start[];
++	set_data(binary_theme_data_start);
+ 
+ // Set images which weren't set by subclass
+ 	new_image("mode_normal", "mode_normal.png");
+-- 
+2.13.5 (Apple Git-94)
+

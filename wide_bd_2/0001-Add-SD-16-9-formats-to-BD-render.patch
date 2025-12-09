@@ -1,0 +1,28 @@
+From 8ca40e1c620fc261ee4e92264cc031a7e1b4493e Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <randrianasulu@gmail.com>
+Date: Tue, 16 Jan 2024 08:09:28 +0300
+Subject: [PATCH 1/4] Add SD 16:9 formats to BD render ?
+
+---
+ cinelerra-5.1/cinelerra/bdcreate.C | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/cinelerra-5.1/cinelerra/bdcreate.C b/cinelerra-5.1/cinelerra/bdcreate.C
+index 2a9de685..10bc496b 100644
+--- a/cinelerra-5.1/cinelerra/bdcreate.C
++++ b/cinelerra-5.1/cinelerra/bdcreate.C
+@@ -94,6 +94,11 @@ static struct bd_format {
+ 	{ "720x576   25p*",	 720,576,  25.,    0, ILACE_MODE_NOTINTERLACED },
+ 	{ "720x480   29.97i",	 720,480,  29.97,  0, ILACE_MODE_BOTTOM_FIRST },
+ 	{ "720x480   29.97p*",	 720,480,  29.97,  0, ILACE_MODE_NOTINTERLACED },
++	{ "720x576(w)   25i",	 720,576,  25.,    1, ILACE_MODE_BOTTOM_FIRST },
++	{ "720x576(w)   25p*",	 720,576,  25.,    1, ILACE_MODE_NOTINTERLACED },
++	{ "720x480(w)   29.97i",	 720,480,  29.97,  1, ILACE_MODE_BOTTOM_FIRST },
++	{ "720x480(w)   29.97p*",	 720,480,  29.97,  1, ILACE_MODE_NOTINTERLACED },
++
+ };
+ 
+ static struct bd_profile {
+-- 
+2.35.8
+

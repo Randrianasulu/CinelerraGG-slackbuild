@@ -1,0 +1,38 @@
+From f88939881d1a58a2b08ab85e26277fc54c674245 Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <randrianasulu@gmail.com>
+Date: Tue, 2 Dec 2025 18:56:24 +0300
+Subject: [PATCH 3/4] Fix libplacebo enabling, was typoed wrong
+
+---
+ cinelerra-5.1/configure.ac        | 1 +
+ cinelerra-5.1/thirdparty/Makefile | 2 +-
+ 2 files changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/cinelerra-5.1/configure.ac b/cinelerra-5.1/configure.ac
+index 40659e3a..4dd4a56e 100644
+--- a/cinelerra-5.1/configure.ac
++++ b/cinelerra-5.1/configure.ac
+@@ -1165,6 +1165,7 @@ CFG_WANTS+=" VULKAN"
+ if test "x$WANT_LIBPLACEBO" != "xno" -a "x$HAVE_LIBPLACEBO" = "xyes"; then
+   FFMPEG_EXTRA_LDFLAGS+=' -lplacebo -lshaderc_shared  `pkg-config --libs libplacebo`'
+   FFMPEG_EXTRA_CFG+=' --enable-libshaderc --extra-cflags="'$(pkg-config --cflags libplacebo)'"'
++  EXTRA_LIBS+=' -lshaderc_shared'
+   WANT_LIBPLACEBO="yes"
+ fi
+ CFG_WANTS+=" LIBPLACEBO"
+diff --git a/cinelerra-5.1/thirdparty/Makefile b/cinelerra-5.1/thirdparty/Makefile
+index adb041be..08071f7e 100644
+--- a/cinelerra-5.1/thirdparty/Makefile
++++ b/cinelerra-5.1/thirdparty/Makefile
+@@ -138,7 +138,7 @@ ffmpeg.cfg_params= \
+ 	$(call if_want,VDPAU,--enable-vdpau,--disable-vdpau) \
+ 	$(call if_want,ONEVPL,--enable-libvpl,--disable-libvpl) \
+ 	$(call if_want,VULKAN,--enable-vulkan,--disable-vulkan) \
+-	$(call if_want,LIBPKACEBO,--enable-libpkacebo,--disable-libplacebo) \
++	$(call if_want,LIBPLACEBO,--enable-libplacebo,--disable-libplacebo) \
+ 	$(call if_want,NV, --enable-nvenc --enable-nvdec --enable-ffnvcodec) \
+ 	$(call if_ena,twolame,--enable-libtwolame) \
+ 	$(call if_ena,openjpeg,--enable-libopenjpeg) \
+-- 
+2.46.4
+

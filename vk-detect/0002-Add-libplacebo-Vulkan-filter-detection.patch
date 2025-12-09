@@ -1,0 +1,71 @@
+From dc4603d1e58ff2d1a18be9272ec87c913acbe475 Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <randrianasulu@gmail.com>
+Date: Tue, 2 Dec 2025 18:36:14 +0300
+Subject: [PATCH 2/4] Add libplacebo Vulkan filter detection
+
+---
+ cinelerra-5.1/configure.ac        | 14 +++++++++++++-
+ cinelerra-5.1/thirdparty/Makefile |  1 +
+ 2 files changed, 14 insertions(+), 1 deletion(-)
+
+diff --git a/cinelerra-5.1/configure.ac b/cinelerra-5.1/configure.ac
+index 1d35bbf0..40659e3a 100644
+--- a/cinelerra-5.1/configure.ac
++++ b/cinelerra-5.1/configure.ac
+@@ -88,6 +88,7 @@ CHECK_WITH([vaapi],[video acceleration api],[VAAPI],[yes])
+ CHECK_WITH([vdpau],[video decode+presentation api for unix],[VDPAU],[yes])
+ CHECK_WITH([onevpl],[Intel QSV api for unix],[ONEVPL],[no])
+ CHECK_WITH([vulkan],[Vulkan api],[VULKAN],[no])
++CHECK_WITH([libplacebo],[libplacebo ffmpeg Vulkan filter],[LIBPLACEBO],[no])
+ CHECK_WITH([nv],[nvenc/nvdec ffnvcodec api],[NV],[yes])
+ CHECK_WITH([cuda],[nv cuda plugins],[CUDA],[auto])
+ CHECK_WITH([clang],[use clang instead of gcc/g++],[CLANG],[no])
+@@ -707,6 +708,11 @@ if test "x$HAVE_VULKAN" != "xyes" -a "x$WANT_VULKAN" = "xyes"; then
+   AC_MSG_ERROR([requires vulkan support.])
+ fi
+ 
++CHECK_LIB([LIBPLACEBO], [placebo], [pl_tone_map_sample])
++if test "x$HAVE_LIBPLACEBO" != "xyes" -a "x$WANT_LIBPLACEBO" = "xyes"; then
++  AC_MSG_ERROR([requires libplacebo support.])
++fi
++
+ #CHECK_LIB([NVENC], [nvidia-encode], [NvEncodeAPICreateInstance])
+ 
+ #if test "x$HAVE_mjpegtools" = "xyes"; then
+@@ -1095,7 +1101,7 @@ fi
+ for v in GL XFT XXF86VM OSS ALSA FIREWIRE OGG DV DVB LADSPA \
+ 	 VIDEO4LINUX2 ESOUND PULSE PACTL OPENEXR LV2 \
+ 	 COMMERCIAL GIFLIB LIBZMPEG LIBDPX SHUTTLE SHUTTLE_USB XV \
+-	 VAAPI VDPAU ONEVPL VULKAN CUDA NV WINTV X10TV; do
++	 VAAPI VDPAU ONEVPL VULKAN LIBPLACEBO CUDA NV WINTV X10TV; do
+   eval vv="\$WANT_$v"
+   if test "x$vv" != "xno"; then
+     CFG_CFLAGS+=" -DHAVE_$v"
+@@ -1156,6 +1162,12 @@ if test "x$WANT_VULKAN" != "xno" -a "x$HAVE_VULKAN" = "xyes"; then
+ fi
+ CFG_WANTS+=" VULKAN"
+ 
++if test "x$WANT_LIBPLACEBO" != "xno" -a "x$HAVE_LIBPLACEBO" = "xyes"; then
++  FFMPEG_EXTRA_LDFLAGS+=' -lplacebo -lshaderc_shared  `pkg-config --libs libplacebo`'
++  FFMPEG_EXTRA_CFG+=' --enable-libshaderc --extra-cflags="'$(pkg-config --cflags libplacebo)'"'
++  WANT_LIBPLACEBO="yes"
++fi
++CFG_WANTS+=" LIBPLACEBO"
+ 
+ if test "x$WANT_NV" != "xno"; then
+   WANT_NV="yes"
+diff --git a/cinelerra-5.1/thirdparty/Makefile b/cinelerra-5.1/thirdparty/Makefile
+index fca72a5e..adb041be 100644
+--- a/cinelerra-5.1/thirdparty/Makefile
++++ b/cinelerra-5.1/thirdparty/Makefile
+@@ -138,6 +138,7 @@ ffmpeg.cfg_params= \
+ 	$(call if_want,VDPAU,--enable-vdpau,--disable-vdpau) \
+ 	$(call if_want,ONEVPL,--enable-libvpl,--disable-libvpl) \
+ 	$(call if_want,VULKAN,--enable-vulkan,--disable-vulkan) \
++	$(call if_want,LIBPKACEBO,--enable-libpkacebo,--disable-libplacebo) \
+ 	$(call if_want,NV, --enable-nvenc --enable-nvdec --enable-ffnvcodec) \
+ 	$(call if_ena,twolame,--enable-libtwolame) \
+ 	$(call if_ena,openjpeg,--enable-libopenjpeg) \
+-- 
+2.46.4
+

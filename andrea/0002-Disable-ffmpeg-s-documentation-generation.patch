@@ -1,0 +1,24 @@
+From 53dea515ec88f55772c061549e2f13f2542924c3 Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <randrianasulu@gmail.com>
+Date: Mon, 20 Nov 2023 22:06:49 +0300
+Subject: [PATCH 2/2] Disable ffmpeg's documentation generation
+
+---
+ cinelerra-5.1/thirdparty/Makefile | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/cinelerra-5.1/thirdparty/Makefile b/cinelerra-5.1/thirdparty/Makefile
+index 659ab3fe..8c7aaf91 100644
+--- a/cinelerra-5.1/thirdparty/Makefile
++++ b/cinelerra-5.1/thirdparty/Makefile
+@@ -132,6 +132,7 @@ fftw.cfg_params= --disable-fortran --enable-shared=no
+ ffmpeg.cfg_vars?= PKG_CONFIG_PATH="$(call bld_path,libwebp)/usr/local/lib/pkgconfig"
+ ffmpeg.cfg_params= \
+ 	--enable-pthreads --disable-avdevice --enable-gpl --disable-ffplay \
++	--disable-doc \
+ 	$(call if_want,VAAPI,--enable-vaapi,--disable-vaapi) \
+ 	$(call if_want,VDPAU,--enable-vdpau,--disable-vdpau) \
+ 	$(call if_want,NV, --enable-nvenc --enable-nvdec --enable-ffnvcodec) \
+-- 
+2.35.7
+

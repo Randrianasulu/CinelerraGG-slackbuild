@@ -1,0 +1,34 @@
+From ca9e91202c24e1a491703a7a00f701198da2a33e Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <randrianasulu@gmail.com>
+Date: Mon, 27 Nov 2023 03:14:59 +0000
+Subject: [PATCH 3/4] Better fix for freebsd 14 OpenEXR cflags pkg-config does
+ not work for some reason/
+
+---
+ cinelerra-5.1/configure.ac | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/cinelerra-5.1/configure.ac b/cinelerra-5.1/configure.ac
+index 27a2d298..6e70fb18 100644
+--- a/cinelerra-5.1/configure.ac
++++ b/cinelerra-5.1/configure.ac
+@@ -901,7 +901,7 @@ EXROStream() : Imf::OStream("mypath") {} };
+   if test "x$WANT_STATIC_BUILD" = "xno"; then
+     SHARED_openexr="$LIBS"
+     SHARED_LIBS+=" $LIBS"
+-    CFG_CFLAGS+=" -I/usr/include/OpenEXR -I/usr/local/include/OpenEXR"
++    CFG_CFLAGS+=" -I/usr/local/include/Imath -I/usr/include/OpenEXR -I/usr/local/include/OpenEXR"
+     CFG_CFLAGS+=" $(pkg-config --cflags OpenEXR)"
+     CFG_CFLAGS+=" $(pkg-config --cflags Imath)"
+   fi
+@@ -909,7 +909,6 @@ EXROStream() : Imf::OStream("mypath") {} };
+  fi
+  LIBS="$saved_LIBS"
+  CXXFLAGS="$saved_CXXFLAGS"
+- CXXFLAGS+=" $(pkg-config --cflags OpenEXR)"
+  AC_LANG_POP(C++)
+  AC_MSG_RESULT([$HAVE_OPENEXR])
+ ])
+-- 
+2.35.7
+

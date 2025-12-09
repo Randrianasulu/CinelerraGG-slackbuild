@@ -1,0 +1,25 @@
+From 47ac51ef3f5de4d07f8ddeb668f2b4467b968789 Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <andrewrandrianasulu@Andrews-MacBook-Pro.local>
+Date: Wed, 19 Jun 2024 14:53:08 +0300
+Subject: [PATCH 06/11] More fixes  for linking on macosx
+
+---
+ cinelerra-5.1/cinelerra/Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/cinelerra-5.1/cinelerra/Makefile b/cinelerra-5.1/cinelerra/Makefile
+index 093fb3ee..2e884b86 100644
+--- a/cinelerra-5.1/cinelerra/Makefile
++++ b/cinelerra-5.1/cinelerra/Makefile
+@@ -526,7 +526,7 @@ CFLAGS += -DUSE_ALPHA
+ 
+ else
+ ifeq ($(shell uname),Darwin)
+-LDFLAGS1 =  -g
++LDFLAGS1 =  -g -Wl,-arch x86_64 -Wl,-allow_sub_type_mismatches -v -liconv  -L/opt/local/libexec/ffmpeg6/lib
+ else
+ LDFLAGS1 = -Wl,-export-dynamic -g -Wl,-z,noexecstack
+ endif
+-- 
+2.13.5 (Apple Git-94)
+

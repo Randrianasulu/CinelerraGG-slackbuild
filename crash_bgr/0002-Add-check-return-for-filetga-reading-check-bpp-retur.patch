@@ -1,0 +1,26 @@
+From c444679ac7ea45862c9d6a17ce8188a8b44aaf02 Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <randrianasulu@gmail.com>
+Date: Sun, 27 Aug 2023 23:55:46 +0300
+Subject: [PATCH 2/2] Add check/return for filetga reading (check bpp, return
+ on non 24/32)
+
+---
+ cinelerra-5.1/cinelerra/filetga.C | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/cinelerra-5.1/cinelerra/filetga.C b/cinelerra-5.1/cinelerra/filetga.C
+index df9a56ee..0bff2e18 100644
+--- a/cinelerra-5.1/cinelerra/filetga.C
++++ b/cinelerra-5.1/cinelerra/filetga.C
+@@ -337,6 +337,8 @@ void FileTGA::read_tga(Asset *asset, VFrame *frame, VFrame *data, VFrame* &temp)
+ 		case 24:
+ 			source_cmodel = BC_RGB888;
+ 			break;
++		default:
++			return;
+ 	}
+ 
+ // Read image
+-- 
+2.35.7
+

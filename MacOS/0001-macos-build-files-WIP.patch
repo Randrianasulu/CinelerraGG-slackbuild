@@ -1,0 +1,106 @@
+From a15c67f0219822c4951a3c4ce2d1c0599dbe6edb Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <andrewrandrianasulu@Andrews-MacBook-Pro.local>
+Date: Mon, 10 Jun 2024 22:08:22 +0300
+Subject: [PATCH 01/11] macos build files WIP
+
+---
+ cinelerra-5.1/blds/macos.bld                   | 20 +++++++++
+ cinelerra-5.1/guicast/pthread_spin_lock_shim.h | 59 ++++++++++++++++++++++++++
+ 2 files changed, 79 insertions(+)
+ create mode 100755 cinelerra-5.1/blds/macos.bld
+ create mode 100644 cinelerra-5.1/guicast/pthread_spin_lock_shim.h
+
+diff --git a/cinelerra-5.1/blds/macos.bld b/cinelerra-5.1/blds/macos.bld
+new file mode 100755
+index 00000000..408fbe1f
+--- /dev/null
++++ b/cinelerra-5.1/blds/macos.bld
+@@ -0,0 +1,20 @@
++#!/bin/bash
++#use: patch -p2 < bsd.patch
++export CONFIG_SHELL=/bin/bash
++export MAKE=gmake
++#export C_INCLUDE_PATH=-I/opt/local/include
++export CFLAGS="-I/opt/local/libexec/ffmpeg6/include -I/opt/local/include -I/opt/X11/include"
++export CPLUS_INCLUDE_PATH=/opt/local/include:/usr/local/include/OpenEXR:/usr/local/include/Imath
++export LIBRARY_PATH=/usr/local/lib:-I/opt/local/include
++alias make=gmake
++( ./autogen.sh
++  BSD=1 CC=clang CXX=clang++ CFLAGS="-g -O2 " \
++  ./configure --with-single-user \
++    --disable-static-build --without-libzmpeg --disable-lame --disable-twolame \
++    --without-oss --without-alsa --without-firewire --without-dv --without-dvb \
++    --without-video4linux2 --without-xxf86vm --without-ladspa-build \
++    --without-commercial --without-thirdparty \
++    --without-shuttle --without-libdpx --without-vdpau --without-vaapi --without-shuttle-usb \
++    --without-x10tv --without-filegif --without-lv2 --with-jobs=4 --without-wintv --with-clang
++   gmake
++   gmake install ) 2>&1 | tee log
+diff --git a/cinelerra-5.1/guicast/pthread_spin_lock_shim.h b/cinelerra-5.1/guicast/pthread_spin_lock_shim.h
+new file mode 100644
+index 00000000..f9372e0c
+--- /dev/null
++++ b/cinelerra-5.1/guicast/pthread_spin_lock_shim.h
+@@ -0,0 +1,59 @@
++/*
++
++Required imports:
++#include <errno.h>
++
++*/
++
++#include <errno.h>
++#include <sched.h>
++
++#ifndef PTHREAD_SPIN_LOCK_SHIM
++#define PTHREAD_SPIN_LOCK_SHIM
++
++typedef int pthread_spinlock_t;
++
++#ifndef PTHREAD_PROCESS_SHARED
++# define PTHREAD_PROCESS_SHARED 1
++#endif
++#ifndef PTHREAD_PROCESS_PRIVATE
++# define PTHREAD_PROCESS_PRIVATE 2
++#endif
++
++static inline int pthread_spin_init(pthread_spinlock_t *lock, int pshared) {
++	__asm__ __volatile__ ("" ::: "memory");
++	*lock = 0;
++	return 0;
++}
++
++static inline int pthread_spin_destroy(pthread_spinlock_t *lock) {
++	return 0;
++}
++
++static inline int pthread_spin_lock(pthread_spinlock_t *lock) {
++	while (1) {
++		int i;
++		for (i=0; i < 10000; i++) {
++			if (__sync_bool_compare_and_swap(lock, 0, 1)) {
++				return 0;
++			}
++		}
++		sched_yield();
++	}
++}
++
++static inline int pthread_spin_trylock(pthread_spinlock_t *lock) {
++	if (__sync_bool_compare_and_swap(lock, 0, 1)) {
++		return 0;
++	}
++	return EBUSY;
++}
++
++static inline int pthread_spin_unlock(pthread_spinlock_t *lock) {
++	__asm__ __volatile__ ("" ::: "memory");
++	*lock = 0;
++	return 0;
++}
++
++#endif
++
+-- 
+2.13.5 (Apple Git-94)
+

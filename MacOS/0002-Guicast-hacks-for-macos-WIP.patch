@@ -1,0 +1,207 @@
+From 4c7d7609d531b681c1a272978e8d5b880597f1db Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <andrewrandrianasulu@Andrews-MacBook-Pro.local>
+Date: Mon, 10 Jun 2024 22:10:47 +0300
+Subject: [PATCH 02/11] Guicast hacks for macos WIP
+
+---
+ cinelerra-5.1/guicast/Makefile     |  6 ++++-
+ cinelerra-5.1/guicast/bchash.C     |  4 +++
+ cinelerra-5.1/guicast/bchash.h     |  1 +
+ cinelerra-5.1/guicast/bcsignals.C  |  3 +++
+ cinelerra-5.1/guicast/bcsignals.h  |  1 +
+ cinelerra-5.1/guicast/bctrace.h    |  1 +
+ cinelerra-5.1/guicast/filesystem.C |  3 +++
+ cinelerra-5.1/guicast/fmemopen.h   | 52 ++++++++++++++++++++++++++++++++++++++
+ cinelerra-5.1/guicast/thread.C     |  4 +++
+ 9 files changed, 74 insertions(+), 1 deletion(-)
+ create mode 100644 cinelerra-5.1/guicast/fmemopen.h
+
+diff --git a/cinelerra-5.1/guicast/Makefile b/cinelerra-5.1/guicast/Makefile
+index 49bd154c..d7d18f6a 100644
+--- a/cinelerra-5.1/guicast/Makefile
++++ b/cinelerra-5.1/guicast/Makefile
+@@ -10,7 +10,11 @@ BOOTSTRAPFLAGS := -DBOOTSTRAP="\"objcopy -B i386 -I binary -O elf32-i386\""
+ endif
+ 
+ ifeq ($(OBJDIR), x86_64)
+-BOOTSTRAPFLAGS := -DBOOTSTRAP="\"objcopy -B i386 -I binary -O elf64-x86-64\""
++ifeq ($(shell uname), Darwin)
++BOOTSTRAPFLAGS := -DBOOTSTRAP="\"gobjcopy -B i386 -I binary -O mach-o-x86-64\""
++else
++BOOTSTRAPFLAGS := -DBOOTSTRAP="\"objcopy -B i386 -I binary -O elf64--x86-64\""
++endif
+ endif
+ ifeq ($(OBJDIR), amd64)
+ BOOTSTRAPFLAGS := -DBOOTSTRAP="\"objcopy -B i386 -I binary -O elf64-x86-64\""
+diff --git a/cinelerra-5.1/guicast/bchash.C b/cinelerra-5.1/guicast/bchash.C
+index b38459ab..341096be 100644
+--- a/cinelerra-5.1/guicast/bchash.C
++++ b/cinelerra-5.1/guicast/bchash.C
+@@ -169,6 +169,7 @@ int BC_Hash::save()
+ 	return ret;
+ }
+ 
++#if !defined (__APPLE__)
+ int BC_Hash::load_string(const char *bfr)
+ {
+ 	FILE *fp = fmemopen((void*)bfr, strlen(bfr), "r");
+@@ -180,6 +181,7 @@ int BC_Hash::load_string(const char *bfr)
+ 
+ int BC_Hash::save_string(char *&bfr)
+ {
++
+ 	size_t bsz = 0;
+ 	FILE *fp = open_memstream(&bfr, &bsz);
+ 	if( !fp ) return 1;
+@@ -188,6 +190,8 @@ int BC_Hash::save_string(char *&bfr)
+ 	return ret;
+ }
+ 
++#endif
++
+ 
+ 
+ int32_t BC_Hash::get(const char *name, int32_t default_)
+diff --git a/cinelerra-5.1/guicast/bchash.h b/cinelerra-5.1/guicast/bchash.h
+index 36c4a4a3..d3989088 100644
+--- a/cinelerra-5.1/guicast/bchash.h
++++ b/cinelerra-5.1/guicast/bchash.h
+@@ -30,6 +30,7 @@
+ #include "bcwindowbase.inc"
+ #include "bctextbox.inc"
+ #include "units.h"
++//#include "fmemopen.h"
+ 
+ 
+ class BC_Hash
+diff --git a/cinelerra-5.1/guicast/bcsignals.C b/cinelerra-5.1/guicast/bcsignals.C
+index 858ba409..c596d022 100644
+--- a/cinelerra-5.1/guicast/bcsignals.C
++++ b/cinelerra-5.1/guicast/bcsignals.C
+@@ -45,6 +45,9 @@
+ #endif
+ #include <sys/types.h>
+ 
++#define dirent64 dirent
++#define readdir64 readdir
++
+ BC_Signals* BC_Signals::global_signals = 0;
+ static int signal_done = 0;
+ 
+diff --git a/cinelerra-5.1/guicast/bcsignals.h b/cinelerra-5.1/guicast/bcsignals.h
+index 42fbebeb..ab4e0f9a 100644
+--- a/cinelerra-5.1/guicast/bcsignals.h
++++ b/cinelerra-5.1/guicast/bcsignals.h
+@@ -26,6 +26,7 @@
+ 
+ #include "arraylist.h"
+ #include "linklist.h"
++#include "pthread_spin_lock_shim.h"
+ #include "bcsignals.inc"
+ #include "bctrace.h"
+ #include <stdio.h>
+diff --git a/cinelerra-5.1/guicast/bctrace.h b/cinelerra-5.1/guicast/bctrace.h
+index b2c4c359..4e47be07 100644
+--- a/cinelerra-5.1/guicast/bctrace.h
++++ b/cinelerra-5.1/guicast/bctrace.h
+@@ -24,6 +24,7 @@
+ 
+ #include "arraylist.h"
+ #include "linklist.h"
++#include "pthread_spin_lock_shim.h"
+ #include "bctrace.inc"
+ #include "bcwindowbase.inc"
+ #include "cstrdup.h"
+diff --git a/cinelerra-5.1/guicast/filesystem.C b/cinelerra-5.1/guicast/filesystem.C
+index b1ace6fd..7c91d07e 100644
+--- a/cinelerra-5.1/guicast/filesystem.C
++++ b/cinelerra-5.1/guicast/filesystem.C
+@@ -36,6 +36,9 @@
+ 
+ #include "filesystem.h"
+ 
++#define dirent64 dirent
++#define readdir64 readdir
++
+ FileItem::FileItem()
+ {
+ 	path = 0;
+diff --git a/cinelerra-5.1/guicast/fmemopen.h b/cinelerra-5.1/guicast/fmemopen.h
+new file mode 100644
+index 00000000..ef52a26e
+--- /dev/null
++++ b/cinelerra-5.1/guicast/fmemopen.h
+@@ -0,0 +1,52 @@
++//
++// Copyright 2011-2014 NimbusKit
++// Originally ported from https://github.com/ingenuitas/python-tesseract/blob/master/fmemopen.c
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//    http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++//
++
++#ifndef FMEMOPEN_H_
++#define FMEMOPEN_H_
++
++#if defined __cplusplus
++extern "C" {
++#endif
++
++/**
++ * A BSD port of the fmemopen Linux method using funopen.
++ *
++ * man docs for fmemopen:
++ * http://linux.die.net/man/3/fmemopen
++ *
++ * man docs for funopen:
++ * https://developer.apple.com/library/mac/#documentation/Darwin/Reference/ManPages/man3/funopen.3.html
++ *
++ * This method is ported from ingenuitas' python-tesseract project.
++ *
++ * You must call fclose on the returned file pointer or memory will be leaked.
++ *
++ * @param buf The data that will be used to back the FILE* methods. Must be at least
++ *            @c size bytes.
++ * @param size The size of the @c buf data.
++ * @param mode The permitted stream operation modes.
++ * @return A pointer that can be used in the fread/fwrite/fseek/fclose family of methods.
++ *         If a failure occurred NULL will be returned.
++ * @ingroup NimbusMemoryMappping
++ */
++FILE *fmemopen(void *buf, size_t size, const char *mode);
++
++#ifdef __cplusplus
++}
++#endif
++
++#endif // #ifndef FMEMOPEN_H_
+diff --git a/cinelerra-5.1/guicast/thread.C b/cinelerra-5.1/guicast/thread.C
+index edac1451..ae55aff4 100644
+--- a/cinelerra-5.1/guicast/thread.C
++++ b/cinelerra-5.1/guicast/thread.C
+@@ -238,9 +238,13 @@ int Thread::get_synchronous()
+ 
+ bool Thread::calculate_realtime()
+ {
++#if !defined (__APPLE__)
+ //printf("Thread::calculate_realtime %d %d\n", getpid(), sched_getscheduler(0));
+ 	return (sched_getscheduler(0) == SCHED_RR ||
+ 		sched_getscheduler(0) == SCHED_FIFO);
++#endif
++return 0;
++
+ }
+ 
+ int Thread::get_realtime()
+-- 
+2.13.5 (Apple Git-94)
+

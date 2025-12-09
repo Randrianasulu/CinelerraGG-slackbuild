@@ -1,0 +1,87 @@
+From 2b169f2ce9f4e00f2bbcf3027cfbde9585eebfb0 Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <andrewrandrianasulu@Andrews-MacBook-Pro.local>
+Date: Wed, 19 Jun 2024 17:58:52 +0300
+Subject: [PATCH 09/11] Hack: bchash.C for macosx
+
+---
+ cinelerra-5.1/guicast/bchash.C | 62 ++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 62 insertions(+)
+
+diff --git a/cinelerra-5.1/guicast/bchash.C b/cinelerra-5.1/guicast/bchash.C
+index 341096be..8499c3fd 100644
+--- a/cinelerra-5.1/guicast/bchash.C
++++ b/cinelerra-5.1/guicast/bchash.C
+@@ -189,8 +189,70 @@ int BC_Hash::save_string(char *&bfr)
+ 	fclose(fp);
+ 	return ret;
+ }
++#else
+ 
++#define BUFFER_LENGTH 4096
++int  BC_Hash::save_string(char* &string)
++{
++	int alen;
++	char *bp;
++
++        alen = BUFFER_LENGTH;
++        bp = string = new char[alen];
++
++        for(int i = 0; i < total; i++)
++        {
++                if(bp - string > alen - strlen(names[i]) - strlen(values[i]) - 5)
++                {
++                        alen += BUFFER_LENGTH;
++                        char *p = new char[alen];
++                        strcpy(p, string);
++                        bp = &p[bp - string];
++                        delete [] string;
++                        string = p;
++                }
++                bp += sprintf(bp, "%s %s\n", names[i], values[i]);
++        }
++        return 1;
++}
++
++int BC_Hash::load_string(const char *string)
++{
++	char *p, *q, *r;
++#if 0
++        r = string;
++        while(*r)
++        {
++                for(q = p = r; *p; p++)
++                {
++                        if(*p == ' ')
++                        {
++                                *p++ = 0;
++                                q = p;
++                                break;
++                        }
++                }
++                if(q == r)
++                        return 0;
++
++                for(; *p; p++)
++                {
++                        if(*p == '\n')
++                        {
++                                *p = 0;
++                                break;
++                        }
++                }
++                //cache->update(r, q);
++                r = ++p;
++        }
+ #endif
++        return 1;
++}
++
++#endif
++
++
+ 
+ 
+ 
+-- 
+2.13.5 (Apple Git-94)
+

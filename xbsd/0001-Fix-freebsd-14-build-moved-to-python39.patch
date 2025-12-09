@@ -1,0 +1,25 @@
+From 59c7c43e2ec1951bda03b58be53bdfc774826b3a Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <randrianasulu@gmail.com>
+Date: Sun, 26 Nov 2023 17:27:42 +0000
+Subject: [PATCH 1/4] Fix freebsd 14 build, moved to python39
+
+---
+ cinelerra-5.1/guicast/Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/cinelerra-5.1/guicast/Makefile b/cinelerra-5.1/guicast/Makefile
+index 423ba100..49bd154c 100644
+--- a/cinelerra-5.1/guicast/Makefile
++++ b/cinelerra-5.1/guicast/Makefile
+@@ -130,7 +130,7 @@ python = $(shell which python)
+ endif
+ 
+ ifeq ($(python),)
+-python += $(shell which python3.8)
++python += $(shell which python3.9)
+ endif
+ 
+ 
+-- 
+2.35.7
+

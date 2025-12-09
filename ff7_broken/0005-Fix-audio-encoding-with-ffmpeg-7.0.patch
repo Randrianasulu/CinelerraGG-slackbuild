@@ -1,0 +1,32 @@
+From fb56a47b515fc487125d7503767ef4e71a9e017e Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <randrianasulu@gmail.com>
+Date: Sun, 7 Apr 2024 17:26:38 +0300
+Subject: [PATCH 5/6] Fix audio encoding with ffmpeg 7.0
+
+---
+ cinelerra-5.1/cinelerra/ffmpeg.C | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/cinelerra-5.1/cinelerra/ffmpeg.C b/cinelerra-5.1/cinelerra/ffmpeg.C
+index e0e9bf62..2fa3d85d 100644
+--- a/cinelerra-5.1/cinelerra/ffmpeg.C
++++ b/cinelerra-5.1/cinelerra/ffmpeg.C
+@@ -993,6 +993,7 @@ int FFAudioStream::init_frame(AVFrame *frame)
+ 	frame->format = avctx->sample_fmt;
+ #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(61,3,100)
+ 	frame->ch_layout.u.mask = avctx->ch_layout.u.mask;
++	av_channel_layout_copy(&frame->ch_layout, &avctx->ch_layout);
+ #else
+ 	frame->channel_layout = avctx->channel_layout;
+ #endif
+@@ -2961,6 +2962,7 @@ int FFMPEG::open_encoder(const char *type, const char *spec)
+ 			AVChannelLayout ch_layout;
+ 			av_channel_layout_default(&ch_layout, ctx->ch_layout.nb_channels);
+ 			ctx->ch_layout.u.mask =  ch_layout.u.mask;
++			av_channel_layout_copy(&ctx->ch_layout, &ch_layout);
+ 			ctx->sample_rate = check_sample_rate(codec, asset->sample_rate);
+ 			if( !ctx->sample_rate ) {
+ 				eprintf(_("check_sample_rate failed %s\n"), filename);
+-- 
+2.35.8
+

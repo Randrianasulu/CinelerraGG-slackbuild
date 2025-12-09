@@ -1,0 +1,11 @@
+--- ./source/CMakeLists.txt.orig	2021-07-23 19:16:11.388035683 +0300
++++ ./source/CMakeLists.txt	2021-07-23 19:17:30.972035687 +0300
+@@ -557,7 +557,7 @@
+             list(APPEND ASM_OBJS ${ASM}.${SUFFIX})
+             add_custom_command(
+                 OUTPUT ${ASM}.${SUFFIX}
+-                COMMAND ${NASM_EXECUTABLE} ARGS ${NASM_FLAGS} ${ASM_SRC} -o ${ASM}.${SUFFIX}
++                COMMAND ${NASM_EXECUTABLE} ARGS -w-macro-params-legacy ${NASM_FLAGS} ${ASM_SRC} -o ${ASM}.${SUFFIX}
+                 DEPENDS ${ASM_SRC})
+         endforeach()
+     endif()

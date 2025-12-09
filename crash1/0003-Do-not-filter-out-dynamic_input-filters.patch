@@ -1,0 +1,25 @@
+From 32b990279fd05e39738ed6b252e278f2b7507b4d Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <randrianasulu@gmail.com>
+Date: Sat, 10 May 2025 15:07:32 +0300
+Subject: [PATCH 3/4] Do not filter out dynamic_input filters
+
+---
+ cinelerra-5.1/cinelerra/pluginfclient.C | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/cinelerra-5.1/cinelerra/pluginfclient.C b/cinelerra-5.1/cinelerra/pluginfclient.C
+index b8694b12..764ba121 100644
+--- a/cinelerra-5.1/cinelerra/pluginfclient.C
++++ b/cinelerra-5.1/cinelerra/pluginfclient.C
+@@ -1255,7 +1255,7 @@ int PluginFFilter::init(const char *name, PluginFClientConfig *conf)
+ 	PluginFLogLevel errs(AV_LOG_ERROR);
+ 	this->filter = avfilter_get_by_name(name);
+ 	if( !this->filter ) return AVERROR(ENOENT);
+-	int flag_mask = AVFILTER_FLAG_DYNAMIC_INPUTS | AVFILTER_FLAG_DYNAMIC_OUTPUTS;
++	int flag_mask = /* AVFILTER_FLAG_DYNAMIC_INPUTS |*/ AVFILTER_FLAG_DYNAMIC_OUTPUTS;
+ 	if( filter->flags & flag_mask ) return AVERROR(EPERM);
+ 	if( !this->is_audio() && !this->is_video() ) return AVERROR(EIO);
+ 	this->graph = avfilter_graph_alloc();
+-- 
+2.46.3
+

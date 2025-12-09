@@ -1,0 +1,72 @@
+From 9b188544b8979b0bcf2d4c97066fa30c70cadda4 Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <randrianasulu@gmail.com>
+Date: Sun, 27 Aug 2023 16:39:49 +0300
+Subject: [PATCH 2/4] Rework libav version string print a bit
+
+---
+ cinelerra-5.1/cinelerra/aboutprefs.C  | 6 ++++--
+ cinelerra-5.1/cinelerra/main.C        | 3 +++
+ cinelerra-5.1/cinelerra/versioninfo.h | 2 ++
+ 3 files changed, 9 insertions(+), 2 deletions(-)
+
+diff --git a/cinelerra-5.1/cinelerra/aboutprefs.C b/cinelerra-5.1/cinelerra/aboutprefs.C
+index 8242eee2..a8de327b 100644
+--- a/cinelerra-5.1/cinelerra/aboutprefs.C
++++ b/cinelerra-5.1/cinelerra/aboutprefs.C
+@@ -28,13 +28,12 @@
+ #include "vframe.h"
+ #include "versioninfo.h"
+ 
+-#include <libavcodec/avcodec.h>
+ 
+ #ifndef COMPILEDATE
+ #define COMPILEDATE "built: " __DATE__ " " __TIME__
+ #endif
+ const char *AboutPrefs::build_timestamp = COMPILEDATE;
+-const char *AboutPrefs::ffmpeg_version  = " Libav version: " LIBAVCODEC_IDENT;
++const char *AboutPrefs::ffmpeg_version  = CINELERRA_LIBAV_VERSION;
+ 
+ AboutPrefs::AboutPrefs(MWindow *mwindow, PreferencesWindow *pwindow)
+  : PreferencesDialog(mwindow, pwindow)
+@@ -129,8 +128,11 @@ void AboutPrefs::create_objects()
+ 
+ 	draw_text(x, y, build_timestamp);
+ 	x += get_text_width(MEDIUMFONT, build_timestamp);
++	draw_text(x,y, " ");
++	x += get_text_width(MEDIUMFONT, " ");
+ 	draw_text(x,y, ffmpeg_version);
+ 	x -= get_text_width(MEDIUMFONT, build_timestamp);
++	x -= get_text_width(MEDIUMFONT, " ");
+ #if defined(REPOMAINTXT)
+ 	y += get_text_height(MEDIUMFONT, build_timestamp);
+ 	draw_text(x, y, REPOMAINTXT);
+diff --git a/cinelerra-5.1/cinelerra/main.C b/cinelerra-5.1/cinelerra/main.C
+index ed403d9e..cd26a973 100644
+--- a/cinelerra-5.1/cinelerra/main.C
++++ b/cinelerra-5.1/cinelerra/main.C
+@@ -312,6 +312,9 @@ int main(int argc, char *argv[])
+ 		fprintf(stderr, "%s %s - %s\n%s",
+ 			PROGRAM_NAME,CINELERRA_VERSION, AboutPrefs::build_timestamp,
+ 			REPOMAINTXT COPYRIGHTTEXT1 COPYRIGHTTEXT2);
++		fprintf(stderr,"\n");
++		fprintf(stderr, "%s \n", AboutPrefs::ffmpeg_version);
++		fprintf(stderr,"\n");
+ 		fprintf(stderr, "%s is free software, covered by the GNU General Public License,\n"
+ 			"and you are welcome to change it and/or distribute copies of it under\n"
+ 			"certain conditions. There is absolutely no warranty for %s.\n\n",
+diff --git a/cinelerra-5.1/cinelerra/versioninfo.h b/cinelerra-5.1/cinelerra/versioninfo.h
+index d6e20b7c..0281b8fc 100644
+--- a/cinelerra-5.1/cinelerra/versioninfo.h
++++ b/cinelerra-5.1/cinelerra/versioninfo.h
+@@ -1,6 +1,8 @@
+ #ifndef __VERSIONINFO_H__
+ #define __VERSIONINFO_H__
++#include <libavcodec/avcodec.h>
+ 
++#define CINELERRA_LIBAV_VERSION "Libav version: " LIBAVCODEC_IDENT;
+ #define CINELERRA_VERSION "Infinity"
+ #define REPOMAINTXT "git://git.cinelerra-gg.org/goodguy/cinelerra.git\n"
+ #define COPYRIGHT_DATE "2019"
+-- 
+2.42.0
+

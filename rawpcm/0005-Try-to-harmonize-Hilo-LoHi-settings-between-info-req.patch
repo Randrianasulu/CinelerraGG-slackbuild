@@ -1,0 +1,48 @@
+From a4a596e116df6f3199641e3f6f45ccb61e447791 Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <randrianasulu@gmail.com>
+Date: Sat, 20 Jan 2024 15:15:39 +0300
+Subject: [PATCH 5/5] Try to harmonize Hilo/LoHi settings between info,
+ requester and encoder
+
+---
+ cinelerra-5.1/cinelerra/assetedit.C  | 6 +++---
+ cinelerra-5.1/cinelerra/fileformat.C | 4 ++--
+ 2 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/cinelerra-5.1/cinelerra/assetedit.C b/cinelerra-5.1/cinelerra/assetedit.C
+index 9bdf847f..18dde8ff 100644
+--- a/cinelerra-5.1/cinelerra/assetedit.C
++++ b/cinelerra-5.1/cinelerra/assetedit.C
+@@ -412,11 +412,11 @@ void AssetEditWindow::create_objects()
+ 			{
+ 				x = x2;
+ 
+-				add_subwindow(lohi = new AssetEditByteOrderLOHI(this,
+-					asset->byte_order, x, y));
+-				x += xS(70);
+ 				add_subwindow(hilo = new AssetEditByteOrderHILO(this,
+ 					!asset->byte_order, x, y));
++				x += xS(70);
++				add_subwindow(lohi = new AssetEditByteOrderLOHI(this,
++					asset->byte_order, x, y));
+ 				y += vmargin;
+ 			}
+ 			else {
+diff --git a/cinelerra-5.1/cinelerra/fileformat.C b/cinelerra-5.1/cinelerra/fileformat.C
+index c87edf2c..a5cbbe01 100644
+--- a/cinelerra-5.1/cinelerra/fileformat.C
++++ b/cinelerra-5.1/cinelerra/fileformat.C
+@@ -101,8 +101,8 @@ void FileFormat::create_objects_(char *string2)
+ 
+ //printf("FileFormat::create_objects_ 1 %d\n", asset->byte_order);
+ 	add_subwindow(new BC_Title(x, y, _("Byte order:")));
+-	add_subwindow(lohi = new FileFormatByteOrderLOHI(x2, y, this, asset->byte_order));
+-	add_subwindow(hilo = new FileFormatByteOrderHILO(x2 + 70, y, this, !asset->byte_order));
++	add_subwindow(hilo = new FileFormatByteOrderHILO(x2, y, this, !asset->byte_order));
++	add_subwindow(lohi = new FileFormatByteOrderLOHI(x2 + 70, y, this, asset->byte_order));
+ 
+ 	y += ys30;
+ 	add_subwindow(signed_button = new FileFormatSigned(x, y, this, asset->signed_));
+-- 
+2.35.8
+

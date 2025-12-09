@@ -1,0 +1,24 @@
+From bf3749508e77af890f524b9052fbc6689f4afed1 Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <randrianasulu@gmail.com>
+Date: Sun, 26 Nov 2023 17:28:51 +0000
+Subject: [PATCH 2/3] Fix OpenEXR build on freebsd 14
+
+---
+ cinelerra-5.1/configure.ac | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/cinelerra-5.1/configure.ac b/cinelerra-5.1/configure.ac
+index 4814f8b8..27a2d298 100644
+--- a/cinelerra-5.1/configure.ac
++++ b/cinelerra-5.1/configure.ac
+@@ -909,6 +909,7 @@ EXROStream() : Imf::OStream("mypath") {} };
+  fi
+  LIBS="$saved_LIBS"
+  CXXFLAGS="$saved_CXXFLAGS"
++ CXXFLAGS+=" $(pkg-config --cflags OpenEXR)"
+  AC_LANG_POP(C++)
+  AC_MSG_RESULT([$HAVE_OPENEXR])
+ ])
+-- 
+2.42.0
+

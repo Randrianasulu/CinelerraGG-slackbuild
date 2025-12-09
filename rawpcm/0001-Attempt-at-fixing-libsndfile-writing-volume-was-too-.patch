@@ -1,0 +1,83 @@
+From fa71df79b1afb80540fb6d814a6b8f1fb48f4440 Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <randrianasulu@gmail.com>
+Date: Fri, 19 Jan 2024 18:28:03 +0300
+Subject: [PATCH 1/5] Attempt at fixing libsndfile writing - volume was too
+ high!
+
+---
+ cinelerra-5.1/cinelerra/filesndfile.C | 12 +++++++-----
+ 1 file changed, 7 insertions(+), 5 deletions(-)
+
+diff --git a/cinelerra-5.1/cinelerra/filesndfile.C b/cinelerra-5.1/cinelerra/filesndfile.C
+index a215080d..f4b15386 100644
+--- a/cinelerra-5.1/cinelerra/filesndfile.C
++++ b/cinelerra-5.1/cinelerra/filesndfile.C
+@@ -88,7 +88,6 @@ void FileSndFile::asset_to_format()
+ 		case BITSLINEAR16:
+ // Only signed is supported
+ 			fd_config.format |= SF_FORMAT_PCM_16;
+-
+ 			if(asset->byte_order || asset->format == FILE_WAV)
+ 				fd_config.format |= SF_ENDIAN_LITTLE;
+ 			else
+@@ -97,7 +96,6 @@ void FileSndFile::asset_to_format()
+ 
+ 		case BITSLINEAR24:
+ 			fd_config.format |= SF_FORMAT_PCM_24;
+-
+ 			if(asset->byte_order || asset->format == FILE_WAV)
+ 				fd_config.format |= SF_ENDIAN_LITTLE;
+ 			else
+@@ -128,12 +126,14 @@ void FileSndFile::asset_to_format()
+ 				fd_config.format |= SF_FORMAT_IMA_ADPCM;
+ 			fd_config.format |= SF_FORMAT_PCM_16;
+ 			break;
++		default:
++			printf("Unknown bits! \n");
+ 	}
+ 
+ 	fd_config.seekable = 1;
+ 	fd_config.samplerate = asset->sample_rate;
+ 	fd_config.channels  = asset->channels;
+-//printf("FileSndFile::asset_to_format %x %d %d\n", fd_config.format, fd_config.pcmbitwidth, fd_config.channels);
++//printf("FileSndFile::asset_to_format Format: %x channels: %d\n", fd_config.format, fd_config.channels);
+ }
+ 
+ void FileSndFile::format_to_asset()
+@@ -211,7 +211,7 @@ void FileSndFile::format_to_asset()
+ 	asset->audio_length = fd_config.frames;
+ 	if(!asset->sample_rate)
+ 		asset->sample_rate = fd_config.samplerate;
+-//printf("FileSndFile::format_to_asset %x %d %d %x\n", fd_config.format & SF_FORMAT_TYPEMASK, fd_config.pcmbitwidth, fd_config.samples, fd_config.format & SF_FORMAT_SUBMASK);
++//printf("FileSndFile::format_to_asset  %x, %d %x\n", fd_config.format & SF_FORMAT_TYPEMASK, fd_config.samples, fd_config.format & SF_FORMAT_SUBMASK);
+ //asset->dump();
+ }
+ 
+@@ -346,7 +346,7 @@ int FileSndFile::write_samples(double **buffer, int64_t len)
+ //if(sample > 1.0 || sample < -1.0) printf("FileSndFile::write_samples %f\n", sample);
+ //printf("FileSndFile::write_samples %d %d\n", asset->bits, BITSFLOAT);
+ 			if(asset->bits != BITSFLOAT) CLAMP(sample, -1.0, (32767.0 / 32768.0));
+-			temp_double[j * asset->channels + i] = sample;
++			temp_double[j * asset->channels + i] = sample/1024;
+ 		}
+ 	}
+ 
+@@ -442,6 +442,7 @@ SndFileHILO::SndFileHILO(SndFileConfig *gui, int x, int y)
+  : BC_Radial(x, y, gui->asset->byte_order == 0, _("Hi Lo"))
+ {
+ 	this->gui = gui;
++	set_tooltip("Little Endian \n");
+ }
+ int SndFileHILO::handle_event()
+ {
+@@ -457,6 +458,7 @@ SndFileLOHI::SndFileLOHI(SndFileConfig *gui, int x, int y)
+  : BC_Radial(x, y, gui->asset->byte_order == 1, _("Lo Hi"))
+ {
+ 	this->gui = gui;
++	set_tooltip("Big Endian \n");
+ }
+ int SndFileLOHI::handle_event()
+ {
+-- 
+2.35.8
+

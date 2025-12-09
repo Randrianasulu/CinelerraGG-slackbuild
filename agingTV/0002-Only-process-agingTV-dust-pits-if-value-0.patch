@@ -1,0 +1,31 @@
+From 49a6d85161ed3d26cb0b56986e393768d601d76e Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <randrianasulu@gmail.com>
+Date: Sun, 21 Apr 2024 11:46:39 +0300
+Subject: [PATCH 2/2] Only process agingTV dust/pits if value > 0
+
+---
+ cinelerra-5.1/plugins/aging/aging.C | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/cinelerra-5.1/plugins/aging/aging.C b/cinelerra-5.1/plugins/aging/aging.C
+index 5517b44d..41d30d75 100644
+--- a/cinelerra-5.1/plugins/aging/aging.C
++++ b/cinelerra-5.1/plugins/aging/aging.C
+@@ -581,12 +581,12 @@ void AgingClient::process_package(LoadPackage *package)
+ 			plugin->input_ptr->get_color_model(),
+ 			plugin->input_ptr->get_w(),
+ 			local_package->row2 - local_package->row1);
+-	if( plugin->config.pits )
++	if( plugin->config.pits && plugin->config.pits_interval > 0 )
+ 		pits(output_rows,
+ 			plugin->input_ptr->get_color_model(),
+ 			plugin->input_ptr->get_w(),
+ 			local_package->row2 - local_package->row1);
+-	if( plugin->config.dust )
++	if( plugin->config.dust && plugin->config.dust_interval > 0 )
+ 		dusts(output_rows,
+ 			plugin->input_ptr->get_color_model(),
+ 			plugin->input_ptr->get_w(),
+-- 
+2.35.8
+

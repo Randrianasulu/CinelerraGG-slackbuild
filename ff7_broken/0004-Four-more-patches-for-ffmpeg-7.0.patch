@@ -1,0 +1,166 @@
+From a914608efedbacf105c7c33caef9dff0e0b6c2ec Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <randrianasulu@gmail.com>
+Date: Sun, 7 Apr 2024 16:47:40 +0300
+Subject: [PATCH 4/6] Four more patches for ffmpeg 7.0
+
+---
+ .../thirdparty/src/ffmpeg-7.0.patchB          | 22 +++++++++
+ .../thirdparty/src/ffmpeg-7.0.patchC          | 41 ++++++++++++++++
+ .../thirdparty/src/ffmpeg-7.0.patchZ1         | 49 +++++++++++++++++++
+ .../thirdparty/src/ffmpeg-7.0.patchZ2         | 11 +++++
+ 4 files changed, 123 insertions(+)
+ create mode 100644 cinelerra-5.1/thirdparty/src/ffmpeg-7.0.patchB
+ create mode 100644 cinelerra-5.1/thirdparty/src/ffmpeg-7.0.patchC
+ create mode 100644 cinelerra-5.1/thirdparty/src/ffmpeg-7.0.patchZ1
+ create mode 100644 cinelerra-5.1/thirdparty/src/ffmpeg-7.0.patchZ2
+
+diff --git a/cinelerra-5.1/thirdparty/src/ffmpeg-7.0.patchB b/cinelerra-5.1/thirdparty/src/ffmpeg-7.0.patchB
+new file mode 100644
+index 00000000..89e99896
+--- /dev/null
++++ b/cinelerra-5.1/thirdparty/src/ffmpeg-7.0.patchB
+@@ -0,0 +1,22 @@
++--- a/libavutil/hwcontext_vdpau.c
+++++ b/libavutil/hwcontext_vdpau.c
++@@ -47,6 +47,11 @@
++     { 0,                     AV_PIX_FMT_NONE,   },
++ };
++ 
+++static const VDPAUPixFmtMap pix_fmts_420j[] = {
+++    { VDP_YCBCR_FORMAT_YV12, AV_PIX_FMT_YUVJ420P },
+++    { 0,                     AV_PIX_FMT_NONE,   },
+++};
+++
++ static const VDPAUPixFmtMap pix_fmts_422[] = {
++     { VDP_YCBCR_FORMAT_NV12, AV_PIX_FMT_NV16    },
++     { VDP_YCBCR_FORMAT_YV12, AV_PIX_FMT_YUV422P },
++@@ -71,6 +76,7 @@
++     const VDPAUPixFmtMap *map;
++ } vdpau_pix_fmts[] = {
++     { VDP_CHROMA_TYPE_420, AV_PIX_FMT_YUV420P, pix_fmts_420 },
+++    { VDP_CHROMA_TYPE_420, AV_PIX_FMT_YUVJ420P, pix_fmts_420j },
++     { VDP_CHROMA_TYPE_422, AV_PIX_FMT_YUV422P, pix_fmts_422 },
++     { VDP_CHROMA_TYPE_444, AV_PIX_FMT_YUV444P, pix_fmts_444 },
++ #ifdef VDP_YCBCR_FORMAT_P016
+diff --git a/cinelerra-5.1/thirdparty/src/ffmpeg-7.0.patchC b/cinelerra-5.1/thirdparty/src/ffmpeg-7.0.patchC
+new file mode 100644
+index 00000000..56df39cc
+--- /dev/null
++++ b/cinelerra-5.1/thirdparty/src/ffmpeg-7.0.patchC
+@@ -0,0 +1,41 @@
++--- a/libavcodec/encode.c
+++++ b/libavcodec/encode.c
++@@ -331,7 +331,7 @@
++     }
++ 
++     if (!frame->buf[0]) {
++-        if (!(avctx->codec->capabilities & AV_CODEC_CAP_DELAY ||
+++        if (avci->draining && !(avctx->codec->capabilities & AV_CODEC_CAP_DELAY ||
++               avci->frame_thread_encoder))
++             return AVERROR_EOF;
++ 
++@@ -350,8 +350,10 @@
++         ret = ff_encode_encode_cb(avctx, avpkt, frame, &got_packet);
++     }
++ 
++-    if (avci->draining && !got_packet)
+++    if (avci->draining && !got_packet) {
+++       fflush(stderr);
++         avci->draining_done = 1;
+++    }
++ 
++     return ret;
++ }
++@@ -526,10 +528,16 @@
++     if (avci->draining)
++         return AVERROR_EOF;
++ 
++-    if (avci->buffer_frame->buf[0])
+++    if (avci->buffer_frame->buf[0]) {
+++        if (!frame) {
+++           fflush(stderr);
+++            av_frame_unref(avci->buffer_frame);
+++       }
++         return AVERROR(EAGAIN);
+++    }
++ 
++     if (!frame) {
+++       fflush(stderr);
++         avci->draining = 1;
++     } else {
++         ret = encode_send_frame_internal(avctx, frame);
+diff --git a/cinelerra-5.1/thirdparty/src/ffmpeg-7.0.patchZ1 b/cinelerra-5.1/thirdparty/src/ffmpeg-7.0.patchZ1
+new file mode 100644
+index 00000000..29cfb628
+--- /dev/null
++++ b/cinelerra-5.1/thirdparty/src/ffmpeg-7.0.patchZ1
+@@ -0,0 +1,49 @@
++--- a/libavcodec/wrapped_avframe.c
+++++ b/libavcodec/wrapped_avframe.c
++@@ -33,6 +33,38 @@
++ #include "libavutil/buffer.h"
++ #include "libavutil/pixdesc.h"
++ 
+++
+++
+++static const enum AVPixelFormat pix_fmts_all[] = {
+++    AV_PIX_FMT_YUV411P,
+++    AV_PIX_FMT_YUV420P,
+++    AV_PIX_FMT_YUVJ420P,
+++    AV_PIX_FMT_YUV422P,
+++    AV_PIX_FMT_YUVJ422P,
+++    AV_PIX_FMT_YUV444P,
+++    AV_PIX_FMT_YUVJ444P,
+++    AV_PIX_FMT_YUV420P10,
+++    AV_PIX_FMT_YUV422P10,
+++    AV_PIX_FMT_YUV444P10,
+++    AV_PIX_FMT_YUV420P12,
+++    AV_PIX_FMT_YUV422P12,
+++    AV_PIX_FMT_YUV444P12,
+++    AV_PIX_FMT_YUV420P14,
+++    AV_PIX_FMT_YUV422P14,
+++    AV_PIX_FMT_YUV444P14,
+++    AV_PIX_FMT_YUV420P16,
+++    AV_PIX_FMT_YUV422P16,
+++    AV_PIX_FMT_YUV444P16,
+++    AV_PIX_FMT_GRAY8,
+++    AV_PIX_FMT_GRAY9,
+++    AV_PIX_FMT_GRAY10,
+++    AV_PIX_FMT_GRAY12,
+++    AV_PIX_FMT_GRAY16,
+++    AV_PIX_FMT_NONE
+++};
+++
+++
+++
++ static void wrapped_avframe_release_buffer(void *unused, uint8_t *data)
++ {
++     AVFrame *frame = (AVFrame *)data;
++@@ -111,6 +143,7 @@
++     .p.id           = AV_CODEC_ID_WRAPPED_AVFRAME,
++     .p.capabilities = AV_CODEC_CAP_ENCODER_REORDERED_OPAQUE,
++     FF_CODEC_ENCODE_CB(wrapped_avframe_encode),
+++    .p.pix_fmts       = pix_fmts_all,
++ };
++ 
++ const FFCodec ff_wrapped_avframe_decoder = {
+diff --git a/cinelerra-5.1/thirdparty/src/ffmpeg-7.0.patchZ2 b/cinelerra-5.1/thirdparty/src/ffmpeg-7.0.patchZ2
+new file mode 100644
+index 00000000..a883b14d
+--- /dev/null
++++ b/cinelerra-5.1/thirdparty/src/ffmpeg-7.0.patchZ2
+@@ -0,0 +1,11 @@
++--- a/libavformat/yuv4mpegenc.c
+++++ b/libavformat/yuv4mpegenc.c
++@@ -268,7 +268,7 @@
++             av_log(s, AV_LOG_ERROR, "'%s' is not an official yuv4mpegpipe pixel format. "
++                    "Use '-strict -1' to encode to this pixel format.\n",
++                    av_get_pix_fmt_name(s->streams[0]->codecpar->format));
++-            return AVERROR(EINVAL);
+++            //return AVERROR(EINVAL);
++         }
++         av_log(s, AV_LOG_WARNING, "Warning: generating non standard YUV stream. "
++                "Mjpegtools will not work.\n");
+-- 
+2.35.8
+

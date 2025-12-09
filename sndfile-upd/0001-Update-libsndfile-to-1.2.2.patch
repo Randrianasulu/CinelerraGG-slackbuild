@@ -1,0 +1,38 @@
+From 12e0fe428ead9b5cc55e3058d2806e41aef4a5d9 Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <randrianasulu@gmail.com>
+Date: Sat, 20 Jan 2024 06:07:10 +0300
+Subject: [PATCH] Update libsndfile to 1.2.2
+
+---
+ cinelerra-5.1/configure.ac        | 2 +-
+ cinelerra-5.1/thirdparty/Makefile | 1 +
+ 2 files changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/cinelerra-5.1/configure.ac b/cinelerra-5.1/configure.ac
+index 1f5fde5b..4b72a861 100644
+--- a/cinelerra-5.1/configure.ac
++++ b/cinelerra-5.1/configure.ac
+@@ -324,7 +324,7 @@ PKG_3RD([libogg],[auto],
+   [ include ])
+ 
+ PKG_3RD([libsndfile],[auto],
+-  [libsndfile-1.0.28],
++  [libsndfile-1.2.2],
+   [ src/.libs/libsndfile.a \
+     src/.libs/libcommon.a \
+     src/G72x/.libs/libg72x.a \
+diff --git a/cinelerra-5.1/thirdparty/Makefile b/cinelerra-5.1/thirdparty/Makefile
+index 8b779f04..ba1ce051 100644
+--- a/cinelerra-5.1/thirdparty/Makefile
++++ b/cinelerra-5.1/thirdparty/Makefile
+@@ -277,6 +277,7 @@ x265.cfg_vars?=$(call cmake_config,source)
+ x265.cfg_params?= -DENABLE_SHARED=no -DENABLE_CLI=no
+ libvpx.cfg_params?= --enable-pic --disable-avx512 --enable-vp9-highbitdepth --disable-examples --disable-unit_tests
+ libdpx.cfg_vars?= libtoolize; aclocal; autoconf; automake -a;
++libsndfile.cfg_params+= --disable-shared --enable-static --disable-sqlite --disable-mpeg
+ 
+ DS:=$$$$$$$$
+ pkg_cfg=$(call bld_path,$(1),usr/local/lib/pkgconfig):
+-- 
+2.35.8
+

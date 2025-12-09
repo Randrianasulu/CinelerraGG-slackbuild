@@ -1,0 +1,30 @@
+From 0ce97ef23c04fcd7d5370d8f6ef8b9509c7a29c7 Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <randrianasulu@gmail.com>
+Date: Sat, 16 Sep 2023 10:11:10 +0300
+Subject: [PATCH 4/4] Fix for group move hang, v2 ?
+
+---
+ cinelerra-5.1/cinelerra/edl.C | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/cinelerra-5.1/cinelerra/edl.C b/cinelerra-5.1/cinelerra/edl.C
+index f1886dde..107fada4 100644
+--- a/cinelerra-5.1/cinelerra/edl.C
++++ b/cinelerra-5.1/cinelerra/edl.C
+@@ -903,9 +903,11 @@ static void get_edit_regions(ArrayList<Edit*> *edits, ArrayList<Range> &regions)
+ // move edit inclusive labels by regions
+ 	for( int i=0; i<edits->size(); ++i ) {
+ 		Edit *edit = edits->get(i);
+-		double pos = edit->track->from_units(edit->startproject);
+-		double end = edit->track->from_units(edit->startproject + edit->length);
++		volatile double pos = edit->track->from_units(edit->startproject);
++		volatile double end = edit->track->from_units(edit->startproject + edit->length);
+ 		int n = regions.size(), k = n;
++		//printf("get_edit_region k= %i \n", k);
++		
+ 		while( --k >= 0 ) {
+ 			Range &range = regions[k];
+ 			if( pos >= range.end ) continue;
+-- 
+2.35.7
+

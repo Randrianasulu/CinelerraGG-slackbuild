@@ -1,0 +1,39 @@
+From b5f7abe8713852b5a4ee1391c74788e55a7aaf78 Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <andrewrandrianasulu@Andrews-MacBook-Pro.local>
+Date: Thu, 20 Jun 2024 00:31:54 +0300
+Subject: [PATCH 11/11] more macosx hacks - links but killed at startup
+
+---
+ cinelerra-5.1/cinelerra/Makefile     | 2 +-
+ cinelerra-5.1/cinelerra/theme_data.S | 6 ++++++
+ 2 files changed, 7 insertions(+), 1 deletion(-)
+ create mode 100644 cinelerra-5.1/cinelerra/theme_data.S
+
+diff --git a/cinelerra-5.1/cinelerra/Makefile b/cinelerra-5.1/cinelerra/Makefile
+index 2e884b86..18020e15 100644
+--- a/cinelerra-5.1/cinelerra/Makefile
++++ b/cinelerra-5.1/cinelerra/Makefile
+@@ -411,7 +411,7 @@ endif
+ 
+ GCC ?= gcc
+ DCRAW := $(OBJDIR)/dcraw.o
+-THEME_DATA := $(OBJDIR)/theme_data.o
++THEME_DATA := $(OBJDIR)/theme_data.S -I$(TOPDIR)/cinelerra/$(OBJDIR)
+ 
+ OUTPUT = $(BINDIR)/$(WANT_CIN)
+ OUTPUT_G = $(OBJDIR)/$(WANT_CIN).debuginfo
+diff --git a/cinelerra-5.1/cinelerra/theme_data.S b/cinelerra-5.1/cinelerra/theme_data.S
+new file mode 100644
+index 00000000..ed98d647
+--- /dev/null
++++ b/cinelerra-5.1/cinelerra/theme_data.S
+@@ -0,0 +1,6 @@
++        .global _binary_theme_data_start
++_binary_theme_data_start:
++        .incbin "theme_data"
++
++        .global _binary_theme_data_end
++_binary_theme_data_end:
+-- 
+2.13.5 (Apple Git-94)
+

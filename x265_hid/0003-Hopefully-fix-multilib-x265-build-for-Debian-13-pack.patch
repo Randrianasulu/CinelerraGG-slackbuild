@@ -1,0 +1,36 @@
+From b8c4f729d9d14a550d9e4bd42a7e8cb739dbefa4 Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <randrianasulu@gmail.com>
+Date: Mon, 8 Dec 2025 15:07:15 +0300
+Subject: [PATCH 3/3] Hopefully fix multilib x265 build for Debian 13 packaging
+
+---
+ cinelerra-5.1/thirdparty/src/x265_4.0.patch2 | 2 +-
+ cinelerra-5.1/thirdparty/src/x265_4.0.patch3 | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/cinelerra-5.1/thirdparty/src/x265_4.0.patch2 b/cinelerra-5.1/thirdparty/src/x265_4.0.patch2
+index 72459e66..12348b11 100644
+--- a/cinelerra-5.1/thirdparty/src/x265_4.0.patch2
++++ b/cinelerra-5.1/thirdparty/src/x265_4.0.patch2
+@@ -4,4 +4,4 @@
+ +#$(shell cd build/linux ; ./multilib.sh)
+ +.NOTPARALLEL:
+ +all:
+-+	$(shell ./multilib.sh ; cp 8bit/libx265.a . ; cp 8bit/x265.pc . ; cp 8bit/x265_config.h .)
+++	./multilib.sh ; cp 8bit/libx265.a . ; cp 8bit/x265.pc . ; cp 8bit/x265_config.h .
+diff --git a/cinelerra-5.1/thirdparty/src/x265_4.0.patch3 b/cinelerra-5.1/thirdparty/src/x265_4.0.patch3
+index e97af1d6..ecca4bcd 100644
+--- a/cinelerra-5.1/thirdparty/src/x265_4.0.patch3
++++ b/cinelerra-5.1/thirdparty/src/x265_4.0.patch3
+@@ -1,7 +1,7 @@
+ --- /dev/null	2020-07-19 09:07:01.788494015 +0300
+ +++ ./multilib.sh	2020-08-02 02:34:58.444933214 +0300
+ @@ -0,0 +1,54 @@
+-+#!/bin/sh
+++#!/bin/bash
+ +
+ +mkdir -p 8bit 10bit 12bit
+ +
+-- 
+2.46.4
+

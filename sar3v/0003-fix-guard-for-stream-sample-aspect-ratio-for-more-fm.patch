@@ -1,0 +1,28 @@
+From 2de88df0278fe40e2e75957179f2962c89e03cf8 Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <randrianasulu@gmail.com>
+Date: Fri, 5 Jan 2024 04:53:23 +0300
+Subject: [PATCH 3/3] fix guard for stream sample aspect ratio for more fmts
+
+---
+ cinelerra-5.1/cinelerra/ffmpeg.C | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/cinelerra-5.1/cinelerra/ffmpeg.C b/cinelerra-5.1/cinelerra/ffmpeg.C
+index cfaa30b4..12275eb2 100644
+--- a/cinelerra-5.1/cinelerra/ffmpeg.C
++++ b/cinelerra-5.1/cinelerra/ffmpeg.C
+@@ -3038,8 +3038,9 @@ int FFMPEG::open_encoder(const char *type, const char *spec)
+ 			ctx->framerate = (AVRational) { frame_rate.num, frame_rate.den };
+ 			ctx->time_base = (AVRational) { frame_rate.den, frame_rate.num };
+ 			printf("ofmt name %s \n", format_name);
+-			if(!strcmp(format_name, "webm") || !strcmp(format_name, "mkv") || !strcmp(format_name, "mov") ||
+-			!strcmp(format_name, "qt") || !strcmp(format_name, "mp4") || !strcmp(format_name, "avi"))
++			if(!strcmp(format_name, "webm") || !strcmp(format_name, "matroska") || !strcmp(format_name, "mov") ||
++			!strcmp(format_name, "qt") || !strcmp(format_name, "mp4") || !strcmp(format_name, "avi") ||
++			!strcmp(format_name, "dv") || !strcmp(format_name, "yuv4mpegpipe"))
+ 			{
+ 			if (to_sample_aspect_ratio(asset).den > 0)
+ 			st->sample_aspect_ratio = to_sample_aspect_ratio(asset);
+-- 
+2.35.8
+

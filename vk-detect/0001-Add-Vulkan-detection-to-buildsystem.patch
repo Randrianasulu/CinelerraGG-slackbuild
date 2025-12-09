@@ -1,0 +1,72 @@
+From 949eaab45de3e8ccc27c4bcdafb9eafa9b008e2a Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <randrianasulu@gmail.com>
+Date: Tue, 2 Dec 2025 17:16:24 +0300
+Subject: [PATCH 1/4] Add Vulkan detection to buildsystem
+
+---
+ cinelerra-5.1/configure.ac        | 15 ++++++++++++++-
+ cinelerra-5.1/thirdparty/Makefile |  1 +
+ 2 files changed, 15 insertions(+), 1 deletion(-)
+
+diff --git a/cinelerra-5.1/configure.ac b/cinelerra-5.1/configure.ac
+index 582cc720..1d35bbf0 100644
+--- a/cinelerra-5.1/configure.ac
++++ b/cinelerra-5.1/configure.ac
+@@ -87,6 +87,7 @@ CHECK_WITH([x10tv],[usb 0bc7:0004 X10 remote device],[X10TV],[yes])
+ CHECK_WITH([vaapi],[video acceleration api],[VAAPI],[yes])
+ CHECK_WITH([vdpau],[video decode+presentation api for unix],[VDPAU],[yes])
+ CHECK_WITH([onevpl],[Intel QSV api for unix],[ONEVPL],[no])
++CHECK_WITH([vulkan],[Vulkan api],[VULKAN],[no])
+ CHECK_WITH([nv],[nvenc/nvdec ffnvcodec api],[NV],[yes])
+ CHECK_WITH([cuda],[nv cuda plugins],[CUDA],[auto])
+ CHECK_WITH([clang],[use clang instead of gcc/g++],[CLANG],[no])
+@@ -701,6 +702,11 @@ if test "x$HAVE_ONEVPL" != "xyes" -a "x$WANT_ONEVPL" = "xyes"; then
+   AC_MSG_ERROR([requires onevpl support.])
+ fi
+ 
++CHECK_LIB([VULKAN], [vulkan], [vkQueueSubmit])
++if test "x$HAVE_VULKAN" != "xyes" -a "x$WANT_VULKAN" = "xyes"; then
++  AC_MSG_ERROR([requires vulkan support.])
++fi
++
+ #CHECK_LIB([NVENC], [nvidia-encode], [NvEncodeAPICreateInstance])
+ 
+ #if test "x$HAVE_mjpegtools" = "xyes"; then
+@@ -1089,7 +1095,7 @@ fi
+ for v in GL XFT XXF86VM OSS ALSA FIREWIRE OGG DV DVB LADSPA \
+ 	 VIDEO4LINUX2 ESOUND PULSE PACTL OPENEXR LV2 \
+ 	 COMMERCIAL GIFLIB LIBZMPEG LIBDPX SHUTTLE SHUTTLE_USB XV \
+-	 VAAPI VDPAU ONEVPL CUDA NV WINTV X10TV; do
++	 VAAPI VDPAU ONEVPL VULKAN CUDA NV WINTV X10TV; do
+   eval vv="\$WANT_$v"
+   if test "x$vv" != "xno"; then
+     CFG_CFLAGS+=" -DHAVE_$v"
+@@ -1143,6 +1149,13 @@ if test "x$WANT_ONEVPL" != "xno" -a "x$HAVE_ONEVPL" = "xyes"; then
+ fi
+ CFG_WANTS+=" ONEVPL"
+ 
++if test "x$WANT_VULKAN" != "xno" -a "x$HAVE_VULKAN" = "xyes"; then
++  FFMPEG_EXTRA_LDFLAGS+=' -lvulkan `pkg-config --libs vulkan`'
++  FFMPEG_EXTRA_CFG+=' --extra-cflags="'$(pkg-config --cflags vulkan)'"'
++  WANT_VULKAN="yes"
++fi
++CFG_WANTS+=" VULKAN"
++
+ 
+ if test "x$WANT_NV" != "xno"; then
+   WANT_NV="yes"
+diff --git a/cinelerra-5.1/thirdparty/Makefile b/cinelerra-5.1/thirdparty/Makefile
+index b2306e23..fca72a5e 100644
+--- a/cinelerra-5.1/thirdparty/Makefile
++++ b/cinelerra-5.1/thirdparty/Makefile
+@@ -137,6 +137,7 @@ ffmpeg.cfg_params= \
+ 	$(call if_want,VAAPI,--enable-vaapi,--disable-vaapi) \
+ 	$(call if_want,VDPAU,--enable-vdpau,--disable-vdpau) \
+ 	$(call if_want,ONEVPL,--enable-libvpl,--disable-libvpl) \
++	$(call if_want,VULKAN,--enable-vulkan,--disable-vulkan) \
+ 	$(call if_want,NV, --enable-nvenc --enable-nvdec --enable-ffnvcodec) \
+ 	$(call if_ena,twolame,--enable-libtwolame) \
+ 	$(call if_ena,openjpeg,--enable-libopenjpeg) \
+-- 
+2.46.4
+

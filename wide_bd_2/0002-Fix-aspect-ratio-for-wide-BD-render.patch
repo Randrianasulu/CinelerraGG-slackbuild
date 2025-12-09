@@ -1,0 +1,28 @@
+From 908cf23fde169cf834d3e8136b57820f25fbc046 Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <randrianasulu@gmail.com>
+Date: Tue, 16 Jan 2024 09:45:51 +0300
+Subject: [PATCH 2/4] Fix aspect ratio for wide BD render ?
+
+---
+ cinelerra-5.1/cinelerra/bdcreate.C | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/cinelerra-5.1/cinelerra/bdcreate.C b/cinelerra-5.1/cinelerra/bdcreate.C
+index 10bc496b..a3869657 100644
+--- a/cinelerra-5.1/cinelerra/bdcreate.C
++++ b/cinelerra-5.1/cinelerra/bdcreate.C
+@@ -432,6 +432,11 @@ int CreateBD_Thread::create_bd_jobs(ArrayList<BatchRenderJob*> *jobs, const char
+ 	FFMPEG::set_option_path(option_path, "video/%s", asset->vcodec);
+ 	FFMPEG::load_options(option_path, asset->ff_video_options,
+ 		 sizeof(asset->ff_video_options));
++	char aspect_line[100];
++	float par = (float)((float)asset->width / (float)asset->height);
++	sprintf(aspect_line, "aspect=%f\n", asset->aspect_ratio/par);
++	strcat(asset->ff_video_options, aspect_line);
++	//printf("Aspect line: %s par: %f width: %i height: %i\n ", aspect_line, par, asset->width, asset->height);
+ 	asset->ff_video_bitrate = vid_bitrate;
+ 	asset->ff_video_quality = -1;
+ 	return 0;
+-- 
+2.35.8
+

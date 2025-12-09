@@ -1,0 +1,92 @@
+From a553332a41f8c045422cf32d1feccf4ebc9bf3ba Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <randrianasulu@gmail.com>
+Date: Sat, 20 Apr 2024 18:58:04 +0300
+Subject: [PATCH] Dissolve fix from HV
+
+---
+ cinelerra-5.1/plugins/dissolve/dissolve.C | 58 ++++++++++++++++++++++-
+ 1 file changed, 56 insertions(+), 2 deletions(-)
+
+diff --git a/cinelerra-5.1/plugins/dissolve/dissolve.C b/cinelerra-5.1/plugins/dissolve/dissolve.C
+index 37b5ac8c..20a49f2a 100644
+--- a/cinelerra-5.1/plugins/dissolve/dissolve.C
++++ b/cinelerra-5.1/plugins/dissolve/dissolve.C
+@@ -1,7 +1,7 @@
+ 
+ /*
+  * CINELERRA
+- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
++ * Copyright (C) 2008-2024 Adam Williams <broadcast at earthling dot net>
+  *
+  * This program is free software; you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License as published by
+@@ -69,11 +69,65 @@ int DissolveMain::process_realtime(VFrame *incoming, VFrame *outgoing)
+ // Use software
+ 	if(!overlayer) overlayer = new OverlayFrame(get_project_smp() + 1);
+ 
++// porter duff fails us for alpha
++// copy what OPENGL does
++#define DISSOLVE(type, temp, max, chroma) \
++{ \
++    temp opacity = fade * max; \
++    temp transparency = max - opacity; \
++    type **out_rows = (type**)outgoing->get_rows(); \
++    type **in_rows = (type**)incoming->get_rows(); \
++    for(int i = 0; i < h; i++) \
++    { \
++        type *out_row = out_rows[i]; \
++        type *in_row = in_rows[i]; \
++        for(int j = 0; j < w; j++) \
++        { \
++            temp out_r = out_row[0]; \
++            temp out_g = out_row[1]; \
++            temp out_b = out_row[2]; \
++            temp out_a = out_row[3]; \
++            temp in_r = *in_row++; \
++            temp in_g = *in_row++; \
++            temp in_b = *in_row++; \
++            temp in_a = *in_row++; \
++            *out_row++ = (out_r * transparency + \
++                in_r * opacity) / max; \
++            *out_row++ = ((out_g - chroma) * transparency + \
++                (in_g - chroma) * opacity) / max + chroma; \
++            *out_row++ = ((out_b - chroma) * transparency + \
++                (in_b - chroma) * opacity) / max + chroma; \
++            *out_row++ = (out_a * transparency + \
++                (in_a * opacity)) / max; \
++        } \
++    } \
++}
++
++if(BC_CModels::has_alpha(outgoing->get_color_model()))
++    {
++        int w = outgoing->get_w();
++        int h = outgoing->get_h();
++        switch (outgoing->get_color_model())
++        {
++	    case BC_RGBA8888:
++                DISSOLVE(uint8_t, int16_t, 255, 0);
++                break;
++	    case BC_YUVA8888:
++                DISSOLVE(uint8_t, int16_t, 255, 128);
++                break;
++	    case BC_RGBA_FLOAT:
++                DISSOLVE(float, float, 1.0, 0.0);
++                break;
++        }
++    }
++    else
++    {
++
+ 	overlayer->overlay(outgoing, incoming,
+ 		0, 0, incoming->get_w(), incoming->get_h(),
+ 		0, 0, incoming->get_w(), incoming->get_h(),
+ 		fade, TRANSFER_SRC, NEAREST_NEIGHBOR);
+-
++    }
+ 	return 0;
+ }
+ 
+-- 
+2.35.8
+

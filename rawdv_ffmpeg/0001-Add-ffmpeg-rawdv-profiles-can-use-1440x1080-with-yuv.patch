@@ -1,0 +1,30 @@
+From 7981d0af722ee456aa40295d6654135744c2a274 Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <randrianasulu@gmail.com>
+Date: Fri, 5 Jan 2024 05:32:01 +0300
+Subject: [PATCH] Add ffmpeg/rawdv  profiles, can use 1440x1080 with yuv422
+
+---
+ cinelerra-5.1/ffmpeg/audio/dv.dv | 1 +
+ cinelerra-5.1/ffmpeg/video/dv.dv | 1 +
+ 2 files changed, 2 insertions(+)
+ create mode 100644 cinelerra-5.1/ffmpeg/audio/dv.dv
+ create mode 100644 cinelerra-5.1/ffmpeg/video/dv.dv
+
+diff --git a/cinelerra-5.1/ffmpeg/audio/dv.dv b/cinelerra-5.1/ffmpeg/audio/dv.dv
+new file mode 100644
+index 00000000..38fffb4e
+--- /dev/null
++++ b/cinelerra-5.1/ffmpeg/audio/dv.dv
+@@ -0,0 +1 @@
++dv pcm_s16le
+\ No newline at end of file
+diff --git a/cinelerra-5.1/ffmpeg/video/dv.dv b/cinelerra-5.1/ffmpeg/video/dv.dv
+new file mode 100644
+index 00000000..832c9072
+--- /dev/null
++++ b/cinelerra-5.1/ffmpeg/video/dv.dv
+@@ -0,0 +1 @@
++dv dvvideo
+-- 
+2.35.8
+

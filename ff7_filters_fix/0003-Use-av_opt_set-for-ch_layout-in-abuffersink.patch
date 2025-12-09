@@ -1,0 +1,29 @@
+From 65e3aa437a8fdb5adedfd43e5331c6f3dad093cc Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <randrianasulu@gmail.com>
+Date: Fri, 19 Apr 2024 07:07:27 +0300
+Subject: [PATCH 3/3] Use av_opt_set for ch_layout in abuffersink
+
+---
+ cinelerra-5.1/cinelerra/pluginfclient.C | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/cinelerra-5.1/cinelerra/pluginfclient.C b/cinelerra-5.1/cinelerra/pluginfclient.C
+index 0ffcf905..b8694b12 100644
+--- a/cinelerra-5.1/cinelerra/pluginfclient.C
++++ b/cinelerra-5.1/cinelerra/pluginfclient.C
+@@ -870,9 +870,9 @@ int PluginFAClient::activate()
+ 	if( ret >= 0 )
+ 		ret = av_opt_set_bin(fsink, "sample_fmts",
+ 			(uint8_t*)&sample_fmt, sizeof(sample_fmt), AV_OPT_SEARCH_CHILDREN);
+-/*	if( ret >= 0 )
+-		ret = av_opt_set_bin(fsink, "ch_layouts",
+-			(uint8_t*)&chLayoutDescription, sizeof(chLayoutDescription), AV_OPT_SEARCH_CHILDREN); */
++	if( ret >= 0 )
++		ret = av_opt_set(fsink, "ch_layouts",
++			chLayoutDescription, AV_OPT_SEARCH_CHILDREN);
+ 	if( ret >= 0 )
+ 		ret = av_opt_set_bin(fsink, "sample_rates",
+ 			(uint8_t*)&sample_rate, sizeof(sample_rate), AV_OPT_SEARCH_CHILDREN);
+-- 
+2.35.8
+

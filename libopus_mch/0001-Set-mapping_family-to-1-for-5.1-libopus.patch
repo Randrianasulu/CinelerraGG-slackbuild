@@ -1,0 +1,27 @@
+From 4e558d31dcd92a93154d286aa1d292ec960f0193 Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <randrianasulu@gmail.com>
+Date: Mon, 22 Apr 2024 11:26:21 +0300
+Subject: [PATCH] Set mapping_family to 1 for 5.1 libopus
+
+---
+ cinelerra-5.1/cinelerra/ffmpeg.C | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/cinelerra-5.1/cinelerra/ffmpeg.C b/cinelerra-5.1/cinelerra/ffmpeg.C
+index 9b8832dd..1f00b883 100644
+--- a/cinelerra-5.1/cinelerra/ffmpeg.C
++++ b/cinelerra-5.1/cinelerra/ffmpeg.C
+@@ -2951,6 +2951,10 @@ int FFMPEG::open_encoder(const char *type, const char *spec)
+ 				sprintf(arg, "%d", ctx->global_quality);
+ 				av_dict_set(&sopts, "global_quality", arg, 0);
+ 			}
++			if(!strcmp(codec_name, "libopus")) {
++			    if(asset->channels > 2)
++				av_dict_set(&sopts, "mapping_family", "1", 0);
++			}
+ 			int aidx = ffaudio.size();
+ 			int fidx = aidx + ffvideo.size();
+ 			FFAudioStream *aud = new FFAudioStream(this, st, aidx, fidx);
+-- 
+2.35.8
+

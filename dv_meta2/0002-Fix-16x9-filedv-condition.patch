@@ -1,0 +1,29 @@
+From 20a8c00f68f5c414e5613cbea2780f213920d116 Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <randrianasulu@gmail.com>
+Date: Sat, 13 Jan 2024 22:26:52 +0300
+Subject: [PATCH 2/2] Fix 16x9 filedv condition?
+
+---
+ cinelerra-5.1/cinelerra/filedv.C | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/cinelerra-5.1/cinelerra/filedv.C b/cinelerra-5.1/cinelerra/filedv.C
+index a523bf95..14ddbf74 100644
+--- a/cinelerra-5.1/cinelerra/filedv.C
++++ b/cinelerra-5.1/cinelerra/filedv.C
+@@ -229,9 +229,9 @@ TRACE("FileDV::open_file 20")
+ 		encoder->isPAL = isPAL;
+ 		output_size = (isPAL ? DV1394_PAL_FRAME_SIZE : DV1394_NTSC_FRAME_SIZE);
+ 
+-		// Compare to 16 / 8 rather than == 16 / 9 in case of floating point
+-		// rounding errors
+-		encoder->is16x9 = asset->aspect_ratio > 16 / 8;
++		//printf("filedv aspect- %f \n", asset->aspect_ratio);
++		if(1.777778 - asset->aspect_ratio < 0.001f)
++		encoder->is16x9 = 1;
+ 	}
+ 	else
+ 	{
+-- 
+2.35.8
+

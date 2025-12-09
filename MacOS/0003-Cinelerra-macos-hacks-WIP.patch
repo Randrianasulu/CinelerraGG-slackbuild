@@ -1,0 +1,134 @@
+From 243da6453fc9ccad86e42e8a7d9ea4b9c66bf35a Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <andrewrandrianasulu@Andrews-MacBook-Pro.local>
+Date: Mon, 10 Jun 2024 22:11:46 +0300
+Subject: [PATCH 03/11] Cinelerra macos hacks WIP
+
+---
+ cinelerra-5.1/cinelerra/bdcreate.C  |  4 ++--
+ cinelerra-5.1/cinelerra/bdwrite.C   | 25 ++++++++++++++++++++++---
+ cinelerra-5.1/cinelerra/dvdcreate.C |  4 ++--
+ cinelerra-5.1/cinelerra/exportedl.C |  2 +-
+ cinelerra-5.1/cinelerra/ffmpeg.C    |  8 ++++++++
+ 5 files changed, 35 insertions(+), 8 deletions(-)
+
+diff --git a/cinelerra-5.1/cinelerra/bdcreate.C b/cinelerra-5.1/cinelerra/bdcreate.C
+index 7305d4e9..ae5fe2a7 100644
+--- a/cinelerra-5.1/cinelerra/bdcreate.C
++++ b/cinelerra-5.1/cinelerra/bdcreate.C
+@@ -46,7 +46,7 @@
+ #include <errno.h>
+ #if !defined(__FreeBSD__)
+ #include <sys/stat.h>
+-#if !defined(__NetBSD__)
++#if !defined(__NetBSD__) && !defined(__APPLE__)
+ #include <sys/statfs.h>
+ #endif
+ #else
+@@ -54,7 +54,7 @@
+ #include <sys/mount.h>
+ #endif
+ 
+-#if defined(__NetBSD__)
++#if defined(__NetBSD__) || defined (__APPLE__)
+ #include <sys/statvfs.h>
+ #ifndef statfs
+ #define statfs statvfs
+diff --git a/cinelerra-5.1/cinelerra/bdwrite.C b/cinelerra-5.1/cinelerra/bdwrite.C
+index 1f7f027e..4968a968 100644
+--- a/cinelerra-5.1/cinelerra/bdwrite.C
++++ b/cinelerra-5.1/cinelerra/bdwrite.C
+@@ -58,11 +58,30 @@
+ #include <stdint.h>
+ #include <stdlib.h>
+ #include <string.h>
+-#if !defined (__FreeBSD__)
+-#include <endian.h>
+-#else
++#if defined (__FreeBSD__)
+ #include <sys/endian.h>
+ #endif
++#if defined (__APPLE__)
++#include <machine/endian.h>
++#include <libkern/OSByteOrder.h>
++
++#define htobe16(x) OSSwapHostToBigInt16(x)
++#define htole16(x) OSSwapHostToLittleInt16(x)
++#define be16toh(x) OSSwapBigToHostInt16(x)
++#define le16toh(x) OSSwapLittleToHostInt16(x)
++
++#define htobe32(x) OSSwapHostToBigInt32(x)
++#define htole32(x) OSSwapHostToLittleInt32(x)
++#define be32toh(x) OSSwapBigToHostInt32(x)
++#define le32toh(x) OSSwapLittleToHostInt32(x)
++
++#define htobe64(x) OSSwapHostToBigInt64(x)
++#define htole64(x) OSSwapHostToLittleInt64(x)
++#define be64toh(x) OSSwapBigToHostInt64(x)
++#define le64toh(x) OSSwapLittleToHostInt64(x)
++#else
++#include <endian.h>
++#endif
+ #include <limits.h>
+ #include <sys/stat.h>
+ // work arounds (centos)
+diff --git a/cinelerra-5.1/cinelerra/dvdcreate.C b/cinelerra-5.1/cinelerra/dvdcreate.C
+index 390d2cbc..ee6877dd 100644
+--- a/cinelerra-5.1/cinelerra/dvdcreate.C
++++ b/cinelerra-5.1/cinelerra/dvdcreate.C
+@@ -47,7 +47,7 @@
+ #include <errno.h>
+ #if !defined(__FreeBSD__)
+ #include <sys/stat.h>
+-#if !defined(__NetBSD__)
++#if !defined(__NetBSD__) && !defined (__APPLE__)
+ #include <sys/statfs.h>
+ #endif
+ #else
+@@ -55,7 +55,7 @@
+ #include <sys/mount.h>
+ #endif
+ 
+-#if defined(__NetBSD__)
++#if defined(__NetBSD__) || defined (__APPLE__)
+ #include <sys/statvfs.h>
+ #ifndef statfs
+ #define statfs statvfs
+diff --git a/cinelerra-5.1/cinelerra/exportedl.C b/cinelerra-5.1/cinelerra/exportedl.C
+index 69174635..aca95d6b 100644
+--- a/cinelerra-5.1/cinelerra/exportedl.C
++++ b/cinelerra-5.1/cinelerra/exportedl.C
+@@ -39,7 +39,7 @@
+ #include "exportedl.h"
+ #include "tracks.h"
+ #include "transition.h"
+-#if defined (__FreeBSD__) || defined (__NetBSD__)
++#if defined (__FreeBSD__) || defined (__NetBSD__) || defined (__APPLE__)
+ #include <libgen.h>
+ #endif
+ #include <ctype.h>
+diff --git a/cinelerra-5.1/cinelerra/ffmpeg.C b/cinelerra-5.1/cinelerra/ffmpeg.C
+index 9b8832dd..6f28778c 100644
+--- a/cinelerra-5.1/cinelerra/ffmpeg.C
++++ b/cinelerra-5.1/cinelerra/ffmpeg.C
+@@ -4496,10 +4496,18 @@ double FFMPEG::get_initial_timecode(int data_type, int channel, double frame_rat
+ 	}
+ 	struct stat tst;
+ 	if( stat(path, &tst) >= 0 ) {
++#if defined(__APPLE__)
++		time_t t = (time_t)tst.st_mtimespec.tv_sec;
++#else
+ 		time_t t = (time_t)tst.st_mtim.tv_sec;
++#endif
+ 		struct tm tm;
+ 		localtime_r(&t, &tm);
++#if defined (__APPLE__)
++		int64_t us = tst.st_mtimespec.tv_nsec / 1000;
++#else
+ 		int64_t us = tst.st_mtim.tv_nsec / 1000;
++#endif
+ 		int frm = us/1000000. * frame_rate;
+ 		sprintf(tcbuf,"%d:%02d:%02d:%02d", tm.tm_hour, tm.tm_min, tm.tm_sec, frm);
+ 		return ff_get_timecode(tcbuf, rate, 0);
+-- 
+2.13.5 (Apple Git-94)
+

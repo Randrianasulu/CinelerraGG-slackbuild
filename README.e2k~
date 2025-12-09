@@ -1,0 +1,76 @@
+./configure --with-single-user --with-booby --disable-libavc1394 --disable-libiec61883 --disable-libtheora --disable-tiff --disable-dav1d --without-ladspa --without-firewire --without-nv
+
+make
+
+[it will fail at some point]
+
+cp /usr/share/automake-1.16/config.guess thirdparty/a52dec-0.7.4/autotools/
+cp /usr/share/automake-1.16/config.guess thirdparty/libogg-1.3.4/
+cp /usr/share/automake-1.16/config.guess thirdparty/libdv-1.0.0/
+cp /usr/share/automake-1.16/config.guess thirdparty/libuuid-1.0.3/
+cp /usr/share/automake-1.16/config.guess thirdparty/libtheora-1.1.1/
+cp /usr/share/automake-1.16/config.guess thirdparty/ladspa-0.4.17/
+
+there might be better way of doing this:
+https://github.com/easybuilders/easybuild-easyblocks/issues/1276
+autoreconf && automake --add-missing --copy --force-missing &&
+short form of automake must be 'automake -caf'
+
+so full version will be
+
+autoreconf -ifv && automake -caf
+
+try to add this to thirdparty/Makefile
+to proga.var= variable 
+
+
+# force reconfigure/rebuild
+rm thirdparty/build/libogg.configure
+
+do the same for each tree needing autoreconf
+
+ autoreconf -ifv
+
+in
+
+thirdparty/a52dec-0.7.4/
+thirdparty/libogg-1.3.4/
+thirdparty/libdv-1.0.0/
+thirdparty/libuuid-1.0.3/
+thirdparty/ladspa-0.4.17/
+
+run
+autoreconf -fiv -I m4
+
+in libtheora-1.1.1
+
+
+apply from thirparty/
+
+cat ../LIBOGG_configure_ac_fix.diff | patch -p0
+
+cat ../MJPEGTOOLS_disable_sse2.diff | patch -p0
+
+cat ../LAME_no_see.diff | patch
+
+# yeah I did it backward
+cat ../OPENEXR_2.4.1_no_see_no_x86.diff | patch -R -p0
+
+cat ../X264_no_sse2.diff | patch -p
+
+
+in
+ thirdparty/x264-snapshot-20191217-2245-stable
+
+fix configure (not real autotools script)
+
+then return to top of the tree and hit make
+
+make will stop at each build error, but because build is parallel
+exact error may scroll out of view. rerun make :}
+
+
+
+Do not forgot to run 'make install' even for single-user build
+
+resulting relocateable binary tree must be in bin/

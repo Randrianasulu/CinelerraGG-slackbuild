@@ -1,0 +1,60 @@
+From 6dfdb1da752ff4a74d21422a4074143ecb76e75f Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <andrewrandrianasulu@Andrews-MacBook-Pro.local>
+Date: Mon, 10 Jun 2024 22:13:45 +0300
+Subject: [PATCH 05/11] cinelerra Makefile hacks for macos WIP
+
+---
+ cinelerra-5.1/cinelerra/Makefile | 15 +++++++++------
+ 1 file changed, 9 insertions(+), 6 deletions(-)
+
+diff --git a/cinelerra-5.1/cinelerra/Makefile b/cinelerra-5.1/cinelerra/Makefile
+index 1cb58d50..093fb3ee 100644
+--- a/cinelerra-5.1/cinelerra/Makefile
++++ b/cinelerra-5.1/cinelerra/Makefile
+@@ -525,8 +525,11 @@ LINKER = ld -o $(OUTPUT)
+ CFLAGS += -DUSE_ALPHA
+ 
+ else
+-
++ifeq ($(shell uname),Darwin)
++LDFLAGS1 =  -g
++else
+ LDFLAGS1 = -Wl,-export-dynamic -g -Wl,-z,noexecstack
++endif
+ LDFLAGS2 = $(LDFLAGS)
+ LINKER = $(CXX) -o $(OUTPUT)
+ 
+@@ -543,8 +546,8 @@ all:	$(OUTPUT) $(CUTADS) $(BDWRITE) $(LV2UI)
+ # Also VFS only overrides the C library when dynamic linking is used.
+ $(OUTPUT): $(OBJS) $(THEME_DATA) $(DCRAW) $(LIBRARIES)
+ 	$(LINKER) `cat $(OBJDIR)/objs`
+-	$(if $(findstring -g,$(CFLAGS)),objcopy --only-keep-debug $(OUTPUT) $(OUTPUT_G))
+-	$(if $(findstring -g,$(CFLAGS)),objcopy --add-gnu-debuglink=$(OUTPUT_G) $(OUTPUT))
++	$(if $(findstring -g,$(CFLAGS)),gobjcopy --only-keep-debug $(OUTPUT) $(OUTPUT_G))
++	$(if $(findstring -g,$(CFLAGS)),gobjcopy --add-gnu-debuglink=$(OUTPUT_G) $(OUTPUT))
+ 	$(if $(findstring -ggdb,$(CFLAGS)),,strip $(OUTPUT))
+ 	ln -f -s ../bin/$(WANT_CIN) ci
+ 
+@@ -552,8 +555,8 @@ ifneq ($(WANT_COMMERCIAL),no)
+ $(CUTADS):	$(CUTOBJS) $(CUTLIBS) $(LIBRARIES)
+ 	@echo $(CXX) -o $@ $(CUTOBJS)
+ 	@$(CXX) $(CFLAGS) -pthread -o $@ $(CUTOBJS) $(CUTLIBS) $(LIBS)
+-	$(if $(findstring -g,$(CFLAGS)),objcopy --only-keep-debug $(CUTADS) $(CUTADS).debuginfo)
+-	$(if $(findstring -g,$(CFLAGS)),objcopy --add-gnu-debuglink=$(CUTADS).debuginfo $(CUTADS))
++	$(if $(findstring -g,$(CFLAGS)),gobjcopy --only-keep-debug $(CUTADS) $(CUTADS).debuginfo)
++	$(if $(findstring -g,$(CFLAGS)),gobjcopy --add-gnu-debuglink=$(CUTADS).debuginfo $(CUTADS))
+ 	$(if $(findstring -ggdb,$(CFLAGS)),,strip $(CUTADS))
+ 
+ install-cutads:
+@@ -565,7 +568,7 @@ endif
+ $(BDWRITE):	$(BDWOBJS) $(LIBRARIES)
+ 	@echo $(CXX) -o $@ $(BDWOBJS)
+ 	@$(CXX) $(CFLAGS) -pthread -o $@ $(BDWOBJS) $(LIBS)
+-	$(if $(findstring -g,$(CFLAGS)),objcopy --only-keep-debug $(BDWRITE) $(BDWRITE).debuginfo)
++	$(if $(findstring -g,$(CFLAGS)),gobjcopy --only-keep-debug $(BDWRITE) $(BDWRITE).debuginfo)
+ 	$(if $(findstring -ggdb,$(CFLAGS)),,strip $(BDWRITE))
+ 
+ install-bdwrite:
+-- 
+2.13.5 (Apple Git-94)
+

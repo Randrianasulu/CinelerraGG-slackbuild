@@ -1,0 +1,130 @@
+From 5e0795483335feb187a8e88af8ab167d7fabb956 Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <randrianasulu@gmail.com>
+Date: Mon, 8 Dec 2025 18:30:16 +0300
+Subject: [PATCH 1/2] Add files for djbfft-0.7.6 from gentoo
+
+https://bugs.gentoo.org/881017
+
+should fix compile ussue during packaging in debian 13
+---
+ .../thirdparty/src/djbfft-0.76.patch2         | 72 +++++++++++++++++++
+ .../thirdparty/src/djbfft-0.76.patch3         | 10 +++
+ .../thirdparty/src/djbfft-0.76.patch4         | 10 +++
+ 3 files changed, 92 insertions(+)
+ create mode 100644 cinelerra-5.1/thirdparty/src/djbfft-0.76.patch2
+ create mode 100644 cinelerra-5.1/thirdparty/src/djbfft-0.76.patch3
+ create mode 100644 cinelerra-5.1/thirdparty/src/djbfft-0.76.patch4
+
+diff --git a/cinelerra-5.1/thirdparty/src/djbfft-0.76.patch2 b/cinelerra-5.1/thirdparty/src/djbfft-0.76.patch2
+new file mode 100644
+index 00000000..ed1b5a7f
+--- /dev/null
++++ b/cinelerra-5.1/thirdparty/src/djbfft-0.76.patch2
+@@ -0,0 +1,72 @@
++--- djbfft-0.76~/auto-str.c	2025-06-09 20:43:27.521080716 +0200
+++++ djbfft-0.76~/auto-str.c	2025-06-09 20:42:54.783164144 +0200
++@@ -5,13 +5,14 @@ 
++ char buf1[256];
++ substdio ss1 = SUBSTDIO_FDBUF(write,1,buf1,sizeof(buf1));
++ 
+++#define puts puts_
++ void puts(s)
++ char *s;
++ {
++   if (substdio_puts(&ss1,s) == -1) _exit(111);
++ }
++ 
++-main(argc,argv)
+++void main(argc,argv)
++ int argc;
++ char **argv;
++ {
++--- djbfft-0.76~/fftc4.h	2025-06-09 20:43:27.521184679 +0200
+++++ djbfft-0.76~/fftc4.h	2025-06-09 20:42:54.783362290 +0200
++@@ -33,6 +33,7 @@ 
++ extern void fftc4_un4096(complex4 *);
++ extern void fftc4_un8192(complex4 *);
++ 
+++extern void fftc4_mul(complex4 *,complex4 *, unsigned int);
++ extern void fftc4_mul2(complex4 *,complex4 *);
++ extern void fftc4_mul4(complex4 *,complex4 *);
++ extern void fftc4_mul8(complex4 *,complex4 *);
++--- djbfft-0.76~/fftc8.h	2025-06-09 20:43:27.521255985 +0200
+++++ djbfft-0.76~/fftc8.h	2025-06-09 20:42:54.783533701 +0200
++@@ -33,6 +33,7 @@ 
++ extern void fftc8_un4096(complex8 *);
++ extern void fftc8_un8192(complex8 *);
++ 
+++extern void fftc8_mul(complex8 *,complex8 *, unsigned int);
++ extern void fftc8_mul2(complex8 *,complex8 *);
++ extern void fftc8_mul4(complex8 *,complex8 *);
++ extern void fftc8_mul8(complex8 *,complex8 *);
++--- djbfft-0.76~/hier.c	2025-06-09 20:43:27.521332704 +0200
+++++ djbfft-0.76~/hier.c	2025-06-09 20:42:54.783699883 +0200
++@@ -1,5 +1,9 @@ 
++ #include "auto_home.h"
++ 
+++extern void h(char *, int, int, int);
+++extern void d(char *, char *, int, int, int);
+++extern void c(char *, char *, char *, int, int, int);
+++
++ void hier()
++ {
++   h(auto_home,-1,-1,0755);
++--- djbfft-0.76~/readwrite.h	1999-09-30 22:25:58.000000000 +0200
+++++ djbfft-0.76~/readwrite.h	2025-06-09 20:44:05.224886356 +0200
++@@ -1,7 +1,6 @@ 
++ #ifndef READWRITE_H
++ #define READWRITE_H
++ 
++-extern int read();
++-extern int write();
+++#include <unistd.h>
++ 
++ #endif
++--- djbfft-0.76~/substdio.c	1999-09-30 22:25:58.000000000 +0200
+++++ djbfft-0.76~/substdio.c	2025-06-09 20:44:34.408570321 +0200
++@@ -2,7 +2,7 @@ 
++ 
++ void substdio_fdbuf(s,op,fd,buf,len)
++ register substdio *s;
++-register int (*op)();
+++register int (*op)();
++ register int fd;
++ register char *buf;
++ register int len;
+diff --git a/cinelerra-5.1/thirdparty/src/djbfft-0.76.patch3 b/cinelerra-5.1/thirdparty/src/djbfft-0.76.patch3
+new file mode 100644
+index 00000000..698bc098
+--- /dev/null
++++ b/cinelerra-5.1/thirdparty/src/djbfft-0.76.patch3
+@@ -0,0 +1,10 @@
++--- ./speed.c.orig	2025-12-08 18:24:05.385423476 +0300
+++++ ./speed.c	2025-12-08 18:24:25.281423799 +0300
++@@ -4,6 +4,7 @@
++ #include "fftc4.h"
++ #include "fftc8.h"
++ #include "timing.h"
+++#include <stdlib.h>
++ 
++ void nomem()
++ {
+diff --git a/cinelerra-5.1/thirdparty/src/djbfft-0.76.patch4 b/cinelerra-5.1/thirdparty/src/djbfft-0.76.patch4
+new file mode 100644
+index 00000000..0101a237
+--- /dev/null
++++ b/cinelerra-5.1/thirdparty/src/djbfft-0.76.patch4
+@@ -0,0 +1,10 @@
++--- ./accuracy.c.orig	2025-12-08 18:22:51.217422274 +0300
+++++ ./accuracy.c	2025-12-08 18:23:11.417422601 +0300
++@@ -4,6 +4,7 @@
++ #include "fftc8.h"
++ #include "fftr4.h"
++ #include "fftr8.h"
+++#include <stdlib.h>
++ 
++ #define ROTATE(x,b) x = (((x) << (b)) | ((x) >> (32 - (b))))
++ real8 myrand()
+-- 
+2.46.4
+

@@ -1,0 +1,40 @@
+From 038524e23900493d4545c44096aebce446422ecf Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <randrianasulu@gmail.com>
+Date: Sat, 13 Jan 2024 21:59:00 +0300
+Subject: [PATCH 1/2] Dv encoder metadata?
+
+---
+ cinelerra-5.1/cinelerra/filedv.C | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/cinelerra-5.1/cinelerra/filedv.C b/cinelerra-5.1/cinelerra/filedv.C
+index cf8bc1bf..a523bf95 100644
+--- a/cinelerra-5.1/cinelerra/filedv.C
++++ b/cinelerra-5.1/cinelerra/filedv.C
+@@ -602,6 +602,7 @@ UNTRACE
+ int FileDV::write_frames(VFrame ***frames, int len)
+ {
+ 	int result = 0;
++	time_t now = time(NULL); 
+ 
+ 	if(stream == 0) return 1;
+ 
+@@ -619,11 +620,15 @@ int FileDV::write_frames(VFrame ***frames, int len)
+ //printf("FileDV::write_frames: 4\n");
+ 					dv_encode_full_frame(encoder, temp_frame->get_rows(),
+ 						e_dv_color_yuv, video_buffer);
++					dv_encode_metadata(video_buffer, encoder->isPAL, encoder->is16x9, &now, 0);
++					dv_encode_timecode(video_buffer, encoder->isPAL, 0);
+ 					break;
+ 				case BC_RGB888:
+ //printf("FileDV::write_frames: 5\n");
+ 					dv_encode_full_frame(encoder, temp_frame->get_rows(),
+ 						e_dv_color_rgb, video_buffer);
++					dv_encode_metadata(video_buffer, encoder->isPAL, encoder->is16x9, &now, 0);
++					dv_encode_timecode(video_buffer, encoder->isPAL, 0);
+ 					break;
+ 				default:
+ 					unsigned char *data = new unsigned char[asset->height * asset->width * 2];
+-- 
+2.35.8
+

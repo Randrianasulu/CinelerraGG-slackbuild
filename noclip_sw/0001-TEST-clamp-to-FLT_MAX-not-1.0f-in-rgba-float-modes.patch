@@ -1,0 +1,96 @@
+From 3ffabb403ad99824657da8cc4cfd9a530341cc7c Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <randrianasulu@gmail.com>
+Date: Sun, 19 Nov 2023 01:48:52 +0300
+Subject: [PATCH 1/2] TEST: clamp to FLT_MAX, not 1.0f in rgba float modes
+
+---
+ cinelerra-5.1/cinelerra/overlay_direct_rgb_float.C   | 2 +-
+ cinelerra-5.1/cinelerra/overlay_direct_rgba_float.C  | 2 +-
+ cinelerra-5.1/cinelerra/overlay_nearest_rgb_float.C  | 2 +-
+ cinelerra-5.1/cinelerra/overlay_nearest_rgba_float.C | 2 +-
+ cinelerra-5.1/cinelerra/overlay_sample_rgb_float.C   | 2 +-
+ cinelerra-5.1/cinelerra/overlay_sample_rgba_float.C  | 2 +-
+ cinelerra-5.1/cinelerra/overlayframe.h               | 1 +
+ 7 files changed, 7 insertions(+), 6 deletions(-)
+
+diff --git a/cinelerra-5.1/cinelerra/overlay_direct_rgb_float.C b/cinelerra-5.1/cinelerra/overlay_direct_rgb_float.C
+index 9b13df3e..e07bceab 100644
+--- a/cinelerra-5.1/cinelerra/overlay_direct_rgb_float.C
++++ b/cinelerra-5.1/cinelerra/overlay_direct_rgb_float.C
+@@ -1,5 +1,5 @@
+ #include "overlaydirect.h"
+ // parallel build
+-#define BLEND(FN) XBLEND(FN, z_float, z_float, 1.f, 3, 0, 0.f);
++#define BLEND(FN) XBLEND(FN, z_float, z_float, FLT_MAX, 3, 0, 0.f);
+ void DirectUnit::rgb_float() { BLEND_SWITCH(BLEND); }
+ 
+diff --git a/cinelerra-5.1/cinelerra/overlay_direct_rgba_float.C b/cinelerra-5.1/cinelerra/overlay_direct_rgba_float.C
+index f0c8afcf..83c75fd3 100644
+--- a/cinelerra-5.1/cinelerra/overlay_direct_rgba_float.C
++++ b/cinelerra-5.1/cinelerra/overlay_direct_rgba_float.C
+@@ -1,5 +1,5 @@
+ #include "overlaydirect.h"
+ // parallel build
+-#define BLEND(FN) XBLEND(FN, z_float, z_float, 1.f, 4, 0, 0.f);
++#define BLEND(FN) XBLEND(FN, z_float, z_float, FLT_MAX, 4, 0, 0.f);
+ void DirectUnit::rgba_float() { BLEND_SWITCH(BLEND); }
+ 
+diff --git a/cinelerra-5.1/cinelerra/overlay_nearest_rgb_float.C b/cinelerra-5.1/cinelerra/overlay_nearest_rgb_float.C
+index 61eb333c..9378cd7a 100644
+--- a/cinelerra-5.1/cinelerra/overlay_nearest_rgb_float.C
++++ b/cinelerra-5.1/cinelerra/overlay_nearest_rgb_float.C
+@@ -1,5 +1,5 @@
+ #include "overlaynearest.h"
+ // parallel build
+-#define BLEND(FN) XBLEND_3NN(FN, z_float, z_float, 1.f, 3, 0, 0.f);
++#define BLEND(FN) XBLEND_3NN(FN, z_float, z_float, FLT_MAX, 3, 0, 0.f);
+ void NNUnit::rgb_float() { BLEND_SWITCH(BLEND); }
+ 
+diff --git a/cinelerra-5.1/cinelerra/overlay_nearest_rgba_float.C b/cinelerra-5.1/cinelerra/overlay_nearest_rgba_float.C
+index 0e120691..61965415 100644
+--- a/cinelerra-5.1/cinelerra/overlay_nearest_rgba_float.C
++++ b/cinelerra-5.1/cinelerra/overlay_nearest_rgba_float.C
+@@ -1,5 +1,5 @@
+ #include "overlaynearest.h"
+ // parallel build
+-#define BLEND(FN) XBLEND_3NN(FN, z_float, z_float, 1.f, 4, 0, 0.f);
++#define BLEND(FN) XBLEND_3NN(FN, z_float, z_float, FLT_MAX, 4, 0, 0.f);
+ void NNUnit::rgba_float() { BLEND_SWITCH(BLEND); }
+ 
+diff --git a/cinelerra-5.1/cinelerra/overlay_sample_rgb_float.C b/cinelerra-5.1/cinelerra/overlay_sample_rgb_float.C
+index 5fd17134..93633799 100644
+--- a/cinelerra-5.1/cinelerra/overlay_sample_rgb_float.C
++++ b/cinelerra-5.1/cinelerra/overlay_sample_rgb_float.C
+@@ -1,5 +1,5 @@
+ #include "overlaysample.h"
+ // parallel build
+-#define BLEND(FN) XSAMPLE(FN, z_float, z_float, 1.f, 3, 0, 0.f);
++#define BLEND(FN) XSAMPLE(FN, z_float, z_float, FLT_MAX, 3, 0, 0.f);
+ void SampleUnit::rgb_float() { BLEND_SWITCH(BLEND); }
+ 
+diff --git a/cinelerra-5.1/cinelerra/overlay_sample_rgba_float.C b/cinelerra-5.1/cinelerra/overlay_sample_rgba_float.C
+index 84d517e0..6e2bc507 100644
+--- a/cinelerra-5.1/cinelerra/overlay_sample_rgba_float.C
++++ b/cinelerra-5.1/cinelerra/overlay_sample_rgba_float.C
+@@ -1,5 +1,5 @@
+ #include "overlaysample.h"
+ // parallel build
+-#define BLEND(FN) XSAMPLE(FN, z_float, z_float, 1.f, 4, 0, 0.f);
++#define BLEND(FN) XSAMPLE(FN, z_float, z_float, FLT_MAX, 4, 0, 0.f);
+ void SampleUnit::rgba_float() { BLEND_SWITCH(BLEND); }
+ 
+diff --git a/cinelerra-5.1/cinelerra/overlayframe.h b/cinelerra-5.1/cinelerra/overlayframe.h
+index 13c2e4bd..631af3f1 100644
+--- a/cinelerra-5.1/cinelerra/overlayframe.h
++++ b/cinelerra-5.1/cinelerra/overlayframe.h
+@@ -32,6 +32,7 @@
+ #include <stdint.h>
+ #include <stdlib.h>
+ #include <unistd.h>
++#include <float.h>
+ 
+ #define DIRECT_COPY 0
+ #define BILINEAR 1
+-- 
+2.35.7
+

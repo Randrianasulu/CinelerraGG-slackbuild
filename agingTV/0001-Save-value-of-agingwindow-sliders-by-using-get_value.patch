@@ -1,0 +1,24 @@
+From 99f324b76997097e571f2e637b739b5381edb6cc Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <randrianasulu@gmail.com>
+Date: Sun, 21 Apr 2024 11:45:15 +0300
+Subject: [PATCH 1/2] Save value of agingwindow sliders by using get_value().
+
+---
+ cinelerra-5.1/plugins/aging/agingwindow.C | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/cinelerra-5.1/plugins/aging/agingwindow.C b/cinelerra-5.1/plugins/aging/agingwindow.C
+index 5f4007aa..9ccb4d8a 100644
+--- a/cinelerra-5.1/plugins/aging/agingwindow.C
++++ b/cinelerra-5.1/plugins/aging/agingwindow.C
+@@ -82,6 +82,7 @@ AgingISlider::~AgingISlider()
+ int AgingISlider::handle_event()
+ {
+ 	int ret = BC_ISlider::handle_event();
++	*output = get_value();
+ 	win->plugin->send_configure_change();
+ 	return ret;
+ }
+-- 
+2.35.8
+

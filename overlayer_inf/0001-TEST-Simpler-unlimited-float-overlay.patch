@@ -1,0 +1,33 @@
+From bbcae1bba06b78731b5c3b416e4566fe7169eabb Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <randrianasulu@gmail.com>
+Date: Mon, 20 Nov 2023 02:16:44 +0300
+Subject: [PATCH 1/2] TEST Simpler unlimited float overlay
+
+---
+ cinelerra-5.1/cinelerra/overlayframe.h | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/cinelerra-5.1/cinelerra/overlayframe.h b/cinelerra-5.1/cinelerra/overlayframe.h
+index 13c2e4bd..6f5d0e7b 100644
+--- a/cinelerra-5.1/cinelerra/overlayframe.h
++++ b/cinelerra-5.1/cinelerra/overlayframe.h
+@@ -32,6 +32,7 @@
+ #include <stdint.h>
+ #include <stdlib.h>
+ #include <unistd.h>
++#include <float.h>
+ 
+ #define DIRECT_COPY 0
+ #define BILINEAR 1
+@@ -237,7 +238,7 @@ static inline int64_t aclip(int64_t v, int mx) {
+ 	return v < 0 ? 0 : v > mx ? mx : v;
+ }
+ static inline float   aclip(float v, float mx) {
+-	return v < 0 ? 0 : v > mx ? mx : v;
++	return v < 0 ? 0 : v > FLT_MAX-1 ? FLT_MAX : v;
+ }
+ static inline float   aclip(float v, int mx) {
+ 	return v < 0 ? 0 : v > mx ? mx : v;
+-- 
+2.35.7
+

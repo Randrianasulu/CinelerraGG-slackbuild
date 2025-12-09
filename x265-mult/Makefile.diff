@@ -1,0 +1,11 @@
+--- cinelerra-5.1/thirdparty/Makefile		2019-11-03 09:00:07.080781488 +0300
++++ cinelerra-5.1/thirdparty/Makefile		2019-11-03 09:01:23.848783003 +0300
+@@ -241,7 +241,7 @@
+ tiff.cfg_params+= --enable-shared=no --disable-zstd $(call if_npkg,libwebp,--without-webp)
+ twolame.cfg_params?=--enable-shared=no
+ x264.cfg_params?= --enable-static --enable-pic
+-x265.cfg_vars?=$(call cmake_config,source)
++#x265.cfg_vars?=$(call cmake_config,source)
+ x265.cfg_params?= -DENABLE_SHARED=no
+ libvpx.cfg_params?= --enable-pic
+ 

@@ -1,0 +1,62 @@
+From a909b1db2f55701b7397ff367a7f9822b9afc182 Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <randrianasulu@gmail.com>
+Date: Sun, 27 Aug 2023 17:51:42 +0300
+Subject: [PATCH 6/8] Add COPYRIGHT4 string about our team
+
+---
+ cinelerra-5.1/cinelerra/aboutprefs.C  | 5 ++++-
+ cinelerra-5.1/cinelerra/main.C        | 1 +
+ cinelerra-5.1/cinelerra/versioninfo.h | 2 ++
+ 3 files changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/cinelerra-5.1/cinelerra/aboutprefs.C b/cinelerra-5.1/cinelerra/aboutprefs.C
+index 54ee612b..0ffb8072 100644
+--- a/cinelerra-5.1/cinelerra/aboutprefs.C
++++ b/cinelerra-5.1/cinelerra/aboutprefs.C
+@@ -71,6 +71,9 @@ void AboutPrefs::create_objects()
+ 	);
+ 	y += 2*get_text_height(MEDIUMFONT);
+ 	draw_text(x,y, COPYRIGHTTEXT3);
++	y += get_text_height(MEDIUMFONT);
++	draw_text(x,y, COPYRIGHTTEXT4);
++	
+ 	y += get_text_height(MEDIUMFONT) * 2;
+ 
+ 
+@@ -98,7 +101,7 @@ void AboutPrefs::create_objects()
+ 			about.append(new BC_ListBoxItem(msg));
+ 		}
+ 		BC_ListBox *listbox;
+-		add_subwindow(listbox = new BC_ListBox(x, y, xS(450), yS(270),
++		add_subwindow(listbox = new BC_ListBox(x, y, xS(450), yS(250),
+ 			LISTBOX_TEXT, &about, 0, 0, 1));
+ 		y += listbox->get_h() + get_text_height(LARGEFONT) + yS(10);
+ 	}
+diff --git a/cinelerra-5.1/cinelerra/main.C b/cinelerra-5.1/cinelerra/main.C
+index 8fbb189d..b1f1fb69 100644
+--- a/cinelerra-5.1/cinelerra/main.C
++++ b/cinelerra-5.1/cinelerra/main.C
+@@ -317,6 +317,7 @@ int main(int argc, char *argv[])
+ 			PROGRAM_NAME,CINELERRA_VERSION, AboutPrefs::build_timestamp,
+ 			REPOMAINTXT COPYRIGHTTEXT1 COPYRIGHTTEXT2);
+ 		fprintf(stderr, "%s", COPYRIGHTTEXT3);
++		fprintf(stderr, "%s", COPYRIGHTTEXT4);
+ 		fprintf(stderr,"\n");
+ 		fprintf(stderr, "%s \n", AboutPrefs::ffmpeg_version);
+ 		fprintf(stderr,"\n");
+diff --git a/cinelerra-5.1/cinelerra/versioninfo.h b/cinelerra-5.1/cinelerra/versioninfo.h
+index 02a2f2c7..7e2a528f 100644
+--- a/cinelerra-5.1/cinelerra/versioninfo.h
++++ b/cinelerra-5.1/cinelerra/versioninfo.h
+@@ -9,6 +9,8 @@
+ #define COPYRIGHTTEXT1 "(c) 2006-2019 Heroine Virtual Ltd. by Adam Williams\n"
+ #define COPYRIGHTTEXT2 "2007-2020 mods for Cinelerra-GG by W.P.Morrow aka goodguy\n"
+ #define COPYRIGHTTEXT3 "2003-2017 mods for Cinelerra-CV by CinelerraCV team\n"
++#define COPYRIGHTTEXT4 "2015-2023 mods for Cinelerra-GG by Cinelerra-GG team\n"
++
+ #undef COMPILEDATE
+ 
+ #endif
+-- 
+2.35.7
+

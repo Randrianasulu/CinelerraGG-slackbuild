@@ -1,0 +1,26 @@
+From de511c4191d68efa1863128963ea6403cb13e2ea Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <randrianasulu@gmail.com>
+Date: Sat, 10 May 2025 16:17:04 +0300
+Subject: [PATCH 4/4] NOT WORKING attempt at adding hw reference to filters
+ from decoder
+
+---
+ cinelerra-5.1/cinelerra/ffmpeg.C | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/cinelerra-5.1/cinelerra/ffmpeg.C b/cinelerra-5.1/cinelerra/ffmpeg.C
+index 00b02791..3df28e9d 100644
+--- a/cinelerra-5.1/cinelerra/ffmpeg.C
++++ b/cinelerra-5.1/cinelerra/ffmpeg.C
+@@ -3930,6 +3930,8 @@ int FFVideoStream::create_filter(const char *filter_spec)
+ 	if( ret >= 0 )
+ 		ret = flip(theta);
+ 	AVFilterContext *fsrc = filt_ctx;
++	if(hw_device_ctx)
++	fsrc->hw_device_ctx = av_buffer_ref(hw_device_ctx);
+ 	if( ret >= 0 ) {
+ 		filt_ctx = 0;
+ 		ret = insert_filter("buffersink", 0, "out");
+-- 
+2.46.3
+

@@ -1,0 +1,426 @@
+From e6b185e4309d5f1d0c70d1d16079a5d32b7e67e2 Mon Sep 17 00:00:00 2001
+From: Good Guy <good1.2guy@gmail.com>
+Date: Thu, 27 Jul 2023 11:32:38 -0600
+Subject: [PATCH 1/8] Credit User for Gain plugin mods + Andrew for Debian 12
+ bld fix
+
+---
+ cinelerra-5.1/blds/bld_prepare.sh       |  16 ++--
+ cinelerra-5.1/plugins/gain/gain.C       |  30 ++++---
+ cinelerra-5.1/plugins/gain/gain.h       |   9 ++-
+ cinelerra-5.1/plugins/gain/gainwindow.C | 100 ++++++++++++++++++------
+ cinelerra-5.1/plugins/gain/gainwindow.h |  46 +++++++++--
+ 5 files changed, 147 insertions(+), 54 deletions(-)
+
+diff --git a/cinelerra-5.1/blds/bld_prepare.sh b/cinelerra-5.1/blds/bld_prepare.sh
+index 62869897..46a03d18 100755
+--- a/cinelerra-5.1/blds/bld_prepare.sh
++++ b/cinelerra-5.1/blds/bld_prepare.sh
+@@ -7,7 +7,7 @@ fi
+ 
+ if [ $# -ne 1 ]; then
+   echo "usage: $0 <os>"
+-  echo "  <os> = [centos | suse | ubuntu | fedora | mint | debian | arch | debian-testing | ubuntu-testing]"
++  echo "  <os> = [centos | suse | ubuntu | fedora | mint | debian | arch | debian-older | ubuntu-older]"
+ fi
+ 
+ dir="$1"
+@@ -79,7 +79,7 @@ case "$dir" in
+     fi
+   ;;
+ #debian 32bit: export ac_cv_header_xmmintrin_h=no
+-"debian")
++"debian-older")
+   apt-get -f -y install apt-file sox nasm yasm g++ build-essential zlib1g-dev \
+     texinfo libpng-dev freeglut3-dev libxv-dev libasound2-dev libbz2-dev \
+     libncurses5-dev libxinerama-dev libfreetype6-dev libxft-dev libgif-dev \
+@@ -92,7 +92,7 @@ case "$dir" in
+   ;;
+ #"ub16-10")
+ #  apt-get -y install libx264-dev libx265-dev libvpx-dev libmjpegtools-dev
+-"ubuntu" | "mint" | "ub14" | "ub15" | "ub16" | "ub17" | "ub18" )
++"ubuntu-older" | "mint" | "ub14" | "ub15" | "ub16" | "ub17" | "ub18" )
+   apt-get -y install apt-file sox nasm yasm g++ build-essential libz-dev \
+     texinfo libpng-dev freeglut3-dev libxv-dev libasound2-dev libbz2-dev \
+     libncurses5-dev libxinerama-dev libfreetype6-dev libxft-dev libgif-dev \
+@@ -104,8 +104,8 @@ case "$dir" in
+     libpulse-dev libtool python \
+     patchelf libboost-filesystem-dev libboost-regex-dev
+   ;;
+-#ubuntu testing for upcoming versions
+-"ubuntu-testing")
++#ubuntu for newest versions since about 06/2022
++"ubuntu")
+   apt-get -y install apt-file sox nasm yasm g++ build-essential libz-dev \
+     texinfo libpng-dev freeglut3-dev libxv-dev libasound2-dev libbz2-dev \
+     libncurses5-dev libxinerama-dev libfreetype6-dev libxft-dev libgif-dev \
+@@ -117,8 +117,8 @@ case "$dir" in
+     libpulse-dev libtool 2to3 python-is-python3 python2-minimal python2 dh-python \
+     patchelf libboost-filesystem-dev libboost-regex-dev libxml-parser-perl libimath-dev liblilv-dev
+   ;;
+-#debian testing for upcoming versions
+-"debian-testing")
++#debian for newest versions since about 06/2022
++"debian")
+   apt-get -f -y install apt-file sox nasm yasm g++ build-essential zlib1g-dev \
+     texinfo libpng-dev freeglut3-dev libxv-dev libasound2-dev libbz2-dev \
+     libncurses5-dev libxinerama-dev libfreetype6-dev libxft-dev libgif-dev \
+@@ -126,7 +126,7 @@ case "$dir" in
+     fonts-dejavu libopenexr-dev festival libfftw3-dev gdb libusb-1.0-0-dev \
+     libdc1394-25 libdc1394-dev libflac-dev libjbig-dev libvdpau-dev libva-dev \
+     inkscape libsndfile1-dev libtheora-dev cmake udftools libxml2-utils git \
+-    autoconf automake debhelper libgtk2.0-dev libpulse-dev 2to3 python-is-python3 python2-minimal python2 dh-python \
++    autoconf automake debhelper libgtk2.0-dev libpulse-dev 2to3 python-is-python3  python3 dh-python \
+     patchelf libboost-filesystem-dev libboost-regex-dev fuse
+   ;;
+ 
+diff --git a/cinelerra-5.1/plugins/gain/gain.C b/cinelerra-5.1/plugins/gain/gain.C
+index b9b9947f..74016559 100644
+--- a/cinelerra-5.1/plugins/gain/gain.C
++++ b/cinelerra-5.1/plugins/gain/gain.C
+@@ -34,10 +34,15 @@
+ #include <string.h>
+ 
+ 
+-REGISTER_PLUGIN(Gain)
++REGISTER_PLUGIN(GainMain)
+ 
+ 
+ GainConfig::GainConfig()
++{
++	reset();
++}
++
++void GainConfig::reset()
+ {
+ 	level = 0.0;
+ }
+@@ -71,25 +76,25 @@ void GainConfig::interpolate(GainConfig &prev,
+ 
+ 
+ 
+-Gain::Gain(PluginServer *server)
++GainMain::GainMain(PluginServer *server)
+  : PluginAClient(server)
+ {
+ 
+ }
+ 
+-Gain::~Gain()
++GainMain::~GainMain()
+ {
+ 
+ }
+ 
+-const char* Gain::plugin_title() { return N_("Gain"); }
+-int Gain::is_realtime() { return 1; }
++const char* GainMain::plugin_title() { return N_("Gain"); }
++int GainMain::is_realtime() { return 1; }
+ 
+ 
+-NEW_WINDOW_MACRO(Gain, GainWindow)
+-LOAD_CONFIGURATION_MACRO(Gain, GainConfig)
++NEW_WINDOW_MACRO(GainMain, GainWindow)
++LOAD_CONFIGURATION_MACRO(GainMain, GainConfig)
+ 
+-int Gain::process_realtime(int64_t size, Samples *input_ptr, Samples *output_ptr)
++int GainMain::process_realtime(int64_t size, Samples *input_ptr, Samples *output_ptr)
+ {
+ 	load_configuration();
+ 
+@@ -108,7 +113,7 @@ int Gain::process_realtime(int64_t size, Samples *input_ptr, Samples *output_ptr
+ 
+ 
+ 
+-void Gain::save_data(KeyFrame *keyframe)
++void GainMain::save_data(KeyFrame *keyframe)
+ {
+ 	FileXML output;
+ 
+@@ -124,7 +129,7 @@ void Gain::save_data(KeyFrame *keyframe)
+ 	output.terminate_string();
+ }
+ 
+-void Gain::read_data(KeyFrame *keyframe)
++void GainMain::read_data(KeyFrame *keyframe)
+ {
+ 	FileXML input;
+ // cause xml file to read directly from text
+@@ -142,13 +147,14 @@ void Gain::read_data(KeyFrame *keyframe)
+ 	}
+ }
+ 
+-void Gain::update_gui()
++void GainMain::update_gui()
+ {
+ 	if(thread)
+ 	{
+ 		load_configuration();
+ 		thread->window->lock_window();
+-		((GainWindow*)thread->window)->level->update(config.level);
++		((GainWindow*)thread->window)->level_text->update((float)config.level);
++		((GainWindow*)thread->window)->level_slider->update(config.level);
+ 		thread->window->unlock_window();
+ 	}
+ }
+diff --git a/cinelerra-5.1/plugins/gain/gain.h b/cinelerra-5.1/plugins/gain/gain.h
+index b2a86e03..614d125a 100644
+--- a/cinelerra-5.1/plugins/gain/gain.h
++++ b/cinelerra-5.1/plugins/gain/gain.h
+@@ -22,7 +22,7 @@
+ #ifndef GAIN_H
+ #define GAIN_H
+ 
+-class Gain;
++class GainMain;
+ class GainEngine;
+ 
+ #include "gainwindow.h"
+@@ -32,6 +32,7 @@ class GainConfig
+ {
+ public:
+ 	GainConfig();
++	void reset();
+ 	int equivalent(GainConfig &that);
+ 	void copy_from(GainConfig &that);
+ 	void interpolate(GainConfig &prev,
+@@ -43,11 +44,11 @@ public:
+ 	double level;
+ };
+ 
+-class Gain : public PluginAClient
++class GainMain : public PluginAClient
+ {
+ public:
+-	Gain(PluginServer *server);
+-	~Gain();
++	GainMain(PluginServer *server);
++	~GainMain();
+ 
+ 	int process_realtime(int64_t size, Samples *input_ptr, Samples *output_ptr);
+ 
+diff --git a/cinelerra-5.1/plugins/gain/gainwindow.C b/cinelerra-5.1/plugins/gain/gainwindow.C
+index c61f985a..6b62ccbb 100644
+--- a/cinelerra-5.1/plugins/gain/gainwindow.C
++++ b/cinelerra-5.1/plugins/gain/gainwindow.C
+@@ -23,6 +23,7 @@
+ #include "bchash.h"
+ #include "filesystem.h"
+ #include "gainwindow.h"
++#include "theme.h"
+ #include "language.h"
+ 
+ #include <string.h>
+@@ -33,15 +34,15 @@
+ 
+ 
+ 
+-GainWindow::GainWindow(Gain *gain)
+- : PluginClientWindow(gain,
+-	xS(230),
++GainWindow::GainWindow(GainMain *plugin)
++ : PluginClientWindow(plugin,
++	xS(420),
+ 	yS(60),
+-	xS(230),
++	xS(420),
+ 	yS(60),
+ 	0)
+ {
+-	this->gain = gain;
++	this->plugin = plugin;
+ }
+ 
+ GainWindow::~GainWindow()
+@@ -51,37 +52,92 @@ GainWindow::~GainWindow()
+ void GainWindow::create_objects()
+ {
+ 	int xs10 = xS(10);
+-	int ys10 = yS(10), ys20 = yS(20);
++	int ys10 = yS(10);
+ 	int x = xs10, y = ys10;
+-	add_tool(new BC_Title(5, y, _("Level:")));
+-	y += ys20;
+-	add_tool(level = new GainLevel(gain, x, y));
++	int x2 = xS(80), x3 = xS(180);
++	int clr_x = get_w()-x - xS(22); // note: clrBtn_w = 22
++
++	y += ys10;
++	add_tool(new BC_Title(x, y, _("Level:")));
++	level_text = new GainLevelText(this, plugin, (x + x2), y);
++	level_text->create_objects();
++	add_tool(level_slider = new GainLevelSlider(this, plugin, x3, y));
++	clr_x = x3 + level_slider->get_w() + x;
++	add_subwindow(level_clr = new GainLevelClr(this, plugin, clr_x, y));
+ 	show_window();
+ 	flush();
+ }
+ 
+ 
+ 
++void GainWindow::update()
++{
++	float level = plugin->config.level;
++	level_text->update(level);
++	level_slider->update(level);
++}
++
++
++
++GainLevelText::GainLevelText(GainWindow *window, GainMain *plugin, int x, int y)
++ : BC_TumbleTextBox(window, plugin->config.level,
++	(float)INFINITYGAIN, (float)GAINLEVEL_MAX, x, y, xS(60), 2)
++{
++	this->window = window;
++	this->plugin = plugin;
++	set_increment(0.1);
++}
++GainLevelText::~GainLevelText()
++{
++}
++int GainLevelText::handle_event()
++{
++	float min = INFINITYGAIN, max = GAINLEVEL_MAX;
++	float output = atof(get_text());
++
++	if(output > max) output = max;
++	else if(output < min) output = min;
++	plugin->config.level = output;
++	window->update();
++	plugin->send_configure_change();
++	return 1;
++}
+ 
+ 
+ 
++GainLevelSlider::GainLevelSlider(GainWindow *window, GainMain *plugin, int x, int y)
++ : BC_FSlider(x, y, 0, xS(200),	yS(200), INFINITYGAIN, GAINLEVEL_MAX, plugin->config.level)
++{
++	this->window = window;
++	this->plugin = plugin;
++	enable_show_value(0); // Hide caption
++}
++GainLevelSlider::~GainLevelSlider()
++{
++}
++int GainLevelSlider::handle_event()
++{
++	plugin->config.level = get_value();
++	window->level_text->update((float)plugin->config.level);
++	plugin->send_configure_change();
++	return 1;
++}
++
+ 
+ 
+-GainLevel::GainLevel(Gain *gain, int x, int y)
+- : BC_FSlider(x,
+- 	y,
+-	0,
+-	xS(200),
+-	yS(200),
+-	INFINITYGAIN,
+-	40,
+-	gain->config.level)
++GainLevelClr::GainLevelClr(GainWindow *window, GainMain *plugin, int x, int y)
++ : BC_Button(x, y, plugin->get_theme()->get_image_set("reset_button"))
++{
++	this->window = window;
++	this->plugin = plugin;
++}
++GainLevelClr::~GainLevelClr()
+ {
+-	this->gain = gain;
+ }
+-int GainLevel::handle_event()
++int GainLevelClr::handle_event()
+ {
+-	gain->config.level = get_value();
+-	gain->send_configure_change();
++	plugin->config.reset();
++	window->update();
++	plugin->send_configure_change();
+ 	return 1;
+ }
+diff --git a/cinelerra-5.1/plugins/gain/gainwindow.h b/cinelerra-5.1/plugins/gain/gainwindow.h
+index 603c9d36..b773ecc7 100644
+--- a/cinelerra-5.1/plugins/gain/gainwindow.h
++++ b/cinelerra-5.1/plugins/gain/gainwindow.h
+@@ -23,9 +23,13 @@
+ #define GAINWINDOW_H
+ 
+ #define TOTAL_LOADS 5
++#define GAINLEVEL_MAX 40
+ 
+ class GainThread;
+ class GainWindow;
++class GainLevelText;
++class GainLevelSlider;
++class GainLevelClr;
+ 
+ #include "filexml.h"
+ #include "gain.h"
+@@ -35,26 +39,52 @@ class GainWindow;
+ 
+ 
+ 
+-class GainLevel;
+-
+ class GainWindow : public PluginClientWindow
+ {
+ public:
+-	GainWindow(Gain *gain);
++	GainWindow(GainMain *plugin);
+ 	~GainWindow();
+ 
+ 	void create_objects();
++        void update();
++
++	GainMain *plugin;
++	GainLevelText *level_text;
++	GainLevelSlider *level_slider;
++	GainLevelClr *level_clr;
++};
++
++class GainLevelText : public BC_TumbleTextBox
++{
++public:
++	GainLevelText(GainWindow *window, GainMain *plugin, int x, int y);
++	~GainLevelText();
++	int handle_event();
+ 
+-	Gain *gain;
+-	GainLevel *level;
++	GainWindow *window;
++	GainMain *plugin;
+ };
+ 
+-class GainLevel : public BC_FSlider
++class GainLevelSlider : public BC_FSlider
+ {
+ public:
+-	GainLevel(Gain *gain, int x, int y);
++	GainLevelSlider(GainWindow *window, GainMain *plugin, int x, int y);
++	~GainLevelSlider();
+ 	int handle_event();
+-	Gain *gain;
++
++	GainWindow *window;
++	GainMain *plugin;
++};
++
++class GainLevelClr : public BC_Button
++{
++public:
++	GainLevelClr(GainWindow *window, GainMain *plugin, int x, int y);
++	~GainLevelClr();
++	int handle_event();
++
++	GainWindow *window;
++	GainMain *plugin;
+ };
+ 
+ 
+-- 
+2.35.7
+

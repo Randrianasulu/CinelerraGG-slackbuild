@@ -1,0 +1,25 @@
+From f11d33fdf7570be40c7cba72f63edec65421dfd6 Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <randrianasulu@gmail.com>
+Date: Thu, 12 Jan 2023 10:23:18 +0000
+Subject: [PATCH 3/3] Add pkg-config to guicast/Makeile - fix NetBSD build
+
+---
+ cinelerra-5.1/guicast/Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/cinelerra-5.1/guicast/Makefile b/cinelerra-5.1/guicast/Makefile
+index 04d5a2e5..32ef3582 100644
+--- a/cinelerra-5.1/guicast/Makefile
++++ b/cinelerra-5.1/guicast/Makefile
+@@ -115,7 +115,7 @@ OUTPUT = $(OBJDIR)/libguicast.a
+ UTILS = $(OBJDIR)/bootstrap $(OBJDIR)/pngtoh $(OBJDIR)/pngtoraw
+ BCXFER = xfer/$(OBJDIR)/xfer.stamp
+ 
+-CFLAGS += $(static_incs)
++CFLAGS += $(static_incs) `pkg-config --cflags libpng` `pkg-config --cflags libjpeg`
+ 
+ $(shell echo $(CFLAGS) > $(OBJDIR)/c_flags)
+ $(shell echo $(OBJS) > $(OBJDIR)/objs)
+-- 
+2.34.1
+

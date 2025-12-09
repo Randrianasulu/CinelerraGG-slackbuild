@@ -1,0 +1,26 @@
+From a446bcf492dbbce2833e2bd788354a24cf385706 Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <randrianasulu@gmail.com>
+Date: Sun, 19 Nov 2023 06:06:30 +0300
+Subject: [PATCH 2/2] Remove clip to 0.0 as minimal float value, enables
+ negative numbers in pipeline
+
+---
+ cinelerra-5.1/cinelerra/overlayframe.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/cinelerra-5.1/cinelerra/overlayframe.h b/cinelerra-5.1/cinelerra/overlayframe.h
+index 631af3f1..96d455b2 100644
+--- a/cinelerra-5.1/cinelerra/overlayframe.h
++++ b/cinelerra-5.1/cinelerra/overlayframe.h
+@@ -238,7 +238,7 @@ static inline int64_t aclip(int64_t v, int mx) {
+ 	return v < 0 ? 0 : v > mx ? mx : v;
+ }
+ static inline float   aclip(float v, float mx) {
+-	return v < 0 ? 0 : v > mx ? mx : v;
++	return  v > mx ? mx : v;
+ }
+ static inline float   aclip(float v, int mx) {
+ 	return v < 0 ? 0 : v > mx ? mx : v;
+-- 
+2.35.7
+

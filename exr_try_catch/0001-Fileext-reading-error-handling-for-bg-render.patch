@@ -1,0 +1,37 @@
+From afa6a601fd3228be18aef413061b3d0165344d7c Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <randrianasulu@gmail.com>
+Date: Wed, 30 Aug 2023 07:27:57 +0300
+Subject: [PATCH] Fileext reading error handling for bg render
+
+---
+ cinelerra-5.1/cinelerra/fileexr.C | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/cinelerra-5.1/cinelerra/fileexr.C b/cinelerra-5.1/cinelerra/fileexr.C
+index e786d4e9..a705f6c8 100644
+--- a/cinelerra-5.1/cinelerra/fileexr.C
++++ b/cinelerra-5.1/cinelerra/fileexr.C
+@@ -312,6 +312,9 @@ int FileEXR::read_frame_header(char *path)
+ 
+ int FileEXR::read_frame(VFrame *frame, VFrame *data)
+ {
++
++    try {
++
+ 	Imf::setGlobalThreadCount(file->cpus);
+ 	EXRIStream exr_stream((char*)data->get_data(), data->get_compressed_size());
+ 	Imf::InputFile file(exr_stream);
+@@ -426,6 +429,10 @@ int FileEXR::read_frame(VFrame *frame, VFrame *data)
+ 		}
+ 	}
+ 	return 0;
++    } catch (const std::exception &e) {
++    std::cerr << "error reading EXR image file:" << e.what() << std::endl;
++    return 1;
++    }
+ }
+ 
+ 
+-- 
+2.35.7
+

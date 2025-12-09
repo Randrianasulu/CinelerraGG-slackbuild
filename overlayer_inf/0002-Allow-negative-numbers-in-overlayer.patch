@@ -1,0 +1,25 @@
+From 87b6f361951e40eaac3a6ee04050344ad0a45679 Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <randrianasulu@gmail.com>
+Date: Mon, 20 Nov 2023 12:05:05 +0300
+Subject: [PATCH 2/2] Allow negative numbers  in overlayer
+
+---
+ cinelerra-5.1/cinelerra/overlayframe.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/cinelerra-5.1/cinelerra/overlayframe.h b/cinelerra-5.1/cinelerra/overlayframe.h
+index 6f5d0e7b..4775e8df 100644
+--- a/cinelerra-5.1/cinelerra/overlayframe.h
++++ b/cinelerra-5.1/cinelerra/overlayframe.h
+@@ -238,7 +238,7 @@ static inline int64_t aclip(int64_t v, int mx) {
+ 	return v < 0 ? 0 : v > mx ? mx : v;
+ }
+ static inline float   aclip(float v, float mx) {
+-	return v < 0 ? 0 : v > FLT_MAX-1 ? FLT_MAX : v;
++	return v < -FLT_MAX+1 ? -FLT_MAX : v > FLT_MAX-1 ? FLT_MAX : v;
+ }
+ static inline float   aclip(float v, int mx) {
+ 	return v < 0 ? 0 : v > mx ? mx : v;
+-- 
+2.35.7
+

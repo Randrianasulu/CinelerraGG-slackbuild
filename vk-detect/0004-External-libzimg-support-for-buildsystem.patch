@@ -1,0 +1,78 @@
+From 7a15943571097fd4f5c999f447c034e90408f7cf Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <randrianasulu@gmail.com>
+Date: Tue, 2 Dec 2025 19:23:34 +0300
+Subject: [PATCH 4/4] External libzimg support for buildsystem
+
+---
+ cinelerra-5.1/configure.ac        | 21 ++++++++++++++++++++-
+ cinelerra-5.1/thirdparty/Makefile |  1 +
+ 2 files changed, 21 insertions(+), 1 deletion(-)
+
+diff --git a/cinelerra-5.1/configure.ac b/cinelerra-5.1/configure.ac
+index 4dd4a56e..98284583 100644
+--- a/cinelerra-5.1/configure.ac
++++ b/cinelerra-5.1/configure.ac
+@@ -89,6 +89,7 @@ CHECK_WITH([vdpau],[video decode+presentation api for unix],[VDPAU],[yes])
+ CHECK_WITH([onevpl],[Intel QSV api for unix],[ONEVPL],[no])
+ CHECK_WITH([vulkan],[Vulkan api],[VULKAN],[no])
+ CHECK_WITH([libplacebo],[libplacebo ffmpeg Vulkan filter],[LIBPLACEBO],[no])
++CHECK_WITH([libzimg],[libzimg ffmpeg filter],[LIBZIMG],[no])
+ CHECK_WITH([nv],[nvenc/nvdec ffnvcodec api],[NV],[yes])
+ CHECK_WITH([cuda],[nv cuda plugins],[CUDA],[auto])
+ CHECK_WITH([clang],[use clang instead of gcc/g++],[CLANG],[no])
+@@ -713,6 +714,13 @@ if test "x$HAVE_LIBPLACEBO" != "xyes" -a "x$WANT_LIBPLACEBO" = "xyes"; then
+   AC_MSG_ERROR([requires libplacebo support.])
+ fi
+ 
++CHECK_LIB([LIBZIMG], [zimg], [zimg_filter_graph_build])
++if test "x$HAVE_LIBZIMG" != "xyes" -a "x$WANT_LIBZIMG" = "xyes"; then
++  AC_MSG_ERROR([requires libzimg support.])
++fi
++
++
++
+ #CHECK_LIB([NVENC], [nvidia-encode], [NvEncodeAPICreateInstance])
+ 
+ #if test "x$HAVE_mjpegtools" = "xyes"; then
+@@ -1101,7 +1109,7 @@ fi
+ for v in GL XFT XXF86VM OSS ALSA FIREWIRE OGG DV DVB LADSPA \
+ 	 VIDEO4LINUX2 ESOUND PULSE PACTL OPENEXR LV2 \
+ 	 COMMERCIAL GIFLIB LIBZMPEG LIBDPX SHUTTLE SHUTTLE_USB XV \
+-	 VAAPI VDPAU ONEVPL VULKAN LIBPLACEBO CUDA NV WINTV X10TV; do
++	 VAAPI VDPAU ONEVPL VULKAN LIBPLACEBO LIBZIMG CUDA NV WINTV X10TV; do
+   eval vv="\$WANT_$v"
+   if test "x$vv" != "xno"; then
+     CFG_CFLAGS+=" -DHAVE_$v"
+@@ -1170,6 +1178,17 @@ if test "x$WANT_LIBPLACEBO" != "xno" -a "x$HAVE_LIBPLACEBO" = "xyes"; then
+ fi
+ CFG_WANTS+=" LIBPLACEBO"
+ 
++if test "x$WANT_LIBZIMG" != "xno" -a "x$HAVE_LIBZIMG" = "xyes"; then
++  FFMPEG_EXTRA_LDFLAGS+=' -lzimg  `pkg-config --libs zimg`'
++  FFMPEG_EXTRA_CFG+='  --extra-cflags="'$(pkg-config --cflags zimg)'"'
++  EXTRA_LIBS+=' -lzimg'
++  WANT_LIBZIMG="yes"
++fi
++CFG_WANTS+=" LIBZIMG"
++
++
++
++
+ if test "x$WANT_NV" != "xno"; then
+   WANT_NV="yes"
+   CFG_WANTS+=" NV"
+diff --git a/cinelerra-5.1/thirdparty/Makefile b/cinelerra-5.1/thirdparty/Makefile
+index 08071f7e..41db2f49 100644
+--- a/cinelerra-5.1/thirdparty/Makefile
++++ b/cinelerra-5.1/thirdparty/Makefile
+@@ -139,6 +139,7 @@ ffmpeg.cfg_params= \
+ 	$(call if_want,ONEVPL,--enable-libvpl,--disable-libvpl) \
+ 	$(call if_want,VULKAN,--enable-vulkan,--disable-vulkan) \
+ 	$(call if_want,LIBPLACEBO,--enable-libplacebo,--disable-libplacebo) \
++	$(call if_want,LIBZIMG,--enable-libzimg,--disable-libzimg) \
+ 	$(call if_want,NV, --enable-nvenc --enable-nvdec --enable-ffnvcodec) \
+ 	$(call if_ena,twolame,--enable-libtwolame) \
+ 	$(call if_ena,openjpeg,--enable-libopenjpeg) \
+-- 
+2.46.4
+

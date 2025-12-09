@@ -1,0 +1,28 @@
+From fa0a5b90a986c5a2e9b24875b89de8fb4b78ba37 Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <randrianasulu@gmail.com>
+Date: Thu, 24 Nov 2022 12:47:16 +0300
+Subject: [PATCH] Avoid unaligned access in bctheme.C
+
+---
+ cinelerra-5.1/guicast/bctheme.C | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/cinelerra-5.1/guicast/bctheme.C b/cinelerra-5.1/guicast/bctheme.C
+index 1ec64c7f..9addf9f7 100644
+--- a/cinelerra-5.1/guicast/bctheme.C
++++ b/cinelerra-5.1/guicast/bctheme.C
+@@ -455,7 +455,10 @@ void BC_Theme::overlay(VFrame *dst, VFrame *src, int in_x1, int in_x2, int shift
+ 
+ void BC_Theme::set_data(unsigned char *ptr)
+ {
+-	int hdr_sz = *(int*)ptr - sizeof(int);
++	//int hdr_sz = *(int*)ptr - sizeof(int);
++	int hdr_sz = 0;
++	memcpy(&hdr_sz, ptr, sizeof(int));
++	hdr_sz -= sizeof(int);
+ 	unsigned char *cp = ptr + sizeof(int);
+ 	unsigned char *dp = cp + hdr_sz;
+ 	int start_item = images.size();
+-- 
+2.30.4
+

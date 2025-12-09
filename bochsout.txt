@@ -1,0 +1,701 @@
+00000000000i[      ] Bochs x86 Emulator 3.0.devel
+00000000000i[      ]   Built from GitHub snapshot after release 3.0
+00000000000i[      ]   Compiled on Oct  2 2025 at 14:22:51
+00000000000i[      ] System configuration
+00000000000i[      ]   processors: 1 (cores=1, HT threads=1)
+00000000000i[      ]   A20 line support: yes
+00000000000i[      ]   load configurable MSRs from file "msrs.def"
+00000000000i[      ] IPS is set to 90000000
+00000000000i[      ] CPU configuration
+00000000000i[      ]   SMP support: no
+00000000000i[      ]   Using pre-defined CPU configuration: p4_willamette
+00000000000i[      ] Optimization configuration
+00000000000i[      ]   RepeatSpeedups support: yes
+00000000000i[      ]   Fast function calls: yes
+00000000000i[      ]   Handlers Chaining speedups: yes
+00000000000i[      ] Devices configuration
+00000000000i[      ]   PCI support: i440FX i430FX i440BX
+00000000000i[      ]   Network devices support: NE2000 E1000
+00000000000i[      ]   Sound support: SB16 ES1370
+00000000000i[      ]   USB support: UHCI
+00000000000i[      ]   VGA extension support: vbe cirrus voodoo
+00000000000i[IMG   ] Disk image modules
+00000000000i[IMG   ]   flat concat sparse dll growing undoable volatile vmware3
+00000000000i[IMG   ]   vmware4 vbox vpc vvfat
+00000000000i[NETCTL] Networking modules
+00000000000i[NETCTL]   null vnet linux slirp socket tuntap vde
+00000000000i[SNDCTL] Sound drivers
+00000000000i[SNDCTL]   dummy file alsa oss pulse
+00000000000i[USBCTL] Pluggable USB devices
+00000000000i[USBCTL]   floppy mouse tablet keypad keyboard hub disk cdrom
+00000000000i[USBCTL]   printer
+00000000000i[MEM0  ] allocated memory at 0xd5545010. after alignment, vector=0xd5546000, block_size = 128K
+00000000000i[MEM0  ] 512,00MB
+00000000000i[MEM0  ] mem block size = 0x00020000, blocks=4096
+00000000000i[MEM0  ] rom at 0xfffe0000/131072 ('/usr/local/share/bochs/BIOS-bochs-latest')
+00000000000i[CPU0  ] initialized CPU model p4_willamette
+00000000000i[DEV   ] will paste characters every 100 iodev timer ticks
+00000000000i[STIMER] using 'slowdown' timer synchronization method
+00000000000i[WAVOUT] ALSA: opened default PCM output device
+00000000000i[WAVOUT] changed sample rate to 48000
+00000000000i[PLUGIN] init_dev of 'geforce' plugin device by virtual method
+00000000000i[MEM0  ] Register memory access handlers: 0x0000000a0000 - 0x0000000bffff
+00000000000i[      ] interval=16666, mode=realtime
+00000000000i[      ] Setting VGA update interval to 16666 (60,0 Hz)
+00000000000i[      ] VSYNC using standard mode
+00000000000i[DEV   ] GeForce AGP present on AGP bus device #0
+00000000000i[GEFORC] loaded PCI ROM '/home/guest/.bochs/Leadtek.6800GT.256.040702_AGP.bin' (size=64000 / PCI=64k)
+00000000000i[GEFORC] GeForce 6800 GT initialized
+00000000000i[XGUI  ] test_alloc_colors: 16 colors available out of 16 colors tried
+00000000000i[XGUI  ] font 8 wide x 16 high, display depth = 24
+00000000000i[XGUI  ] maximum host resolution: x=1440 y=850
+00000000000i[PLUGIN] init_dev of 'pci' plugin device by virtual method
+00000000000i[DEV   ] i440BX Host bridge present at device 0, function 0
+00000000000i[DEV   ] i440BX PCI-to-AGP bridge present at device 1, function 0
+00000000000i[PLUGIN] init_dev of 'pci2isa' plugin device by virtual method
+00000000000i[DEV   ] PIIX3 PCI-to-ISA bridge present at device 7, function 0
+00000000000i[PLUGIN] init_dev of 'cmos' plugin device by virtual method
+00000000000i[CMOS  ] Using local time for initial clock
+00000000000i[CMOS  ] Setting initial clock to: Sun Oct 12 19:54:53   2025 tz=utc (time0=1760298893)
+00000000000i[PLUGIN] init_dev of 'dma' plugin device by virtual method
+00000000000i[DMA   ] channel 4 used by cascade
+00000000000i[PLUGIN] init_dev of 'pic' plugin device by virtual method
+00000000000i[PLUGIN] init_dev of 'pit' plugin device by virtual method
+00000000000i[PLUGIN] init_dev of 'floppy' plugin device by virtual method
+00000000000i[DMA   ] channel 2 used by Floppy Drive
+00000000000i[FLOPPY] tried to open '/dev/fd0' read/write: Нет такого файла или каталога
+00000000000i[FLOPPY] tried to open '/dev/fd0' read only: Нет такого файла или каталога
+00000000000i[FLOPPY] Using boot sequence cdrom, disk, none
+00000000000i[FLOPPY] Floppy boot signature check is enabled
+00000000000i[PLUGIN] init_dev of 'acpi' plugin device by virtual method
+00000000000i[DEV   ] ACPI Controller present at device 7, function 3
+00000000000i[PLUGIN] init_dev of 'hpet' plugin device by virtual method
+00000000000i[HPET  ] initializing HPET
+00000000000i[MEM0  ] Register memory access handlers: 0x0000fed00000 - 0x0000fed003ff
+00000000000i[PLUGIN] init_dev of 'ioapic' plugin device by virtual method
+00000000000i[IOAPIC] initializing I/O APIC
+00000000000i[MEM0  ] Register memory access handlers: 0x0000fec00000 - 0x0000fec00fff
+00000000000i[IOAPIC] IOAPIC enabled (base address = 0xfec00000)
+00000000000i[PLUGIN] init_dev of 'keyboard' plugin device by virtual method
+00000000000i[PLUGIN] init_dev of 'pci_ide' plugin device by virtual method
+00000000000i[DEV   ] PIIX3 PCI IDE controller present at device 7, function 1
+00000000000i[PLUGIN] init_dev of 'harddrv' plugin device by virtual method
+00000000000i[HD    ] CD on ata0-1: '/dev/sr0'
+00000000000i[CD1   ] load cdrom with path='/dev/sr0'
+00000000000i[CD1   ] Using direct access for cdrom.
+00000000000i[HD    ] Media present in CD-ROM drive
+00000000000i[CD1   ] cdrom: Data track 0, length 358115
+00000000000i[HD    ] Capacity is 358115 sectors (699,44 MB)
+00000000000i[PLUGIN] init_dev of 'unmapped' plugin device by virtual method
+00000000000i[PLUGIN] init_dev of 'biosdev' plugin device by virtual method
+00000000000i[PLUGIN] init_dev of 'speaker' plugin device by virtual method
+00000000000i[PCSPK ] Using lowlevel sound support for output
+00000000000i[PLUGIN] init_dev of 'extfpuirq' plugin device by virtual method
+00000000000i[PLUGIN] init_dev of 'parallel' plugin device by virtual method
+00000000000i[PAR   ] parallel port 1 at 0x0378 irq 7
+00000000000i[PLUGIN] init_dev of 'serial' plugin device by virtual method
+00000000000i[SER   ] com1 at 0x03f8 irq 4 (mode: null)
+00000000000i[PLUGIN] init_dev of 'gameport' plugin device by virtual method
+00000000000i[PLUGIN] init_dev of 'es1370' plugin device by virtual method
+00000000000i[ES1370] ES1370 disabled
+00000000000i[PLUGIN] init_dev of 'ne2k' plugin device by virtual method
+00000000000i[DEV   ] PCI slot #1 used by plugin 'ne2k'
+00000000000i[DEV   ] NE2000 PCI NIC #0 present at device 8, function 0
+00000000000i[NE2K0 ] NE2000 PCI NIC #0 initialized mac b0:c4:20:00:00:01
+00000000000i[NE2K0 ] slirp network driver (based on libslirp version 4.8.0)
+00000000000i[SLIRP0] timer_new_opaque()
+00000000000i[SLIRP0] timer_mod()
+00000000000i[PLUGIN] init_dev of 'usb_uhci' plugin device by virtual method
+00000000000i[DEV   ] USB UHCI present at device 7, function 2
+00000000000i[UHCI  ] USB UHCI initialized
+00000000000i[PLUGIN] register state of 'geforce' plugin device by virtual method
+00000000000i[PLUGIN] register state of 'pci' plugin device by virtual method
+00000000000i[PLUGIN] register state of 'pci2isa' plugin device by virtual method
+00000000000i[PLUGIN] register state of 'cmos' plugin device by virtual method
+00000000000i[PLUGIN] register state of 'dma' plugin device by virtual method
+00000000000i[PLUGIN] register state of 'pic' plugin device by virtual method
+00000000000i[PLUGIN] register state of 'pit' plugin device by virtual method
+00000000000i[PLUGIN] register state of 'floppy' plugin device by virtual method
+00000000000i[PLUGIN] register state of 'unmapped' plugin device by virtual method
+00000000000i[PLUGIN] register state of 'biosdev' plugin device by virtual method
+00000000000i[PLUGIN] register state of 'speaker' plugin device by virtual method
+00000000000i[PLUGIN] register state of 'extfpuirq' plugin device by virtual method
+00000000000i[PLUGIN] register state of 'parallel' plugin device by virtual method
+00000000000i[PLUGIN] register state of 'serial' plugin device by virtual method
+00000000000i[PLUGIN] register state of 'gameport' plugin device by virtual method
+00000000000i[PLUGIN] register state of 'ne2k' plugin device by virtual method
+00000000000i[PLUGIN] register state of 'usb_uhci' plugin device by virtual method
+00000000000i[PLUGIN] register state of 'acpi' plugin device by virtual method
+00000000000i[PLUGIN] register state of 'hpet' plugin device by virtual method
+00000000000i[PLUGIN] register state of 'ioapic' plugin device by virtual method
+00000000000i[PLUGIN] register state of 'keyboard' plugin device by virtual method
+00000000000i[PLUGIN] register state of 'pci_ide' plugin device by virtual method
+00000000000i[PLUGIN] register state of 'harddrv' plugin device by virtual method
+00000000000i[SYS   ] bx_pc_system_c::Reset(HARDWARE) called
+00000000000i[CPU0  ] cpu hardware reset
+00000000000i[APIC0 ] allocate APIC id=0 (MMIO enabled) to 0x0000fee00000
+00000000000i[CPU0  ] CPUID[0x00000000]: 00000002 756e6547 6c65746e 49656e69
+00000000000i[CPU0  ] CPUID[0x00000001]: 00000f12 00010800 00000000 0febfbff
+00000000000i[CPU0  ] CPUID[0x00000002]: 665b5001 00000000 00000000 007a7040
+00000000000i[CPU0  ] CPUID[0x80000000]: 80000004 00000000 00000000 00000000
+00000000000i[CPU0  ] CPUID[0x80000001]: 00000000 00000000 00000000 00000000
+00000000000i[CPU0  ] CPUID[0x80000002]: 20202020 20202020 20202020 6e492020
+00000000000i[CPU0  ] CPUID[0x80000003]: 286c6574 50202952 69746e65 52286d75
+00000000000i[CPU0  ] CPUID[0x80000004]: 20342029 20555043 30382e31 007a4847
+00000000000i[CPU0  ] CPU Features supported:
+00000000000i[CPU0  ] 		x87
+00000000000i[CPU0  ] 		486ni
+00000000000i[CPU0  ] 		pentium_ni
+00000000000i[CPU0  ] 		p6ni
+00000000000i[CPU0  ] 		mmx
+00000000000i[CPU0  ] 		debugext
+00000000000i[CPU0  ] 		vme
+00000000000i[CPU0  ] 		pse
+00000000000i[CPU0  ] 		pae
+00000000000i[CPU0  ] 		pge
+00000000000i[CPU0  ] 		mtrr
+00000000000i[CPU0  ] 		pat
+00000000000i[CPU0  ] 		sysenter_sysexit
+00000000000i[CPU0  ] 		clflush
+00000000000i[CPU0  ] 		sse
+00000000000i[CPU0  ] 		sse2
+00000000000i[CPU0  ] 		xapic
+00000000000i[PLUGIN] reset of 'geforce' plugin device by virtual method
+00000000000i[DDC   ] Using default EDID for resolution 1920x1200
+00000000000i[PLUGIN] reset of 'pci' plugin device by virtual method
+00000000000i[PLUGIN] reset of 'pci2isa' plugin device by virtual method
+00000000000i[PLUGIN] reset of 'cmos' plugin device by virtual method
+00000000000i[PLUGIN] reset of 'dma' plugin device by virtual method
+00000000000i[PLUGIN] reset of 'pic' plugin device by virtual method
+00000000000i[PLUGIN] reset of 'pit' plugin device by virtual method
+00000000000i[PLUGIN] reset of 'floppy' plugin device by virtual method
+00000000000i[PLUGIN] reset of 'acpi' plugin device by virtual method
+00000000000i[PLUGIN] reset of 'hpet' plugin device by virtual method
+00000000000i[PLUGIN] reset of 'ioapic' plugin device by virtual method
+00000000000i[PLUGIN] reset of 'keyboard' plugin device by virtual method
+00000000000i[PLUGIN] reset of 'pci_ide' plugin device by virtual method
+00000000000i[PLUGIN] reset of 'harddrv' plugin device by virtual method
+00000000000i[PLUGIN] reset of 'unmapped' plugin device by virtual method
+00000000000i[PLUGIN] reset of 'biosdev' plugin device by virtual method
+00000000000i[PLUGIN] reset of 'speaker' plugin device by virtual method
+00000000000i[PLUGIN] reset of 'extfpuirq' plugin device by virtual method
+00000000000i[PLUGIN] reset of 'parallel' plugin device by virtual method
+00000000000i[PLUGIN] reset of 'serial' plugin device by virtual method
+00000000000i[PLUGIN] reset of 'gameport' plugin device by virtual method
+00000000000i[PLUGIN] reset of 'ne2k' plugin device by virtual method
+00000000000i[PLUGIN] reset of 'usb_uhci' plugin device by virtual method
+00000000000i[XGUI  ] Mouse capture on
+00000001734i[BIOS  ] BIOS BUILD DATE: 05/15/25
+00000337548i[KBD   ] reset-disable command received
+00000365335i[BIOS  ] Starting rombios32
+00000365773i[BIOS  ] Shutdown flag 0
+00000366381i[BIOS  ] ram_size=0x20000000
+00000366836i[BIOS  ] ram_end=512MB
+00001258643i[BIOS  ] Found 1 cpu(s)
+00001272636i[BIOS  ] bios_table_addr: 0x000fa1d8 end=0x000fcc00
+00001600505i[PCI   ] i440BX Host bridge write to PAM register 59 (TLB Flush)
+00001941548i[BIOS  ] Modify pir_table at: 0x000f9db0
+00001941593i[PCI   ] AGP aperture size set to 64 MB
+00001945103i[P2ISA ] PCI IRQ routing: PIRQA# set to 0x0b
+00001945127i[P2ISA ] PCI IRQ routing: PIRQB# set to 0x09
+00001945151i[P2ISA ] PCI IRQ routing: PIRQC# set to 0x0b
+00001945175i[P2ISA ] PCI IRQ routing: PIRQD# set to 0x09
+00001945187i[P2ISA ] write: ELCR2 = 0x0a
+00001945957i[BIOS  ] PIIX3/PIIX4 init: elcr=00 0a
+00001952819i[BIOS  ] PCI: bus=1 devfn=0x00: vendor_id=0x10de device_id=0x0045 class=0x0300
+00001952940i[MEM0  ] Register memory access handlers: 0x0000c0000000 - 0x0000c0ffffff
+00001952940i[GEFORC] BAR #0: mem base address = 0xc0000000
+00001953609i[BIOS  ] region 0: 0xc0000000
+00001953747i[MEM0  ] Register memory access handlers: 0x0000c1000000 - 0x0000c1ffffff
+00001953747i[GEFORC] BAR #2: mem base address = 0xc1000000
+00001954416i[BIOS  ] region 2: 0xc1000000
+00001954612i[MEM0  ] Register memory access handlers: 0x0000c2000000 - 0x0000c200ffff
+00001954612i[GEFORC] new ROM address = 0xc2000000
+00001955281i[BIOS  ] region 6: 0xc2000000
+00001955367i[PCI   ] i440BX Host bridge write to PAM register 5a (TLB Flush)
+00002037303i[PCI   ] i440BX Host bridge write to PAM register 5a (TLB Flush)
+00002037353i[PCI   ] i440BX Host bridge write to PAM register 5a (TLB Flush)
+00002119289i[PCI   ] i440BX Host bridge write to PAM register 5a (TLB Flush)
+00002119339i[PCI   ] i440BX Host bridge write to PAM register 5b (TLB Flush)
+00002201275i[PCI   ] i440BX Host bridge write to PAM register 5b (TLB Flush)
+00002201325i[PCI   ] i440BX Host bridge write to PAM register 5b (TLB Flush)
+00002283261i[PCI   ] i440BX Host bridge write to PAM register 5b (TLB Flush)
+00002284298i[BIOS  ] PCI ROM copied to 0xc0000 (size=0x10000)
+00002284433i[MEM0  ] Register memory access handlers: 0x0000d0000000 - 0x0000dfffffff
+00002284433i[GEFORC] BAR #1: mem base address = 0xd0000000
+00002285102i[BIOS  ] region 1: 0xd0000000
+00002285295i[GEFORC] new IRQ line = 11
+00002287196i[BIOS  ] PCI: bus=0 devfn=0x00: vendor_id=0x8086 device_id=0x7190 class=0x0600
+00002287313i[MEM0  ] Register memory access handlers: 0x0000e0000000 - 0x0000e3ffffff
+00002287313i[PCI   ] BAR #0: mem base address = 0xe0000000
+00002287982i[BIOS  ] region 0: 0xe0000000
+00002290303i[BIOS  ] PCI: bus=0 devfn=0x08: vendor_id=0x8086 device_id=0x7191 class=0x0604
+00002293377i[BIOS  ] PCI: bus=0 devfn=0x38: vendor_id=0x8086 device_id=0x7110 class=0x0601
+00002295592i[BIOS  ] PCI: bus=0 devfn=0x39: vendor_id=0x8086 device_id=0x7111 class=0x0101
+00002295859i[PIDE  ] BAR #4: i/o base address = 0xc000
+00002296476i[BIOS  ] region 4: 0x0000c000
+00002298515i[BIOS  ] PCI: bus=0 devfn=0x3a: vendor_id=0x8086 device_id=0x7112 class=0x0c03
+00002298757i[UHCI  ] BAR #4: i/o base address = 0xc020
+00002299374i[BIOS  ] region 4: 0x0000c020
+00002299514i[UHCI  ] new IRQ line = 9
+00002301428i[BIOS  ] PCI: bus=0 devfn=0x3b: vendor_id=0x8086 device_id=0x7113 class=0x0680
+00002301771i[ACPI  ] new PM base address: 0xb000
+00002301786i[ACPI  ] new SM base address: 0xb100
+00002301814i[PCI   ] setting SMRAM control register to 0x4a
+00002465951i[CPU0  ] Enter to System Management Mode
+00002465962i[CPU0  ] RSM: Resuming from System Management Mode
+00002630016i[PCI   ] setting SMRAM control register to 0x0a
+00002632028i[BIOS  ] PCI: bus=0 devfn=0x40: vendor_id=0x10ec device_id=0x8029 class=0x0200
+00002632146i[NE2K0 ] BAR #0: i/o base address = 0xc040
+00002632763i[BIOS  ] region 0: 0x0000c040
+00002633028i[NE2K0 ] new IRQ line = 11
+00002647261i[BIOS  ] MP table addr=0x000fa2b0 MPC table addr=0x000fa1e0 size=0xc8
+00002648993i[BIOS  ] SMBIOS table addr=0x000fa2c0
+00002649709i[BIOS  ] HPET present at 0xfed00000
+00002651797i[BIOS  ] ACPI tables: RSDP addr=0x000fa3f0 ACPI DATA addr=0x1fff0000 size=0xff8
+00002654821i[BIOS  ] Firmware waking vector 0x1fff00cc
+00002662252i[BIOS  ] Modify ACPI PCI-to-ISA entry at: 0x1fff09a2
+00002681159i[BIOS  ] New ACPI DSDT checksum = 0x6f
+00002682502i[PCI   ] i440BX Host bridge write to PAM register 59 (TLB Flush)
+00002683235i[BIOS  ] bios_table_cur_addr: 0x000fa414
+00038325313i[BIOS  ] IDE time out
+00038360775i[PCI   ] i440BX Host bridge write to PAM register 5a (TLB Flush)
+00038360891i[PCI   ] i440BX Host bridge write to PAM register 5b (TLB Flush)
+00045595942i[BIOS  ] Booting from 07c0:0000
+00047166660i[GEFORC] switched to 640 x 480 x 16
+00289913230i[BIOS  ] KBD: unsupported int 16h function 03
+00289917080i[BIOS  ] *** int 15h function AX=e980, BX=0000 not yet supported!
+00533961048e[CPU0  ] RDMSR: Unknown register 0x1a0
+00570741567i[HPET  ] Entering legacy mode
+00571133605e[CPU0  ] RDMSR: Unknown register 0x1a0
+00571152481e[CPU0  ] RDMSR: Unknown register 0x1a0
+00571152804e[CPU0  ] RDMSR: Unknown register 0x179
+00571157745e[CPU0  ] RDMSR: Unknown register 0x179
+00571157788e[CPU0  ] RDMSR: Unknown register 0x17a
+00571157853e[CPU0  ] RDMSR: Unknown register 0x179
+00576078842e[WAVOUT] ALSA: underrun occurred
+00578624290i[CPU0  ] Enter to System Management Mode
+00578624300i[CPU0  ] RSM: Resuming from System Management Mode
+00584076931i[APIC0 ] warning: write to read-only APIC register 0x30
+00584077006i[APIC0 ] warning: write to read-only APIC register 0x20
+00584077032i[APIC0 ] warning: write to read-only APIC register 0x20
+00587709121i[APIC0 ] set timer divide factor to 16
+00597383843i[APIC0 ] set timer divide factor to 16
+00608721229i[P2ISA ] PCI IRQ routing: PIRQA# set to 0x8b
+00608827757i[P2ISA ] PCI IRQ routing: PIRQB# set to 0x89
+00608937147i[P2ISA ] PCI IRQ routing: PIRQC# set to 0x8b
+00609043843i[P2ISA ] PCI IRQ routing: PIRQD# set to 0x89
+00618628138e[WAVOUT] ALSA: underrun occurred
+00675143701i[APIC0 ] set timer divide factor to 16
+06665006658i[SER   ] com1: FIFO enabled
+06665322305i[SER   ] com1: FIFO enabled
+06674647633i[P2ISA ] PCI IRQ routing: PIRQD# set to 0x0b
+06674837247e[UHCI  ] read from non existent offset 0x14 (port #3)
+06683413337i[KBD   ] identify keyboard command received
+06683532805i[KBD   ] setting typematic info
+06683557659i[KBD   ] setting delay to 250 mS (unused)
+06683557659i[KBD   ] setting repeat rate to 30,0 cps (unused)
+06821131311i[CD1   ] cdrom: Data track 0, length 358115
+06821210974e[HD    ] ata0-1: atapi_cmd_error: key=05 asc=24
+06826260693e[HD    ] ata0-1: atapi_cmd_error: key=05 asc=24
+06881243118e[HD    ] ata0-1: atapi_cmd_error: key=05 asc=24
+06997109876i[FLOPPY] controller reset in software
+06997126373e[FLOPPY] io_write: 0x3f5: invalid or unsupported floppy command 0x18
+06997141595i[FLOPPY] controller reset in software
+06998648323i[PCI   ] AGP aperture size set to 64 MB
+06998648865i[PCI   ] New GART base address = 0x1ccf0000
+07005803250i[P2ISA ] PCI IRQ routing: PIRQA# set to 0x0a
+07005924928i[NE2K0 ] RCR write, monitor bit set!
+07005925064e[NE2K0 ] ne2K: dma read underrun iolen=1 remote_bytes=0
+07005925069e[NE2K0 ] ne2K: dma read underrun iolen=1 remote_bytes=0
+07005925074e[NE2K0 ] ne2K: dma read underrun iolen=1 remote_bytes=0
+07005925079e[NE2K0 ] ne2K: dma read underrun iolen=1 remote_bytes=0
+07005925084e[NE2K0 ] ne2K: dma read underrun iolen=1 remote_bytes=0
+07005925089e[NE2K0 ] ne2K: dma read underrun iolen=1 remote_bytes=0
+07005925094e[NE2K0 ] ne2K: dma read underrun iolen=1 remote_bytes=0
+07005925099e[NE2K0 ] ne2K: dma read underrun iolen=1 remote_bytes=0
+07005925104e[NE2K0 ] ne2K: dma read underrun iolen=1 remote_bytes=0
+07005925109e[NE2K0 ] ne2K: dma read underrun iolen=1 remote_bytes=0
+07005925114e[NE2K0 ] ne2K: dma read underrun iolen=1 remote_bytes=0
+07005925119e[NE2K0 ] ne2K: dma read underrun iolen=1 remote_bytes=0
+07005925124e[NE2K0 ] ne2K: dma read underrun iolen=1 remote_bytes=0
+07005925129e[NE2K0 ] ne2K: dma read underrun iolen=1 remote_bytes=0
+07005925134e[NE2K0 ] ne2K: dma read underrun iolen=1 remote_bytes=0
+07005925139e[NE2K0 ] ne2K: dma read underrun iolen=1 remote_bytes=0
+07005925246i[NE2K0 ] RCR write, monitor bit set!
+07005925320i[NE2K0 ] Physical address set to 00:00:00:00:00:00
+07240294272e[GEFORC] unknown color format: 0x00
+07240294272e[GEFORC] unknown color format: 0x00
+07266834450i[GEFORC] switched to 1920 x 1200 x 32
+07795579110e[HD    ] ata0-1: atapi_cmd_error: key=05 asc=24
+18321487006e[HD    ] ata0-1: atapi_cmd_error: key=05 asc=24
+25896753436e[HD    ] ata0-1: atapi_cmd_error: key=05 asc=24
+26422339553e[KBD   ] kbd_ctrl_to_mouse(): got value of 0x88
+26422384653e[KBD   ] kbd_ctrl_to_mouse(): got value of 0x00
+26422582512i[KBD   ] wheel mouse mode enabled
+26422973683i[KBD   ] wheel mouse mode enabled
+26466076085e[PAR   ] read: input mode not supported
+26466076091e[PAR   ] read: input mode not supported
+26738659123i[NE2K0 ] RCR write, monitor bit set!
+26738659197i[NE2K0 ] Physical address set to b0:c4:20:00:00:01
+27161455835e[SLIRP0] DHCP server: requested parameter 2 not supported yet
+27161455835e[SLIRP0] DHCP server: requested parameter 119 not supported yet
+27161455835e[SLIRP0] DHCP server: requested parameter 44 not supported yet
+27161455835e[SLIRP0] DHCP server: requested parameter 47 not supported yet
+27161455835e[SLIRP0] DHCP server: requested parameter 26 not supported yet
+27161455835e[SLIRP0] DHCP server: requested parameter 121 not supported yet
+27161455835e[SLIRP0] DHCP server: requested parameter 42 not supported yet
+27161556207e[SLIRP0] DHCP server: requested parameter 2 not supported yet
+27161556207e[SLIRP0] DHCP server: requested parameter 119 not supported yet
+27161556207e[SLIRP0] DHCP server: requested parameter 44 not supported yet
+27161556207e[SLIRP0] DHCP server: requested parameter 47 not supported yet
+27161556207e[SLIRP0] DHCP server: requested parameter 26 not supported yet
+27161556207e[SLIRP0] DHCP server: requested parameter 121 not supported yet
+27161556207e[SLIRP0] DHCP server: requested parameter 42 not supported yet
+27577397958e[CPU0  ] RDMSR: Unknown register 0x179
+27577398000e[CPU0  ] RDMSR: Unknown register 0x17a
+29461228221e[GEFORC] unknown color format: 0x00
+29461228221e[GEFORC] unknown color format: 0x00
+29462771070i[GEFORC] switched to 1024 x 768 x 32
+40737716849e[FLOPPY] attempt to read/write/verify/scan sector 1 with media not present
+41034490234i[FLOPPY] controller reset in software
+41084311914i[FLOPPY] controller reset in software
+46012915721i[FLOPPY] controller reset in software
+46081807084i[SER   ] com1: FIFO enabled
+46083618999i[SER   ] com1: FIFO enabled
+46273341338e[HD    ] ata0-1: atapi_cmd_error: key=05 asc=24
+46273391383e[HD    ] ata0-1: atapi_cmd_error: key=05 asc=24
+54569239923e[CPU0  ] RDMSR: Unknown register 0x179
+54569239965e[CPU0  ] RDMSR: Unknown register 0x17a
+65550127826e[GEFORC] unknown color format: 0x00
+65551873818e[GEFORC] unknown color format: 0x00
+65552064662e[GEFORC] unknown color format: 0x00
+65553959676e[GEFORC] unknown color format: 0x00
+68733182587e[GEFORC] unknown color format: 0x00
+68736201645e[GEFORC] unknown color format: 0x00
+68736373053e[GEFORC] unknown color format: 0x00
+68737924818e[GEFORC] unknown color format: 0x00
+68812329305e[GEFORC] unknown color format: 0x00
+68812575722e[GEFORC] unknown color format: 0x00
+68813030642e[GEFORC] unknown color format: 0x00
+68817116083e[GEFORC] unknown color format: 0x00
+68818363160e[GEFORC] unknown color format: 0x00
+68820412717e[GEFORC] unknown color format: 0x00
+81561442006e[CPU0  ] RDMSR: Unknown register 0x179
+81561442048e[CPU0  ] RDMSR: Unknown register 0x17a
+108553642006e[CPU0  ] RDMSR: Unknown register 0x179
+108553642048e[CPU0  ] RDMSR: Unknown register 0x17a
+135545842025e[CPU0  ] RDMSR: Unknown register 0x179
+135545842067e[CPU0  ] RDMSR: Unknown register 0x17a
+162538041602e[CPU0  ] RDMSR: Unknown register 0x179
+162538041644e[CPU0  ] RDMSR: Unknown register 0x17a
+189530239874e[CPU0  ] RDMSR: Unknown register 0x179
+189530239916e[CPU0  ] RDMSR: Unknown register 0x17a
+200823325922e[GEFORC] unknown color format: 0x00
+200823864363e[GEFORC] unknown color format: 0x00
+200824683977e[GEFORC] unknown color format: 0x00
+202179046112e[GEFORC] unknown color format: 0x00
+202179976906e[GEFORC] unknown color format: 0x00
+202180996730e[GEFORC] unknown color format: 0x00
+203181204409e[GEFORC] unknown color format: 0x00
+203181527814e[GEFORC] unknown color format: 0x00
+203181808488e[GEFORC] unknown color format: 0x00
+203198598068e[GEFORC] unknown color format: 0x00
+203199201144e[GEFORC] unknown color format: 0x00
+203199422339e[GEFORC] unknown color format: 0x00
+203201243790e[GEFORC] unknown color format: 0x00
+203213687107e[GEFORC] unknown color format: 0x00
+203215199611e[GEFORC] unknown color format: 0x00
+203216269297e[GEFORC] unknown color format: 0x00
+203222332321e[GEFORC] unknown color format: 0x00
+203228514522e[GEFORC] unknown color format: 0x00
+203478121976e[GEFORC] unknown color format: 0x00
+203484660137e[GEFORC] unknown color format: 0x00
+203550396566e[GEFORC] unknown color format: 0x00
+203557452822e[GEFORC] unknown color format: 0x00
+203564273144e[GEFORC] unknown color format: 0x00
+204298758311e[GEFORC] unknown color format: 0x00
+204299688616e[GEFORC] unknown color format: 0x00
+204299923067e[GEFORC] unknown color format: 0x00
+204305425243e[GEFORC] unknown color format: 0x00
+205547271103e[GEFORC] unknown color format: 0x00
+205549804051e[GEFORC] unknown color format: 0x00
+206614444438e[GEFORC] unknown color format: 0x00
+206617164013e[GEFORC] unknown color format: 0x00
+206628270728e[GEFORC] unknown color format: 0x00
+206631017467e[GEFORC] unknown color format: 0x00
+206643420572e[GEFORC] unknown color format: 0x00
+206646037350e[GEFORC] unknown color format: 0x00
+206828153915e[GEFORC] unknown color format: 0x00
+206830916582e[GEFORC] unknown color format: 0x00
+206841561102e[GEFORC] unknown color format: 0x00
+206844189802e[GEFORC] unknown color format: 0x00
+206854439276e[GEFORC] unknown color format: 0x00
+206857066597e[GEFORC] unknown color format: 0x00
+207056921575e[GEFORC] unknown color format: 0x00
+207059456624e[GEFORC] unknown color format: 0x00
+207245102631e[GEFORC] unknown color format: 0x00
+207247900213e[GEFORC] unknown color format: 0x00
+207524090003e[GEFORC] unknown color format: 0x00
+207525582847e[GEFORC] unknown color format: 0x00
+207871299038e[GEFORC] unknown color format: 0x00
+207876560682e[GEFORC] unknown color format: 0x00
+207898958321e[GEFORC] unknown color format: 0x00
+207903347471e[GEFORC] unknown color format: 0x00
+208213910278e[GEFORC] unknown color format: 0x00
+208217672285e[GEFORC] unknown color format: 0x00
+208223391485e[GEFORC] unknown color format: 0x00
+208225912785e[GEFORC] unknown color format: 0x00
+208341358692e[GEFORC] unknown color format: 0x00
+208345966097e[GEFORC] unknown color format: 0x00
+210937422783e[GEFORC] unknown color format: 0x00
+210938219216e[GEFORC] unknown color format: 0x00
+210945680308e[GEFORC] unknown color format: 0x00
+210946258918e[GEFORC] unknown color format: 0x00
+210951803514e[GEFORC] unknown color format: 0x00
+210951992593e[GEFORC] unknown color format: 0x00
+210952727015e[GEFORC] unknown color format: 0x00
+210958165173e[GEFORC] unknown color format: 0x00
+210958365835e[GEFORC] unknown color format: 0x00
+210959346815e[GEFORC] unknown color format: 0x00
+210963736264e[GEFORC] unknown color format: 0x00
+210967276638e[GEFORC] unknown color format: 0x00
+210967843250e[GEFORC] unknown color format: 0x00
+210968065841e[GEFORC] unknown color format: 0x00
+210969620809e[GEFORC] unknown color format: 0x00
+210972136291e[GEFORC] unknown color format: 0x00
+210972364212e[GEFORC] unknown color format: 0x00
+210972974817e[GEFORC] unknown color format: 0x00
+210973967101e[GEFORC] unknown color format: 0x00
+210974167091e[GEFORC] unknown color format: 0x00
+210974362165e[GEFORC] unknown color format: 0x00
+210975650657e[GEFORC] unknown color format: 0x00
+210975815976e[GEFORC] unknown color format: 0x00
+210976431653e[GEFORC] unknown color format: 0x00
+210981022624e[GEFORC] unknown color format: 0x00
+210981614406e[GEFORC] unknown color format: 0x00
+210982214904e[GEFORC] unknown color format: 0x00
+210984247845e[GEFORC] unknown color format: 0x00
+210984621870e[GEFORC] unknown color format: 0x00
+210985403850e[GEFORC] unknown color format: 0x00
+211727108951e[GEFORC] unknown color format: 0x00
+211740989108e[GEFORC] unknown color format: 0x00
+211753847146e[GEFORC] unknown color format: 0x00
+211754930763e[GEFORC] unknown color format: 0x00
+211756697868e[GEFORC] unknown color format: 0x00
+211756890405e[GEFORC] unknown color format: 0x00
+211757643618e[GEFORC] unknown color format: 0x00
+211799845351e[GEFORC] unknown color format: 0x00
+211800040552e[GEFORC] unknown color format: 0x00
+211800486267e[GEFORC] unknown color format: 0x00
+211802492990e[GEFORC] unknown color format: 0x00
+211803986113e[GEFORC] unknown color format: 0x00
+212002888799e[GEFORC] unknown color format: 0x00
+212003147329e[GEFORC] unknown color format: 0x00
+212003808481e[GEFORC] unknown color format: 0x00
+212006019019e[GEFORC] unknown color format: 0x00
+212006257344e[GEFORC] unknown color format: 0x00
+212006743246e[GEFORC] unknown color format: 0x00
+212091735017e[GEFORC] unknown color format: 0x00
+212093904169e[GEFORC] unknown color format: 0x00
+212173401399e[GEFORC] unknown color format: 0x00
+212173588699e[GEFORC] unknown color format: 0x00
+212173796013e[GEFORC] unknown color format: 0x00
+212199292066e[GEFORC] unknown color format: 0x00
+212199948104e[GEFORC] unknown color format: 0x00
+212201276678e[GEFORC] unknown color format: 0x00
+212203155118e[GEFORC] unknown color format: 0x00
+212203343163e[GEFORC] unknown color format: 0x00
+212203550418e[GEFORC] unknown color format: 0x00
+212381544502e[GEFORC] unknown color format: 0x00
+212381819967e[GEFORC] unknown color format: 0x00
+212382534452e[GEFORC] unknown color format: 0x00
+212390644038e[GEFORC] unknown color format: 0x00
+212391651054e[GEFORC] unknown color format: 0x00
+212391932431e[GEFORC] unknown color format: 0x00
+212394132201e[GEFORC] unknown color format: 0x00
+212394325182e[GEFORC] unknown color format: 0x00
+212394515905e[GEFORC] unknown color format: 0x00
+212399372477e[GEFORC] unknown color format: 0x00
+212399939479e[GEFORC] unknown color format: 0x00
+212400129680e[GEFORC] unknown color format: 0x00
+212402409367e[GEFORC] unknown color format: 0x00
+212402593294e[GEFORC] unknown color format: 0x00
+212402729762e[GEFORC] unknown color format: 0x00
+212488446436e[GEFORC] unknown color format: 0x00
+212488712838e[GEFORC] unknown color format: 0x00
+212489279507e[GEFORC] unknown color format: 0x00
+212489897695e[GEFORC] unknown color format: 0x00
+212490930769e[GEFORC] unknown color format: 0x00
+212492459166e[GEFORC] unknown color format: 0x00
+212492637007e[GEFORC] unknown color format: 0x00
+212493144109e[GEFORC] unknown color format: 0x00
+212493971910e[GEFORC] unknown color format: 0x00
+212715150149e[GEFORC] unknown color format: 0x00
+212715388261e[GEFORC] unknown color format: 0x00
+212716223845e[GEFORC] unknown color format: 0x00
+212718355563e[GEFORC] unknown color format: 0x00
+212718561427e[GEFORC] unknown color format: 0x00
+212719292756e[GEFORC] unknown color format: 0x00
+212805265856e[GEFORC] unknown color format: 0x00
+212805455777e[GEFORC] unknown color format: 0x00
+212805768508e[GEFORC] unknown color format: 0x00
+212829735134e[GEFORC] unknown color format: 0x00
+212830405767e[GEFORC] unknown color format: 0x00
+212831567994e[GEFORC] unknown color format: 0x00
+212884380833e[GEFORC] unknown color format: 0x00
+212884566348e[GEFORC] unknown color format: 0x00
+212884780431e[GEFORC] unknown color format: 0x00
+212934316500e[GEFORC] unknown color format: 0x00
+212934578964e[GEFORC] unknown color format: 0x00
+212934844684e[GEFORC] unknown color format: 0x00
+212937079017e[GEFORC] unknown color format: 0x00
+212937526565e[GEFORC] unknown color format: 0x00
+212938383697e[GEFORC] unknown color format: 0x00
+212940651302e[GEFORC] unknown color format: 0x00
+212940842408e[GEFORC] unknown color format: 0x00
+212941055608e[GEFORC] unknown color format: 0x00
+212941678257e[GEFORC] unknown color format: 0x00
+213009722556e[GEFORC] unknown color format: 0x00
+213010493611e[GEFORC] unknown color format: 0x00
+213011158592e[GEFORC] unknown color format: 0x00
+213012357856e[GEFORC] unknown color format: 0x00
+213838837440e[GEFORC] unknown color format: 0x00
+213840181237e[GEFORC] unknown color format: 0x00
+213840441692e[GEFORC] unknown color format: 0x00
+213845748123e[GEFORC] unknown color format: 0x00
+213847678302e[GEFORC] unknown color format: 0x00
+213849203391e[GEFORC] unknown color format: 0x00
+213850456830e[GEFORC] unknown color format: 0x00
+215157640760e[GEFORC] unknown color format: 0x00
+215158948029e[GEFORC] unknown color format: 0x00
+215159804600e[GEFORC] unknown color format: 0x00
+215161148387e[GEFORC] unknown color format: 0x00
+216522439590e[CPU0  ] RDMSR: Unknown register 0x179
+216522439632e[CPU0  ] RDMSR: Unknown register 0x17a
+217579287405e[GEFORC] unknown color format: 0x00
+217580189873e[GEFORC] unknown color format: 0x00
+217580469631e[GEFORC] unknown color format: 0x00
+217583697665e[GEFORC] unknown color format: 0x00
+217585954970e[GEFORC] unknown color format: 0x00
+217586156597e[GEFORC] unknown color format: 0x00
+217587042350e[GEFORC] unknown color format: 0x00
+217611495026e[GEFORC] unknown color format: 0x00
+217611740480e[GEFORC] unknown color format: 0x00
+217612687031e[GEFORC] unknown color format: 0x00
+217616736470e[GEFORC] unknown color format: 0x00
+217617391081e[GEFORC] unknown color format: 0x00
+217618044917e[GEFORC] unknown color format: 0x00
+217620809290e[GEFORC] unknown color format: 0x00
+218742009434e[GEFORC] unknown color format: 0x00
+218742169209e[GEFORC] unknown color format: 0x00
+218743932892e[GEFORC] unknown color format: 0x00
+218753451804e[GEFORC] unknown color format: 0x00
+218753653807e[GEFORC] unknown color format: 0x00
+218754981566e[GEFORC] unknown color format: 0x00
+218756690305e[GEFORC] unknown color format: 0x00
+218947658459e[GEFORC] unknown color format: 0x00
+218948157291e[GEFORC] unknown color format: 0x00
+218949557545e[GEFORC] unknown color format: 0x00
+220225059783e[GEFORC] unknown color format: 0x00
+220225865564e[GEFORC] unknown color format: 0x00
+220239436903e[GEFORC] unknown color format: 0x00
+220240379565e[GEFORC] unknown color format: 0x00
+220275784037e[GEFORC] unknown color format: 0x00
+220297614642e[GEFORC] unknown color format: 0x00
+220459477252e[GEFORC] unknown color format: 0x00
+220459950874e[GEFORC] unknown color format: 0x00
+220460612044e[GEFORC] unknown color format: 0x00
+221206302314e[GEFORC] unknown color format: 0x00
+221207672524e[GEFORC] unknown color format: 0x00
+221636151888e[GEFORC] unknown color format: 0x00
+221652218280e[GEFORC] unknown color format: 0x00
+221670466475e[GEFORC] unknown color format: 0x00
+221674438436e[GEFORC] unknown color format: 0x00
+221676815139e[GEFORC] unknown color format: 0x00
+221679780601e[GEFORC] unknown color format: 0x00
+221693837367e[GEFORC] unknown color format: 0x00
+221694170207e[GEFORC] unknown color format: 0x00
+221702969981e[GEFORC] unknown color format: 0x00
+221707081117e[GEFORC] unknown color format: 0x00
+221716186134e[GEFORC] unknown color format: 0x00
+221724920294e[GEFORC] unknown color format: 0x00
+221737122740e[GEFORC] unknown color format: 0x00
+221737951833e[GEFORC] unknown color format: 0x00
+221784446010e[GEFORC] unknown color format: 0x00
+221791234722e[GEFORC] unknown color format: 0x00
+221798989037e[GEFORC] unknown color format: 0x00
+221801682533e[GEFORC] unknown color format: 0x00
+221859360989e[GEFORC] unknown color format: 0x00
+222276016133e[GEFORC] unknown color format: 0x00
+222276675072e[GEFORC] unknown color format: 0x00
+222278041219e[GEFORC] unknown color format: 0x00
+222764540544e[GEFORC] unknown color format: 0x00
+222768851650e[GEFORC] unknown color format: 0x00
+222786185803e[GEFORC] unknown color format: 0x00
+222787207561e[GEFORC] unknown color format: 0x00
+222787704908e[GEFORC] unknown color format: 0x00
+222789695523e[GEFORC] unknown color format: 0x00
+225772523726e[GEFORC] unknown color format: 0x00
+225777180092e[GEFORC] unknown color format: 0x00
+226038999159e[GEFORC] unknown color format: 0x00
+226040326729e[GEFORC] unknown color format: 0x00
+226040514298e[GEFORC] unknown color format: 0x00
+226041495085e[GEFORC] unknown color format: 0x00
+226044098431e[GEFORC] unknown color format: 0x00
+226044305129e[GEFORC] unknown color format: 0x00
+226044542131e[GEFORC] unknown color format: 0x00
+226045174840e[GEFORC] unknown color format: 0x00
+226054013776e[GEFORC] unknown color format: 0x00
+226054214048e[GEFORC] unknown color format: 0x00
+226054450743e[GEFORC] unknown color format: 0x00
+226057272097e[GEFORC] unknown color format: 0x00
+226057469748e[GEFORC] unknown color format: 0x00
+226058053391e[GEFORC] unknown color format: 0x00
+226349519236e[GEFORC] unknown color format: 0x00
+226353393055e[GEFORC] unknown color format: 0x00
+226367373648e[GEFORC] unknown color format: 0x00
+226368394250e[GEFORC] unknown color format: 0x00
+226369963035e[GEFORC] unknown color format: 0x00
+226384001377e[GEFORC] unknown color format: 0x00
+226387683924e[GEFORC] unknown color format: 0x00
+226405601488e[GEFORC] unknown color format: 0x00
+226408897091e[GEFORC] unknown color format: 0x00
+226410620740e[GEFORC] unknown color format: 0x00
+226410841479e[GEFORC] unknown color format: 0x00
+226411055819e[GEFORC] unknown color format: 0x00
+226599108823e[GEFORC] unknown color format: 0x00
+226599514460e[GEFORC] unknown color format: 0x00
+226599774938e[GEFORC] unknown color format: 0x00
+226600346477e[GEFORC] unknown color format: 0x00
+227309101290i[GEFORC] switched to 1920 x 1200 x 32
+243514640214e[CPU0  ] RDMSR: Unknown register 0x179
+243514640256e[CPU0  ] RDMSR: Unknown register 0x17a
+261443433929i[KBD   ] wheel mouse mode disabled
+261452512209i[HPET  ] Leaving legacy mode
+261452518974p[ACPI  ] >>PANIC<< ACPI control: soft power off
+261452518974i[CPU0  ] CPU is in protected mode (active)
+261452518974i[CPU0  ] CS.mode = 32 bit
+261452518974i[CPU0  ] SS.mode = 32 bit
+261452518974i[CPU0  ] EFER = 0x00000000: ffxsr nxe lma lme sce
+261452518974i[CPU0  ] | EAX=00002001  EBX=0000b004  ECX=00000010  EDX=0000b004
+261452518974i[CPU0  ] | ESP=df13fdd8  EBP=df13fddc  ESI=00002001  EDI=00000010
+261452518974i[CPU0  ] | EFLAGS=00000046: id vip vif ac vm rf nt IOPL=0 of df if tf sf ZF af PF cf
+261452518974i[CPU0  ] | SEG sltr(index|ti|rpl)     base    limit G D
+261452518974i[CPU0  ] |  CS:0060( 000c| 0|  0) 00000000 ffffffff 1 1
+261452518974i[CPU0  ] |  DS:007b( 000f| 0|  3) 00000000 ffffffff 1 1
+261452518974i[CPU0  ] |  SS:0068( 000d| 0|  0) 00000000 ffffffff 1 1
+261452518974i[CPU0  ] |  ES:007b( 000f| 0|  3) 00000000 ffffffff 1 1
+261452518974i[CPU0  ] |  FS:00d8( 001b| 0|  0) 00fc2000 ffffffff 1 0
+261452518974i[CPU0  ] |  GS:00e0( 001c| 0|  0) c1808620 00000018 0 1
+261452518974i[CPU0  ] | EIP=c0376479 (c0376477)
+261452518974i[CPU0  ] | CR0=0x8005003b: PG cd nw AC WP NE ET TS em MP PE
+261452518974i[CPU0  ] | CR2=0x0060af06
+261452518974i[CPU0  ] | CR3=0x1b62a000
+261452518974i[CPU0  ] | CR4=0x000006d0: lass uintr pks cet pke smap smep keylock osxsave pcid fsgsbase smx vmx la57 umip OSXMMEXCPT OSFXSR pce PGE MCE pae PSE de tsd pvi vme
+261452518974i[CPU0  ] 0xc0376477>> out dx, ax : 66EF
+261452518974i[SLIRP0] timer_free()
+261452518974i[CMOS  ] Last time: 1760301798 tz=utc (Sun Oct 12 20:43:18   2025)
+261452518974i[XGUI  ] Exit
+261452518974i[      ] restoring default signal behavior
+261452518974i[SIM   ] quit_sim called with exit code 1

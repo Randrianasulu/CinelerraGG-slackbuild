@@ -1,0 +1,27 @@
+From c6548cb637bd9e0dc31c6327f280cffade211641 Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <randrianasulu@gmail.com>
+Date: Sat, 10 May 2025 14:57:00 +0300
+Subject: [PATCH 2/4] Same possible crash  fix in ffstreamaudio for dynamic
+ inputs <1
+
+---
+ cinelerra-5.1/cinelerra/ffmpeg.C | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/cinelerra-5.1/cinelerra/ffmpeg.C b/cinelerra-5.1/cinelerra/ffmpeg.C
+index 82ae0856..00b02791 100644
+--- a/cinelerra-5.1/cinelerra/ffmpeg.C
++++ b/cinelerra-5.1/cinelerra/ffmpeg.C
+@@ -3959,7 +3959,8 @@ int FFAudioStream::create_filter(const char *filter_spec)
+ 		while( --i>=0 && *sp!=0 && !strchr(" \t:=,",*sp) ) *np++ = *sp++;
+ 		*np = 0;
+ 		const AVFilter *filter = !filter_name[0] ? 0 : avfilter_get_by_name(filter_name);
+-		if( !filter || avfilter_pad_get_type(filter->inputs,0) != AVMEDIA_TYPE_AUDIO ) {
++		int       nb_pads = filter->nb_inputs;
++		if( !filter || (nb_pads >1 &&  avfilter_pad_get_type(filter->inputs,0)) != AVMEDIA_TYPE_AUDIO ) {
+ 			ff_err(AVERROR(EINVAL), "FFAudioStream::create_filter: %s\n", filter_spec);
+ 			return -1;
+ 		}
+-- 
+2.46.3
+

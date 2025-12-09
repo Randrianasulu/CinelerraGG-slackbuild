@@ -1,0 +1,62 @@
+From 4b46292d5c6000cd81385507ae80a3d8be29fa59 Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <randrianasulu@gmail.com>
+Date: Sun, 27 Aug 2023 15:22:21 +0300
+Subject: [PATCH 1/4] Add libav build info to aboutprefs.C
+
+---
+ cinelerra-5.1/cinelerra/aboutprefs.C | 8 +++++++-
+ cinelerra-5.1/cinelerra/aboutprefs.h | 1 +
+ 2 files changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/cinelerra-5.1/cinelerra/aboutprefs.C b/cinelerra-5.1/cinelerra/aboutprefs.C
+index 03a6f9d0..8242eee2 100644
+--- a/cinelerra-5.1/cinelerra/aboutprefs.C
++++ b/cinelerra-5.1/cinelerra/aboutprefs.C
+@@ -28,10 +28,13 @@
+ #include "vframe.h"
+ #include "versioninfo.h"
+ 
++#include <libavcodec/avcodec.h>
++
+ #ifndef COMPILEDATE
+ #define COMPILEDATE "built: " __DATE__ " " __TIME__
+ #endif
+ const char *AboutPrefs::build_timestamp = COMPILEDATE;
++const char *AboutPrefs::ffmpeg_version  = " Libav version: " LIBAVCODEC_IDENT;
+ 
+ AboutPrefs::AboutPrefs(MWindow *mwindow, PreferencesWindow *pwindow)
+  : PreferencesDialog(mwindow, pwindow)
+@@ -53,7 +56,7 @@ void AboutPrefs::create_objects()
+ 
+ // 	add_subwindow(new BC_Title(mwindow->theme->preferencestitle_x,
+ // 		mwindow->theme->preferencestitle_y,
+-// 		_("About"),
++// 		_("About"),http://mirrors.pdp-11.ru/
+ // 		LARGEFONT,
+ // 		resources->text_default));
+ 
+@@ -125,6 +128,9 @@ void AboutPrefs::create_objects()
+ 	y += get_text_height(MEDIUMFONT, license3);
+ 
+ 	draw_text(x, y, build_timestamp);
++	x += get_text_width(MEDIUMFONT, build_timestamp);
++	draw_text(x,y, ffmpeg_version);
++	x -= get_text_width(MEDIUMFONT, build_timestamp);
+ #if defined(REPOMAINTXT)
+ 	y += get_text_height(MEDIUMFONT, build_timestamp);
+ 	draw_text(x, y, REPOMAINTXT);
+diff --git a/cinelerra-5.1/cinelerra/aboutprefs.h b/cinelerra-5.1/cinelerra/aboutprefs.h
+index ee87dcf1..1b50374c 100644
+--- a/cinelerra-5.1/cinelerra/aboutprefs.h
++++ b/cinelerra-5.1/cinelerra/aboutprefs.h
+@@ -32,6 +32,7 @@ public:
+ 	~AboutPrefs();
+ 
+ 	static const char *build_timestamp;
++	static const char *ffmpeg_version;
+ 	void create_objects();
+ 	ArrayList<BC_ListBoxItem*> about;
+ };
+-- 
+2.42.0
+

@@ -1,0 +1,28 @@
+From 13a4acefca6932025aa3d29fb913a5dc79178eb7 Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <randrianasulu@gmail.com>
+Date: Fri, 19 Jan 2024 21:35:20 +0300
+Subject: [PATCH 3/5] For some reason putting condition + printf prevent 24 bit
+ raw PCM garbage
+
+---
+ cinelerra-5.1/cinelerra/filesndfile.C | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/cinelerra-5.1/cinelerra/filesndfile.C b/cinelerra-5.1/cinelerra/filesndfile.C
+index 516b0972..2d5dc188 100644
+--- a/cinelerra-5.1/cinelerra/filesndfile.C
++++ b/cinelerra-5.1/cinelerra/filesndfile.C
+@@ -346,7 +346,9 @@ int FileSndFile::write_samples(double **buffer, int64_t len)
+ //if(sample > 1.0 || sample < -1.0) printf("FileSndFile::write_samples %f\n", sample);
+ //printf("FileSndFile::write_samples %d %d\n", asset->bits, BITSFLOAT);
+ 			if(asset->bits != BITSFLOAT) CLAMP(sample, -1.0, (32767.0 / 32768.0));
+-			if(asset->format == FILE_PCM && asset->bits == BITSLINEAR16) sample = sample/100;
++			if(asset->format == FILE_PCM && asset->bits == BITSLINEAR16)
++			sample = sample/100;
++			if (sample > 1.0f) printf("non-normalized sample value\n");
+ 			temp_double[j * asset->channels + i] = sample;
+ 		}
+ 	}
+-- 
+2.35.8
+
