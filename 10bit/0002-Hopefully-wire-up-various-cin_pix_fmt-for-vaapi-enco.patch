@@ -1,0 +1,61 @@
+From 4bc2b5e74eaf8349c1832f929ce845e4a36ce5ba Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <randrianasulu@gmail.com>
+Date: Fri, 15 Nov 2024 19:21:11 +0300
+Subject: [PATCH 2/2] Hopefully wire up various cin_pix_fmt for vaapi encoder
+
+---
+ cinelerra-5.1/cinelerra/ffmpeg.C | 8 +++-----
+ cinelerra-5.1/cinelerra/ffmpeg.h | 2 +-
+ 2 files changed, 4 insertions(+), 6 deletions(-)
+
+diff --git a/cinelerra-5.1/cinelerra/ffmpeg.C b/cinelerra-5.1/cinelerra/ffmpeg.C
+index a6ee6def..6fdcf384 100644
+--- a/cinelerra-5.1/cinelerra/ffmpeg.C
++++ b/cinelerra-5.1/cinelerra/ffmpeg.C
+@@ -1194,10 +1194,9 @@ int FFVideoStream::decode_hw_format(AVCodec *decoder, AVHWDeviceType type)
+ 	return ret;
+ }
+ 
+-AVHWDeviceType FFVideoStream::encode_hw_activate(const char *hw_dev)
++AVHWDeviceType FFVideoStream::encode_hw_activate(const char *hw_dev, const char *hw_sformat)
+ {
+ 	const char *drm_node_enc = getenv("CIN_DRM_ENC");
+-	const char *tenbit_enc = getenv("CIN_10BIT_ENC");
+ 	AVBufferRef *hw_device_ctx = 0;
+ 	AVBufferRef *hw_frames_ref = 0;
+ 	AVHWDeviceType type = AV_HWDEVICE_TYPE_NONE;
+@@ -1231,8 +1230,7 @@ AVHWDeviceType FFVideoStream::encode_hw_activate(const char *hw_dev)
+ 		AVHWFramesContext *frames_ctx = (AVHWFramesContext *)(hw_frames_ref->data);
+ 		frames_ctx->format = AV_PIX_FMT_VAAPI;
+ 		frames_ctx->sw_format = AV_PIX_FMT_NV12;
+-		if(tenbit_enc)
+-		frames_ctx->sw_format = av_get_pix_fmt(tenbit_enc);
++		if (strcmp(hw_sformat, "vaapi")) frames_ctx->sw_format = av_get_pix_fmt(hw_sformat);
+ 		frames_ctx->width = width;
+ 		frames_ctx->height = height;
+ 		frames_ctx->initial_pool_size = 0; // 200;
+@@ -3060,7 +3058,7 @@ int FFMPEG::open_encoder(const char *type, const char *spec)
+ 			}
+ 			AVPixelFormat pix_fmt = av_get_pix_fmt(asset->ff_pixel_format);
+ 			if( opt_hw_dev != 0 ) {
+-				AVHWDeviceType hw_type = vid->encode_hw_activate(opt_hw_dev);
++				AVHWDeviceType hw_type = vid->encode_hw_activate(opt_hw_dev, asset->ff_pixel_format);
+ 				switch( hw_type ) {
+ 				case AV_HWDEVICE_TYPE_VAAPI:
+ 					pix_fmt = AV_PIX_FMT_VAAPI;
+diff --git a/cinelerra-5.1/cinelerra/ffmpeg.h b/cinelerra-5.1/cinelerra/ffmpeg.h
+index ed864b59..5253d9c7 100644
+--- a/cinelerra-5.1/cinelerra/ffmpeg.h
++++ b/cinelerra-5.1/cinelerra/ffmpeg.h
+@@ -278,7 +278,7 @@ public:
+ #else
+ 	int decode_hw_format(AVCodec *decoder, AVHWDeviceType type);
+ #endif
+-	AVHWDeviceType encode_hw_activate(const char *hw_dev);
++	AVHWDeviceType encode_hw_activate(const char *hw_dev, const char *hw_sformat);
+ 	int encode_hw_write(FFrame *picture);
+ 	int encode_frame(AVFrame *frame);
+ 	int create_filter(const char *filter_spec);
+-- 
+2.46.2
+

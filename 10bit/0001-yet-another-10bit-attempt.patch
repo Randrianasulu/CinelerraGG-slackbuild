@@ -1,0 +1,33 @@
+From 97b6b084c38c2eace1f81d000bf2ba1341dd15cc Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <randrianasulu@gmail.com>
+Date: Thu, 14 Nov 2024 16:18:24 +0300
+Subject: [PATCH 1/2] yet another 10bit attempt
+
+---
+ cinelerra-5.1/cinelerra/ffmpeg.C | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/cinelerra-5.1/cinelerra/ffmpeg.C b/cinelerra-5.1/cinelerra/ffmpeg.C
+index 7521c0ba..a6ee6def 100644
+--- a/cinelerra-5.1/cinelerra/ffmpeg.C
++++ b/cinelerra-5.1/cinelerra/ffmpeg.C
+@@ -1197,6 +1197,7 @@ int FFVideoStream::decode_hw_format(AVCodec *decoder, AVHWDeviceType type)
+ AVHWDeviceType FFVideoStream::encode_hw_activate(const char *hw_dev)
+ {
+ 	const char *drm_node_enc = getenv("CIN_DRM_ENC");
++	const char *tenbit_enc = getenv("CIN_10BIT_ENC");
+ 	AVBufferRef *hw_device_ctx = 0;
+ 	AVBufferRef *hw_frames_ref = 0;
+ 	AVHWDeviceType type = AV_HWDEVICE_TYPE_NONE;
+@@ -1230,6 +1231,8 @@ AVHWDeviceType FFVideoStream::encode_hw_activate(const char *hw_dev)
+ 		AVHWFramesContext *frames_ctx = (AVHWFramesContext *)(hw_frames_ref->data);
+ 		frames_ctx->format = AV_PIX_FMT_VAAPI;
+ 		frames_ctx->sw_format = AV_PIX_FMT_NV12;
++		if(tenbit_enc)
++		frames_ctx->sw_format = av_get_pix_fmt(tenbit_enc);
+ 		frames_ctx->width = width;
+ 		frames_ctx->height = height;
+ 		frames_ctx->initial_pool_size = 0; // 200;
+-- 
+2.46.2
+
