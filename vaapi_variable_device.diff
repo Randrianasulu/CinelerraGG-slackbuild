@@ -1,0 +1,19 @@
+diff --git a/cinelerra-5.1/cinelerra/ffmpeg.C b/cinelerra-5.1/cinelerra/ffmpeg.C
+index 4923eded..e89520bb 100644
+--- a/cinelerra-5.1/cinelerra/ffmpeg.C
++++ b/cinelerra-5.1/cinelerra/ffmpeg.C
+@@ -1160,7 +1160,14 @@ int FFVideoStream::decode_hw_format(AVCodec *decoder, AVHWDeviceType type)
+ 	if( hw_pix_fmt >= 0 ) {
+ 		hw_pixfmt = hw_pix_fmt;
+ 		avctx->get_format  = get_hw_format;
++		const char *drm_node = getenv("CIN_DRM_DEC");
++		if(drm_node && type==AV_HWDEVICE_TYPE_VAAPI) {
++		    ret = av_hwdevice_ctx_create(&hw_device_ctx, type, drm_node, 0, 0);
++		}
++		else {
+ 		ret = av_hwdevice_ctx_create(&hw_device_ctx, type, 0, 0, 0);
++		}
++
+ 		if( ret >= 0 ) {
+ 			avctx->hw_device_ctx = av_buffer_ref(hw_device_ctx);
+ 			ret = 1;

@@ -1,0 +1,75 @@
+diff --git a/cinelerra-5.1/cinelerra/ci b/cinelerra-5.1/cinelerra/ci
+index bc987833..22858982 120000
+--- a/cinelerra-5.1/cinelerra/ci
++++ b/cinelerra-5.1/cinelerra/ci
+@@ -1 +1 @@
+-../bin/cinelerra
+\ No newline at end of file
++../bin/cin
+\ No newline at end of file
+diff --git a/cinelerra-5.1/cinelerra/overlay_direct_rgb_float.C b/cinelerra-5.1/cinelerra/overlay_direct_rgb_float.C
+index 9b13df3e..926b70ed 100644
+--- a/cinelerra-5.1/cinelerra/overlay_direct_rgb_float.C
++++ b/cinelerra-5.1/cinelerra/overlay_direct_rgb_float.C
+@@ -1,5 +1,5 @@
+ #include "overlaydirect.h"
+ // parallel build
+-#define BLEND(FN) XBLEND(FN, z_float, z_float, 1.f, 3, 0, 0.f);
++#define BLEND(FN) XBLEND(FN, z_float, z_float, 1000.f, 3, 0, 0.f);
+ void DirectUnit::rgb_float() { BLEND_SWITCH(BLEND); }
+ 
+diff --git a/cinelerra-5.1/cinelerra/overlay_direct_rgba_float.C b/cinelerra-5.1/cinelerra/overlay_direct_rgba_float.C
+index f0c8afcf..54517f26 100644
+--- a/cinelerra-5.1/cinelerra/overlay_direct_rgba_float.C
++++ b/cinelerra-5.1/cinelerra/overlay_direct_rgba_float.C
+@@ -1,5 +1,5 @@
+ #include "overlaydirect.h"
+ // parallel build
+-#define BLEND(FN) XBLEND(FN, z_float, z_float, 1.f, 4, 0, 0.f);
++#define BLEND(FN) XBLEND(FN, z_float, z_float, 1000.f, 4, 0, 0.f);
+ void DirectUnit::rgba_float() { BLEND_SWITCH(BLEND); }
+ 
+diff --git a/cinelerra-5.1/cinelerra/overlay_nearest_rgb_float.C b/cinelerra-5.1/cinelerra/overlay_nearest_rgb_float.C
+index 61eb333c..36ad6b98 100644
+--- a/cinelerra-5.1/cinelerra/overlay_nearest_rgb_float.C
++++ b/cinelerra-5.1/cinelerra/overlay_nearest_rgb_float.C
+@@ -1,5 +1,5 @@
+ #include "overlaynearest.h"
+ // parallel build
+-#define BLEND(FN) XBLEND_3NN(FN, z_float, z_float, 1.f, 3, 0, 0.f);
++#define BLEND(FN) XBLEND_3NN(FN, z_float, z_float, 1000.f, 3, 0, 0.f);
+ void NNUnit::rgb_float() { BLEND_SWITCH(BLEND); }
+ 
+diff --git a/cinelerra-5.1/cinelerra/overlay_nearest_rgba_float.C b/cinelerra-5.1/cinelerra/overlay_nearest_rgba_float.C
+index 0e120691..6ce72240 100644
+--- a/cinelerra-5.1/cinelerra/overlay_nearest_rgba_float.C
++++ b/cinelerra-5.1/cinelerra/overlay_nearest_rgba_float.C
+@@ -1,5 +1,5 @@
+ #include "overlaynearest.h"
+ // parallel build
+-#define BLEND(FN) XBLEND_3NN(FN, z_float, z_float, 1.f, 4, 0, 0.f);
++#define BLEND(FN) XBLEND_3NN(FN, z_float, z_float, 1000.f, 4, 0, 0.f);
+ void NNUnit::rgba_float() { BLEND_SWITCH(BLEND); }
+ 
+diff --git a/cinelerra-5.1/cinelerra/overlay_sample_rgb_float.C b/cinelerra-5.1/cinelerra/overlay_sample_rgb_float.C
+index 5fd17134..84669f1d 100644
+--- a/cinelerra-5.1/cinelerra/overlay_sample_rgb_float.C
++++ b/cinelerra-5.1/cinelerra/overlay_sample_rgb_float.C
+@@ -1,5 +1,5 @@
+ #include "overlaysample.h"
+ // parallel build
+-#define BLEND(FN) XSAMPLE(FN, z_float, z_float, 1.f, 3, 0, 0.f);
++#define BLEND(FN) XSAMPLE(FN, z_float, z_float, 1000.f, 3, 0, 0.f);
+ void SampleUnit::rgb_float() { BLEND_SWITCH(BLEND); }
+ 
+diff --git a/cinelerra-5.1/cinelerra/overlay_sample_rgba_float.C b/cinelerra-5.1/cinelerra/overlay_sample_rgba_float.C
+index 84d517e0..44388d9b 100644
+--- a/cinelerra-5.1/cinelerra/overlay_sample_rgba_float.C
++++ b/cinelerra-5.1/cinelerra/overlay_sample_rgba_float.C
+@@ -1,5 +1,5 @@
+ #include "overlaysample.h"
+ // parallel build
+-#define BLEND(FN) XSAMPLE(FN, z_float, z_float, 1.f, 4, 0, 0.f);
++#define BLEND(FN) XSAMPLE(FN, z_float, z_float, 1000.f, 4, 0, 0.f);
+ void SampleUnit::rgba_float() { BLEND_SWITCH(BLEND); }
+ 

@@ -1,0 +1,50 @@
+diff --git a/cinelerra-5.1/cinelerra/ffmpeg.C b/cinelerra-5.1/cinelerra/ffmpeg.C
+index d9e86a4f..6754019b 100644
+--- a/cinelerra-5.1/cinelerra/ffmpeg.C
++++ b/cinelerra-5.1/cinelerra/ffmpeg.C
+@@ -1434,7 +1434,7 @@ int FFVideoStream::convert_hw_frame(AVFrame *ifrm, AVFrame *ofrm)
+ 			&inv_table, &src_range, &table, &dst_range,
+ 			&brightness, &contrast, &saturation) ) {
+ 		if( src_range != codec_range || dst_range != codec_range ||
+-		    inv_table != codec_table || table != codec_table )
++		    inv_table != codec_table || table != codec_table ) 
+ 			sws_setColorspaceDetails(fconvert_ctx,
+ 					codec_table, codec_range, codec_table, codec_range,
+ 					brightness, contrast, saturation);
+@@ -1675,6 +1675,13 @@ int FFVideoConvert::convert_picture_vframe(VFrame *frame, AVFrame *ip, AVFrame *
+ 
+ 	int *inv_table, *table, src_range, dst_range;
+ 	int brightness, contrast, saturation;
++	
++	const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(ofmt);
++	int isYUV = !(desc->flags & AV_PIX_FMT_FLAG_RGB) && desc->nb_components >= 2;
++
++	int is_rgbyuv = ((BC_CModels::is_yuv(cmodel) && !isYUV ) || (!BC_CModels::is_yuv(cmodel) && isYUV));
++	if(is_rgbyuv) printf("rgb-yuv transfer! \n");
++	
+ 	if( !sws_getColorspaceDetails(convert_ctx,
+ 			&inv_table, &src_range, &table, &dst_range,
+ 			&brightness, &contrast, &saturation) ) {
+@@ -1807,10 +1814,21 @@ int FFVideoConvert::convert_vframe_picture(VFrame *frame, AVFrame *op, AVFrame *
+ 
+ 	int *inv_table, *table, src_range, dst_range;
+ 	int brightness, contrast, saturation;
++	
++	printf("Out cmodel: %i \n", cmodel);
++	const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(ofmt);
++	int isYUV = !(desc->flags & AV_PIX_FMT_FLAG_RGB) && desc->nb_components >= 2;
++	
++	if (isYUV) printf ("outfmt is yuv! \n");
++	
++	int is_rgbyuv = ((BC_CModels::is_yuv(cmodel) && !isYUV ) || (!BC_CModels::is_yuv(cmodel) && isYUV));
++	if(is_rgbyuv) printf("rgb-yuv transfer in convert_vframe_picture! \n");
++	
++	
+ 	if( !sws_getColorspaceDetails(convert_ctx,
+ 			&inv_table, &src_range, &table, &dst_range,
+ 			&brightness, &contrast, &saturation) ) {
+-		if(( dst_range != color_range || table != color_table ) && (cmodel !=  27 && cmodel != 17))
++		if( dst_range != color_range || table != color_table )
+ 			sws_setColorspaceDetails(convert_ctx,
+ 					inv_table, src_range, color_table, color_range,
+ 					brightness, contrast, saturation);

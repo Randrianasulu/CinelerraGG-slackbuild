@@ -1,0 +1,96 @@
+diff --git a/cinelerra-5.1/cinelerra/ffmpeg.C b/cinelerra-5.1/cinelerra/ffmpeg.C
+index e89d1fa1..62e65c57 100644
+--- a/cinelerra-5.1/cinelerra/ffmpeg.C
++++ b/cinelerra-5.1/cinelerra/ffmpeg.C
+@@ -1663,7 +1663,7 @@ int FFVideoConvert::convert_picture_vframe(VFrame *frame, AVFrame *ip, AVFrame *
+ 	case BC_COLORS_JPEG:  color_range = 1;  break;
+ 	case BC_COLORS_MPEG:  color_range = 0;  break;
+ 	}
+-	int color_space = SWS_CS_ITU601;
++	int color_space = 0;
+ 	switch( preferences->yuv_color_space ) {
+ 	case BC_COLORS_BT601_PAL:  color_space = SWS_CS_ITU601;  break;
+ 	case BC_COLORS_BT601_NTSC: color_space = SWS_CS_SMPTE170M; break;
+@@ -1675,11 +1675,13 @@ int FFVideoConvert::convert_picture_vframe(VFrame *frame, AVFrame *ip, AVFrame *
+ 
+ 	int *inv_table, *table, src_range, dst_range;
+ 	int brightness, contrast, saturation;
++	printf("CMODEL %i \n", cmodel);
++	
+ 	if( !sws_getColorspaceDetails(convert_ctx,
+ 			&inv_table, &src_range, &table, &dst_range,
+ 			&brightness, &contrast, &saturation) ) {
+-		if( src_range != color_range || dst_range != color_range ||
+-		    inv_table != color_table || table != color_table )
++		if(( src_range != color_range || dst_range != color_range ||
++		    inv_table != color_table || table != color_table ) && (cmodel != 27 && cmodel != 17)) /* not yuv */ 
+ 			sws_setColorspaceDetails(convert_ctx,
+ 					color_table, color_range, color_table, color_range,
+ 					brightness, contrast, saturation);
+@@ -1720,6 +1722,8 @@ int FFVideoConvert::convert_cmodel(VFrame *frame, AVFrame *ip)
+ 			(max_bits > 8 ? BC_RGBA16161616 : BC_RGBA8888) :
+ 			(max_bits > 8 ? BC_RGB161616 : BC_RGB888)) ;
+ 	}
++	printf("convert_cmodel: %i \n", imodel);
++	printf("max_bits: %i \n", max_bits);
+ 	VFrame vframe(ip->width, ip->height, imodel);
+ 	if( convert_picture_vframe(&vframe, ip) ) return -1;
+ 	frame->transfer_from(&vframe);
+@@ -1772,6 +1776,7 @@ int FFVideoConvert::convert_vframe_picture(VFrame *frame, AVFrame *op, AVFrame *
+ 		opic->data[0] = frame->get_y();  opic->linesize[0] = ysz;
+ 		opic->data[1] = frame->get_u();  opic->linesize[1] = usz;
+ 		opic->data[2] = frame->get_v();  opic->linesize[2] = usz;
++		printf("CModel 444 selected! \n");
+ 		break;
+ 	default:
+ 		opic->data[0] = frame->get_data();
+@@ -1810,7 +1815,7 @@ int FFVideoConvert::convert_vframe_picture(VFrame *frame, AVFrame *op, AVFrame *
+ 	if( !sws_getColorspaceDetails(convert_ctx,
+ 			&inv_table, &src_range, &table, &dst_range,
+ 			&brightness, &contrast, &saturation) ) {
+-		if( dst_range != color_range || table != color_table )
++		if(( dst_range != color_range || table != color_table ) && (cmodel !=  27 && cmodel != 17) )
+ 			sws_setColorspaceDetails(convert_ctx,
+ 					inv_table, src_range, color_table, color_range,
+ 					brightness, contrast, saturation);
+@@ -1846,6 +1851,7 @@ int FFVideoConvert::convert_pixfmt(VFrame *frame, AVFrame *op)
+ 			(max_bits > 8 ? BC_RGBA16161616 : BC_RGBA8888) :
+ 			(max_bits > 8 ? BC_RGB161616 : BC_RGB888)) ;
+ 	}
++	printf("convert_pixfmt: %i \n", imodel);
+ 	VFrame vframe(frame->get_w(), frame->get_h(), imodel);
+ 	vframe.transfer_from(frame);
+ 	if( !convert_vframe_picture(&vframe, op) ) return 1;
+@@ -2766,6 +2772,7 @@ int FFMPEG::open_decoder()
+ 					file_base->file->preferences->yuv_color_range;
+ 				break;
+ 			}
++			
+ 			switch( avpar->color_space ) {
+ 			case AVCOL_SPC_BT470BG:
+ 				vid->color_space = BC_COLORS_BT601_PAL;
+@@ -2783,10 +2790,15 @@ int FFMPEG::open_decoder()
+ 				vid->color_space = BC_COLORS_BT2020_CL;
+ 				break;
+ 			default:
+-				vid->color_space = !file_base ? BC_COLORS_BT601_NTSC :
++				vid->color_space = !file_base ? BC_COLORS_BT709:
+ 					file_base->file->preferences->yuv_color_space;
+ 				break;
+ 			}
++			
++			printf("cspace %i , crange % i \n", vid->color_space, vid->color_range);
++			printf("cspace_det %i , crange_det % i \n", avpar->color_space, avpar->color_range);
++
++
+ 			double secs = to_secs(st->duration, st->time_base);
+ 			vid->length = secs * vid->frame_rate;
+ 			vid->aspect_ratio = (double)st->sample_aspect_ratio.num / st->sample_aspect_ratio.den;
+@@ -3042,6 +3054,7 @@ int FFMPEG::open_encoder(const char *type, const char *spec)
+ 			}
+ 			if( (vid->color_space = asset->ff_color_space) < 0 )
+ 				vid->color_space = file_base->file->preferences->yuv_color_space;
++			printf("enc vid cspace %i \n", vid->color_space);
+ 			switch( vid->color_space ) {
+ 			case BC_COLORS_BT601_NTSC:  ctx->colorspace = AVCOL_SPC_SMPTE170M;  break;
+ 			case BC_COLORS_BT601_PAL: ctx->colorspace = AVCOL_SPC_BT470BG; break;

@@ -1,0 +1,45 @@
+diff --git a/cinelerra-5.1/cinelerra/ffmpeg.C b/cinelerra-5.1/cinelerra/ffmpeg.C
+index 7521c0ba..6a3a7f38 100644
+--- a/cinelerra-5.1/cinelerra/ffmpeg.C
++++ b/cinelerra-5.1/cinelerra/ffmpeg.C
+@@ -373,6 +373,7 @@ GET_HW_PIXFMT(vaapi, AV_PIX_FMT_VAAPI)
+ GET_HW_PIXFMT(vdpau, AV_PIX_FMT_VDPAU)
+ GET_HW_PIXFMT(cuda,  AV_PIX_FMT_CUDA)
+ GET_HW_PIXFMT(nv12,  AV_PIX_FMT_NV12)
++GET_HW_PIXFMT(p010,  AV_PIX_FMT_P010LE)
+ 
+ static enum AVPixelFormat get_hw_format(AVCodecContext *ctx,
+ 			const enum AVPixelFormat *pix_fmts)
+@@ -383,6 +384,7 @@ static enum AVPixelFormat get_hw_format(AVCodecContext *ctx,
+ 		case AV_PIX_FMT_VAAPI: ctx->get_format = get_hw_vaapi; return *p;
+ 		case AV_PIX_FMT_VDPAU: ctx->get_format = get_hw_vdpau; return *p;
+ 		case AV_PIX_FMT_CUDA:  ctx->get_format = get_hw_cuda;  return *p;
++		case AV_PIX_FMT_P010LE:  ctx->get_format = get_hw_p010;  return *p;
+ 		case AV_PIX_FMT_NV12:  ctx->get_format = get_hw_nv12;  return *p;
+ 		default:
+ 			fprintf(stderr, "Unknown HW surface format: %s\n",
+@@ -1197,6 +1199,7 @@ int FFVideoStream::decode_hw_format(AVCodec *decoder, AVHWDeviceType type)
+ AVHWDeviceType FFVideoStream::encode_hw_activate(const char *hw_dev)
+ {
+ 	const char *drm_node_enc = getenv("CIN_DRM_ENC");
++	const char *tenbit_enc = getenv("CIN_10BIT_ENC");
+ 	AVBufferRef *hw_device_ctx = 0;
+ 	AVBufferRef *hw_frames_ref = 0;
+ 	AVHWDeviceType type = AV_HWDEVICE_TYPE_NONE;
+@@ -1230,6 +1233,7 @@ AVHWDeviceType FFVideoStream::encode_hw_activate(const char *hw_dev)
+ 		AVHWFramesContext *frames_ctx = (AVHWFramesContext *)(hw_frames_ref->data);
+ 		frames_ctx->format = AV_PIX_FMT_VAAPI;
+ 		frames_ctx->sw_format = AV_PIX_FMT_NV12;
++		if (tenbit_enc) frames_ctx->sw_format =  AV_PIX_FMT_P010LE;
+ 		frames_ctx->width = width;
+ 		frames_ctx->height = height;
+ 		frames_ctx->initial_pool_size = 0; // 200;
+@@ -1391,7 +1395,7 @@ int FFVideoStream::init_frame(AVFrame *picture)
+ {
+ 	switch( avctx->pix_fmt ) {
+ 	case AV_PIX_FMT_VAAPI:
+-		picture->format = AV_PIX_FMT_NV12;
++		picture->format = AV_PIX_FMT_P010LE;
+ 		break;
+ 	default:
+ 		picture->format = avctx->pix_fmt;

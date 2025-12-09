@@ -1,0 +1,22 @@
+diff --git a/cinelerra-5.1/plugins/histogram/histogram.C b/cinelerra-5.1/plugins/histogram/histogram.C
+index c78c3c7c..975e2eab 100644
+--- a/cinelerra-5.1/plugins/histogram/histogram.C
++++ b/cinelerra-5.1/plugins/histogram/histogram.C
+@@ -234,7 +234,7 @@ float HistogramMain::calculate_level(float input, int mode, int use_value)
+ 
+ 	if( !EQUIV(config.gamma[mode], 0) ) {
+ 		output = pow(output, 1.0 / config.gamma[mode]);
+-		CLAMP(output, 0, 1.0);
++		//CLAMP(output, 0, 1.0);
+ 	}
+ 
+ // Apply value curve
+@@ -247,7 +247,7 @@ float HistogramMain::calculate_level(float input, int mode, int use_value)
+ 			config.low_output[mode];
+ 	}
+ 
+-	CLAMP(output, 0, 1.0);
++	//CLAMP(output, 0, 1.0);
+ 	return output;
+ }
+ 
