@@ -1,0 +1,39 @@
+From cd74a4e0d8c066bd99ad863150e3df692591413d Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <randrianasulu@gmail.com>
+Date: Wed, 11 Mar 2026 14:03:11 +0300
+Subject: [PATCH] Fix x11 direct mode
+
+---
+ cinelerra-5.1/cinelerra/vdevicex11.C | 2 +-
+ cinelerra-5.1/cinelerra/vrender.C    | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/cinelerra-5.1/cinelerra/vdevicex11.C b/cinelerra-5.1/cinelerra/vdevicex11.C
+index 215dde54..cb1aca21 100644
+--- a/cinelerra-5.1/cinelerra/vdevicex11.C
++++ b/cinelerra-5.1/cinelerra/vdevicex11.C
+@@ -273,7 +273,7 @@ void VDeviceX11::new_output_buffer(VFrame **result, int file_colormodel, EDL *ed
+ 				default: {}
+ 			}
+ 			
+-			if(colormodel_is16bpc = 1) direct_supported = 0;
++			if(colormodel_is16bpc == 1) direct_supported = 0;
+ 
+ 
+ // file wants direct frame but we need a temp
+diff --git a/cinelerra-5.1/cinelerra/vrender.C b/cinelerra-5.1/cinelerra/vrender.C
+index c8ca1535..5222d775 100644
+--- a/cinelerra-5.1/cinelerra/vrender.C
++++ b/cinelerra-5.1/cinelerra/vrender.C
+@@ -283,7 +283,7 @@ int VRender::get_colormodel(VEdit *playable_edit, int use_vconsole, int use_bren
+ 			if( file ) {
+ // damn the color range, full speed ahead
+ 				if( vconfig->driver == PLAYBACK_X11 && vconfig->use_direct_x11 &&
+-				    file->colormodel_supported(BC_BGR8888) == BC_BGR8888  && ! colormodel_is16bpc )
++				    file->colormodel_supported(BC_BGR8888) == BC_BGR8888  && !colormodel_is16bpc )
+ 					colormodel = BC_BGR8888;
+ 				else {
+ // file favorite colormodel may mismatch rgb/yuv
+-- 
+2.46.4
+

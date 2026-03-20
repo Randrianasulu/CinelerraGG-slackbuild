@@ -1,0 +1,25 @@
+--- /home/guest/botva/src/cinelerra-git/cin-5/new-git/cinelerra/cinelerra-5.1/guicast/Makefile	2025-04-23 09:29:14.894954632 +0300
++++ /dev/shm/Makefile	2025-12-19 19:33:33.082785131 +0300
+@@ -36,6 +36,13 @@
+ BOOTSTRAPFLAGS := -DBOOTSTRAP="\"objcopy -B powerpc -I binary -O elf32-powerpc\""
+ endif
+ 
++ifeq ($(OBJDIR), sparc)
++BOOTSTRAPFLAGS := -DBOOTSTRAP="\"objcopy -B sparc -I binary -O elf32-sparc\""
++endif
++
++ifeq ($(OBJDIR), sparc64)
++BOOTSTRAPFLAGS := -DBOOTSTRAP="\"objcopy -B sparc -I binary -O elf32-sparc64\""
++endif
+ 
+ 
+ 
+@@ -147,7 +154,7 @@
+ 	ar rs $(OUTPUT) `ls -1 $(dir $(BCXFER))/xfer*.o`
+ 
+ $(OBJDIR)/bootstrap:
+-	$(CC) -O2 $(BOOTSTRAPFLAGS) bootstrap.c -o $(OBJDIR)/bootstrap
++	$(CC) -O0 -g $(BOOTSTRAPFLAGS) -Wcast-align bootstrap.c -o $(OBJDIR)/bootstrap
+ 
+ $(OBJDIR)/pngtoh: pngtoh.c
+ 	$(CC) -O2 pngtoh.c -o $(OBJDIR)/pngtoh

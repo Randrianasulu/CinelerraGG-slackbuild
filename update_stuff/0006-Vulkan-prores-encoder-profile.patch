@@ -1,0 +1,31 @@
+From bc9d436196406f572fbbdc9d7263d775e2d10fcc Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <randrianasulu@gmail.com>
+Date: Thu, 19 Mar 2026 08:17:49 +0300
+Subject: [PATCH 6/9] Vulkan prores encoder profile
+
+---
+ cinelerra-5.1/ffmpeg/video/prores_vulkan.pro | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+ create mode 100644 cinelerra-5.1/ffmpeg/video/prores_vulkan.pro
+
+diff --git a/cinelerra-5.1/ffmpeg/video/prores_vulkan.pro b/cinelerra-5.1/ffmpeg/video/prores_vulkan.pro
+new file mode 100644
+index 00000000..14d88826
+--- /dev/null
++++ b/cinelerra-5.1/ffmpeg/video/prores_vulkan.pro
+@@ -0,0 +1,12 @@
++mov prores_ks_vulkan
++# ProRes, encoder prores_ks. Container Apple QuickTime movie (.mov).
++cin_hw_dev=vulkan
++cin_pix_fmt=yuv422p10
++profile=3
++# The possible video profile values for the ProRes codec are:
++# 5 = 4444xq
++# 4 = 4444
++# 3 = HQ (high quality)
++# 2 = Standard
++# 1 = LT (light)
++# 0 = Proxy
+-- 
+2.46.4
+

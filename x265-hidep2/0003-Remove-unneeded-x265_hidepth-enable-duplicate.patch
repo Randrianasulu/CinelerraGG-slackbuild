@@ -1,0 +1,36 @@
+From fc213ecf3fd215b754fb68dff0f245ffd359bc64 Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <randrianasulu@gmail.com>
+Date: Mon, 15 Dec 2025 04:40:49 +0300
+Subject: [PATCH 3/3] Remove unneeded x265_hidepth enable (duplicate)
+
+---
+ cinelerra-5.1/configure.ac | 8 --------
+ 1 file changed, 8 deletions(-)
+
+diff --git a/cinelerra-5.1/configure.ac b/cinelerra-5.1/configure.ac
+index 18730be6..9489db00 100644
+--- a/cinelerra-5.1/configure.ac
++++ b/cinelerra-5.1/configure.ac
+@@ -1186,19 +1186,11 @@ if test "x$WANT_LIBZIMG" != "xno" -a "x$HAVE_LIBZIMG" = "xyes"; then
+ fi
+ CFG_WANTS+=" LIBZIMG"
+ 
+-
+-
+-
+ if test "x$WANT_NV" != "xno"; then
+   WANT_NV="yes"
+   CFG_WANTS+=" NV"
+ fi
+ 
+-if test "x$WANT_X265_HIDEPTH" != "xno"; then
+-  WANT_X265_HIDEPTH="yes"
+-  CFG_WANTS+=" X265_HIDEPTH"
+-fi
+-
+ if test "x$HAVE_DL" = "xyes"; then
+   EXTRA_LIBS+=' -ldl'
+   FFMPEG_EXTRA_LDFLAGS+=' -ldl'
+-- 
+2.46.4
+

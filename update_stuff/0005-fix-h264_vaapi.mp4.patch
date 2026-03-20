@@ -1,0 +1,23 @@
+From 95cbd8f62935fb52df65e63610f670004baa0e55 Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <randrianasulu@gmail.com>
+Date: Thu, 19 Mar 2026 08:11:20 +0300
+Subject: [PATCH 5/9] fix h264_vaapi.mp4
+
+---
+ cinelerra-5.1/ffmpeg/video/h264_vaapi.mp4 | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/cinelerra-5.1/ffmpeg/video/h264_vaapi.mp4 b/cinelerra-5.1/ffmpeg/video/h264_vaapi.mp4
+index ab61bbd7..8cbd1f14 100644
+--- a/cinelerra-5.1/ffmpeg/video/h264_vaapi.mp4
++++ b/cinelerra-5.1/ffmpeg/video/h264_vaapi.mp4
+@@ -2,4 +2,6 @@ mp4 h264_vaapi
+ # Requires specific GPU hardware encoding capability 
+ #  as well as required software implementation.
+ cin_hw_dev=vaapi
++cin_pix_fmt=nv12
++async_depth=64
+ profile=high
+-- 
+2.46.4
+

@@ -1,0 +1,25 @@
+From 79013daef73c644c9852f6c473c29cd8d4cd7c08 Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <randrianasulu@gmail.com>
+Date: Mon, 8 Dec 2025 05:15:04 +0300
+Subject: [PATCH 2/3] Make x265_hidepth actually work
+
+---
+ cinelerra-5.1/configure.ac | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/cinelerra-5.1/configure.ac b/cinelerra-5.1/configure.ac
+index 0f1aedb9..18730be6 100644
+--- a/cinelerra-5.1/configure.ac
++++ b/cinelerra-5.1/configure.ac
+@@ -1291,7 +1291,7 @@ echo "export THIRDPARTY EXTRA_LIBS FFMPEG_EXTRA_CFG"
+ echo ""
+ 
+ echo "WANT_CIN := $WANT_CIN"
+-CFG_WANTS+=" CIN_3RDPARTY LIBZMPEG COMMERCIAL STATIC_BUILD"
++CFG_WANTS+=" CIN_3RDPARTY LIBZMPEG COMMERCIAL STATIC_BUILD X265_HIDEPTH"
+ for w in $CFG_WANTS; do ww=WANT_$w; echo "WANT_$w := ${!ww}"; done
+ echo ""
+ 
+-- 
+2.46.4
+

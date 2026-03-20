@@ -1,0 +1,830 @@
+From 4e1b3f8293b261252f68d5b7d6abaf0b278e77e1 Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <randrianasulu@gmail.com>
+Date: Wed, 11 Mar 2026 19:22:41 +0300
+Subject: [PATCH 1/2] Remove old ffmpeg.git patches
+
+---
+ .../thirdparty/src/ffmpeg.git.patch1          |  11 -
+ .../thirdparty/src/ffmpeg.git.patch10         |  16 -
+ .../thirdparty/src/ffmpeg.git.patch2          | 414 ------------------
+ .../thirdparty/src/ffmpeg.git.patch3          |  68 ---
+ .../thirdparty/src/ffmpeg.git.patch4          |  10 -
+ .../thirdparty/src/ffmpeg.git.patch5          |  25 --
+ .../thirdparty/src/ffmpeg.git.patch7          |  10 -
+ .../thirdparty/src/ffmpeg.git.patch9          |  14 -
+ .../thirdparty/src/ffmpeg.git.patchB          |  22 -
+ .../thirdparty/src/ffmpeg.git.patchC          |  41 --
+ .../thirdparty/src/ffmpeg.git.patchD          |  24 -
+ .../thirdparty/src/ffmpeg.git.patchZ1         |  49 ---
+ .../thirdparty/src/ffmpeg.git.patchZ2         |  11 -
+ 13 files changed, 715 deletions(-)
+ delete mode 100644 cinelerra-5.1/thirdparty/src/ffmpeg.git.patch1
+ delete mode 100644 cinelerra-5.1/thirdparty/src/ffmpeg.git.patch10
+ delete mode 100644 cinelerra-5.1/thirdparty/src/ffmpeg.git.patch2
+ delete mode 100644 cinelerra-5.1/thirdparty/src/ffmpeg.git.patch3
+ delete mode 100644 cinelerra-5.1/thirdparty/src/ffmpeg.git.patch4
+ delete mode 100644 cinelerra-5.1/thirdparty/src/ffmpeg.git.patch5
+ delete mode 100644 cinelerra-5.1/thirdparty/src/ffmpeg.git.patch7
+ delete mode 100644 cinelerra-5.1/thirdparty/src/ffmpeg.git.patch9
+ delete mode 100644 cinelerra-5.1/thirdparty/src/ffmpeg.git.patchB
+ delete mode 100644 cinelerra-5.1/thirdparty/src/ffmpeg.git.patchC
+ delete mode 100644 cinelerra-5.1/thirdparty/src/ffmpeg.git.patchD
+ delete mode 100644 cinelerra-5.1/thirdparty/src/ffmpeg.git.patchZ1
+ delete mode 100644 cinelerra-5.1/thirdparty/src/ffmpeg.git.patchZ2
+
+diff --git a/cinelerra-5.1/thirdparty/src/ffmpeg.git.patch1 b/cinelerra-5.1/thirdparty/src/ffmpeg.git.patch1
+deleted file mode 100644
+index 4427ea65..00000000
+--- a/cinelerra-5.1/thirdparty/src/ffmpeg.git.patch1
++++ /dev/null
+@@ -1,11 +0,0 @@
+---- a/fftools/cmdutils.c	2025-04-18 12:38:40.562773988 -0600
+-+++ b/fftools/cmdutils.c	2025-04-18 12:37:06.493547153 -0600
+-@@ -57,7 +57,7 @@
+- AVDictionary *swr_opts;
+- AVDictionary *format_opts, *codec_opts;
+- 
+--int hide_banner = 0;
+-+int hide_banner = 1;
+- 
+- void uninit_opts(void)
+- {
+diff --git a/cinelerra-5.1/thirdparty/src/ffmpeg.git.patch10 b/cinelerra-5.1/thirdparty/src/ffmpeg.git.patch10
+deleted file mode 100644
+index 818da25c..00000000
+--- a/cinelerra-5.1/thirdparty/src/ffmpeg.git.patch10
++++ /dev/null
+@@ -1,16 +0,0 @@
+---- a/libavutil/hwcontext_cuda.c	2025-04-18 14:35:01.291580404 -0600
+-+++ b/libavutil/hwcontext_cuda.c	2025-04-18 14:34:29.859129090 -0600
+-@@ -365,11 +365,13 @@
+-                                                     hwctx->internal->cuda_device));
+-         if (ret < 0)
+-             return ret;
+-+#if 0
+-     } else if (flags & AV_CUDA_USE_CURRENT_CONTEXT) {
+-         ret = CHECK_CU(cu->cuCtxGetCurrent(&hwctx->cuda_ctx));
+-         if (ret < 0)
+-             return ret;
+-         av_log(device_ctx, AV_LOG_INFO, "Using current CUDA context.\n");
+-+#endif
+-     } else {
+-         ret = CHECK_CU(cu->cuCtxCreate(&hwctx->cuda_ctx, desired_flags,
+-                                        hwctx->internal->cuda_device));
+diff --git a/cinelerra-5.1/thirdparty/src/ffmpeg.git.patch2 b/cinelerra-5.1/thirdparty/src/ffmpeg.git.patch2
+deleted file mode 100644
+index 9dcd9284..00000000
+--- a/cinelerra-5.1/thirdparty/src/ffmpeg.git.patch2
++++ /dev/null
+@@ -1,414 +0,0 @@
+---- a/libavformat/mpegtsenc.c	2025-05-12 18:48:13.570751744 -0600
+-+++ b/libavformat/mpegtsenc.c	2025-05-13 12:12:38.534457031 -0600
+-@@ -90,9 +90,11 @@
+-     int64_t pat_period; /* PAT/PMT period in PCR time base */
+-     int64_t nit_period; /* NIT period in PCR time base */
+-     int nb_services;
+--    int64_t first_pcr;
+-     int first_dts_checked;
+--    int64_t next_pcr;
+-+    int64_t pcr_pos, pcr;
+-+    int64_t first_pcr, next_pcr;
+-+    int64_t delay;
+-+    int pcr_stream_pid;
+-     int mux_rate; ///< set to 1 when VBR
+-     int pes_payload_size;
+-     int64_t total_size;
+-@@ -259,7 +261,7 @@
+-     int data_st_warning;
+- 
+-     int64_t pcr_period; /* PCR period in PCR time base */
+--    int64_t last_pcr;
+-+    int64_t pcr_timer;
+- 
+-     /* For Opus */
+-     int opus_queued_samples;
+-@@ -962,18 +964,18 @@
+-     return 0;
+- }
+- 
+--static int64_t get_pcr(const MpegTSWrite *ts)
+-+static int64_t get_pcr(const MpegTSWrite *ts, AVIOContext *pb)
+- {
+--    return av_rescale(ts->total_size + 11, 8 * PCR_TIME_BASE, ts->mux_rate) +
+--           ts->first_pcr;
+-+    int64_t pos = avio_tell(pb) + 11;
+-+    return ts->pcr + (ts->mux_rate == 1 ? (pos - ts->pcr_pos) * 8 :
+-+        av_rescale(pos - ts->pcr_pos, 8 * PCR_TIME_BASE, ts->mux_rate));
+- }
+- 
+- static void write_packet(AVFormatContext *s, const uint8_t *packet)
+- {
+-     MpegTSWrite *ts = s->priv_data;
+-     if (ts->m2ts_mode) {
+--        int64_t pcr = get_pcr(s->priv_data);
+--        uint32_t tp_extra_header = pcr % 0x3fffffff;
+-+        uint32_t tp_extra_header = get_pcr(ts, s->pb) % 0x3fffffff;
+-         tp_extra_header = AV_RB32(&tp_extra_header);
+-         avio_write(s->pb, (unsigned char *) &tp_extra_header,
+-                    sizeof(tp_extra_header));
+-@@ -1059,9 +1061,6 @@
+-         else
+-             ts_st->pcr_period = 1;
+-     }
+--
+--    // output a PCR as soon as possible
+--    ts_st->last_pcr   = ts->first_pcr - ts_st->pcr_period;
+- }
+- 
+- static void select_pcr_streams(AVFormatContext *s)
+-@@ -1124,6 +1123,7 @@
+- 
+-     if (s->max_delay < 0) /* Not set by the caller */
+-         s->max_delay = 0;
+-+    ts->delay = av_rescale(s->max_delay, 90000, AV_TIME_BASE);
+- 
+-     // round up to a whole number of TS packets
+-     ts->pes_payload_size = (ts->pes_payload_size + 14 + 183) / 184 * 184 - 14;
+-@@ -1183,7 +1183,9 @@
+-         /* MPEG pid values < 16 are reserved. Applications which set st->id in
+-          * this range are assigned a calculated pid. */
+-         if (st->id < 16) {
+--            if (ts->m2ts_mode) {
+-+            if (ts->start_pid >= 0)
+-+                ts_st->pid = ts->start_pid + i;
+-+            else if (ts->m2ts_mode) {
+-                 switch (st->codecpar->codec_type) {
+-                 case AVMEDIA_TYPE_VIDEO:
+-                     ts_st->pid = ts->m2ts_video_pid++;
+-@@ -1210,9 +1212,9 @@
+-                     av_log(s, AV_LOG_ERROR, "Cannot automatically assign PID for stream %d\n", st->index);
+-                     return AVERROR(EINVAL);
+-                 }
+--            } else {
+--                ts_st->pid = ts->start_pid + i;
+-             }
+-+            else
+-+                ts_st->pid = START_PID + i;
+-         } else {
+-             ts_st->pid = st->id;
+-         }
+-@@ -1280,9 +1282,14 @@
+-     ts->last_pat_ts = AV_NOPTS_VALUE;
+-     ts->last_sdt_ts = AV_NOPTS_VALUE;
+-     ts->last_nit_ts = AV_NOPTS_VALUE;
+--    ts->pat_period = av_rescale(ts->pat_period_us, PCR_TIME_BASE, AV_TIME_BASE);
+--    ts->sdt_period = av_rescale(ts->sdt_period_us, PCR_TIME_BASE, AV_TIME_BASE);
+--    ts->nit_period = av_rescale(ts->nit_period_us, PCR_TIME_BASE, AV_TIME_BASE);
+-+    ts->pat_period = ts->pat_period_us < 0 ? -1 :
+-+        av_rescale(ts->pat_period_us, PCR_TIME_BASE, AV_TIME_BASE);
+-+    ts->sdt_period = ts->sdt_period_us < 0 ? -1 :
+-+        av_rescale(ts->sdt_period_us, PCR_TIME_BASE, AV_TIME_BASE);
+-+    ts->nit_period = ts->nit_period_us < 0 ? -1 :
+-+        av_rescale(ts->nit_period_us, PCR_TIME_BASE, AV_TIME_BASE);
+-+    ts->pcr = 0;
+-+    ts->pcr_pos = 0;
+- 
+-     /* assign provider name */
+-     provider = av_dict_get(s->metadata, "service_provider", NULL, 0);
+-@@ -1298,8 +1305,8 @@
+-         av_log(s, AV_LOG_VERBOSE, "muxrate %d, ", ts->mux_rate);
+-     av_log(s, AV_LOG_VERBOSE,
+-            "sdt every %"PRId64" ms, pat/pmt every %"PRId64" ms",
+--           av_rescale(ts->sdt_period, 1000, PCR_TIME_BASE),
+--           av_rescale(ts->pat_period, 1000, PCR_TIME_BASE));
+-+           ts->sdt_period < 0 ? -1 : av_rescale(ts->sdt_period, 1000, PCR_TIME_BASE),
+-+           ts->pat_period < 0 ? -1 : av_rescale(ts->pat_period, 1000, PCR_TIME_BASE));
+-     if (ts->flags & MPEGTS_FLAG_NIT)
+-         av_log(s, AV_LOG_VERBOSE, ", nit every %"PRId64" ms", av_rescale(ts->nit_period, 1000, PCR_TIME_BASE));
+-     av_log(s, AV_LOG_VERBOSE, "\n");
+-@@ -1308,36 +1315,40 @@
+- }
+- 
+- /* send SDT, NIT, PAT and PMT tables regularly */
+--static void retransmit_si_info(AVFormatContext *s, int force_pat, int force_sdt, int force_nit, int64_t pcr)
+-+static void retransmit_si_info(AVFormatContext *s, int force_pat, int force_sdt, int force_nit)
+- {
+-     MpegTSWrite *ts = s->priv_data;
+-     int i;
+- 
+--    if ((pcr != AV_NOPTS_VALUE && ts->last_sdt_ts == AV_NOPTS_VALUE) ||
+--        (pcr != AV_NOPTS_VALUE && pcr - ts->last_sdt_ts >= ts->sdt_period) ||
+--        force_sdt
+--    ) {
+--        if (pcr != AV_NOPTS_VALUE)
+--            ts->last_sdt_ts = FFMAX(pcr, ts->last_sdt_ts);
+--        mpegts_write_sdt(s);
+--    }
+--    if ((pcr != AV_NOPTS_VALUE && ts->last_pat_ts == AV_NOPTS_VALUE) ||
+--        (pcr != AV_NOPTS_VALUE && pcr - ts->last_pat_ts >= ts->pat_period) ||
+--        force_pat) {
+--        if (pcr != AV_NOPTS_VALUE)
+--            ts->last_pat_ts = FFMAX(pcr, ts->last_pat_ts);
+--        mpegts_write_pat(s);
+--        for (i = 0; i < ts->nb_services; i++)
+--            mpegts_write_pmt(s, ts->services[i]);
+--    }
+--    if ((pcr != AV_NOPTS_VALUE && ts->last_nit_ts == AV_NOPTS_VALUE) ||
+--        (pcr != AV_NOPTS_VALUE && pcr - ts->last_nit_ts >= ts->nit_period) ||
+--        force_nit
+--    ) {
+--        if (pcr != AV_NOPTS_VALUE)
+--            ts->last_nit_ts = FFMAX(pcr, ts->last_nit_ts);
+-+    if (ts->sdt_period >= 0) {
+-+        int64_t pcr = get_pcr(ts, s->pb);
+-+        if (ts->last_sdt_ts == AV_NOPTS_VALUE || pcr >= ts->last_sdt_ts + ts->sdt_period)
+-+            force_sdt = 1;
+-+        if (force_sdt) {
+-+            ts->last_sdt_ts = pcr;
+-+            mpegts_write_sdt(s);
+-+        }
+-+    }
+-+    if (ts->pat_period >= 0) {
+-+        int64_t pcr = get_pcr(ts, s->pb);
+-+        if (ts->last_pat_ts == AV_NOPTS_VALUE || pcr >= ts->last_pat_ts + ts->pat_period)
+-+            force_pat = 1;
+-+        if (force_pat) {
+-+            ts->last_pat_ts = pcr;
+-+            mpegts_write_pat(s);
+-+            for (i = 0; i < ts->nb_services; i++)
+-+                mpegts_write_pmt(s, ts->services[i]);
+-+        }
+-+    }
+-+    if (ts->nit_period >= 0) {
+-+        int64_t pcr = get_pcr(ts, s->pb);
+-+        if (ts->last_nit_ts == AV_NOPTS_VALUE || pcr >= ts->last_nit_ts + ts->nit_period)
+-+            force_nit = 1;
+-+        if (force_nit) {
+-+            ts->last_nit_ts = pcr;
+-         if (ts->flags & MPEGTS_FLAG_NIT)
+-             mpegts_write_nit(s);
+-+        }
+-     }
+- }
+- 
+-@@ -1374,25 +1385,29 @@
+- static void mpegts_insert_pcr_only(AVFormatContext *s, AVStream *st)
+- {
+-     MpegTSWrite *ts = s->priv_data;
+--    MpegTSWriteStream *ts_st = st->priv_data;
+-+    int64_t pcr = get_pcr(ts, s->pb);
+-+    MpegTSWriteStream *ts_st = st ? st->priv_data : 0;
+-+    uint32_t pcr_pid = ts_st ? ts_st->pid : ts->pcr_stream_pid;
+-     uint8_t *q;
+-     uint8_t buf[TS_PACKET_SIZE];
+- 
+-     q    = buf;
+-     *q++ = SYNC_BYTE;
+--    *q++ = ts_st->pid >> 8;
+--    *q++ = ts_st->pid;
+--    *q++ = 0x20 | ts_st->cc;   /* Adaptation only */
+-+    *q++ = pcr_pid >> 8;
+-+    *q++ = pcr_pid;
+-+    uint32_t flags =  0x20;    /* Adaptation only */
+-     /* Continuity Count field does not increment (see 13818-1 section 2.4.3.3) */
+-+    if(ts_st) flags |= ts_st->cc;
+-+    *q++ = flags;
+-     *q++ = TS_PACKET_SIZE - 5; /* Adaptation Field Length */
+-     *q++ = 0x10;               /* Adaptation flags: PCR present */
+--    if (ts_st->discontinuity) {
+-+    if (ts_st && ts_st->discontinuity) {
+-         q[-1] |= 0x80;
+-         ts_st->discontinuity = 0;
+-     }
+- 
+-     /* PCR coded into 6 bytes */
+--    q += write_pcr_bits(q, get_pcr(ts));
+-+    q += write_pcr_bits(q, pcr);
+- 
+-     /* stuffing bytes */
+-     memset(q, STUFFING_BYTE, TS_PACKET_SIZE - (q - buf));
+-@@ -1493,9 +1508,9 @@
+-     int afc_len, stuffing_len;
+-     int is_dvb_subtitle = (st->codecpar->codec_id == AV_CODEC_ID_DVB_SUBTITLE);
+-     int is_dvb_teletext = (st->codecpar->codec_id == AV_CODEC_ID_DVB_TELETEXT);
+--    int64_t delay = av_rescale(s->max_delay, 90000, AV_TIME_BASE);
+-     int force_pat = st->codecpar->codec_type == AVMEDIA_TYPE_VIDEO && key && !ts_st->prev_payload_key;
+-     int force_sdt = 0;
+-+    int64_t pcr;
+-     int force_nit = 0;
+- 
+-     av_assert0(ts_st->payload != buf || st->codecpar->codec_type != AVMEDIA_TYPE_VIDEO);
+-@@ -1512,21 +1527,19 @@
+- 
+-     is_start = 1;
+-     while (payload_size > 0) {
+--        int64_t pcr = AV_NOPTS_VALUE;
+--        if (ts->mux_rate > 1)
+--            pcr = get_pcr(ts);
+--        else if (dts != AV_NOPTS_VALUE)
+--            pcr = (dts - delay) * SYSTEM_CLOCK_FREQUENCY_DIVISOR;
+--
+--        retransmit_si_info(s, force_pat, force_sdt, force_nit, pcr);
+--        force_pat = 0;
+--        force_sdt = 0;
+--        force_nit = 0;
+-+        // add 11, pcr references the last byte of program clock reference base
+-+        ts->pcr_pos = avio_tell(s->pb) + 11;
+-+        pcr = ts->pcr = ts->mux_rate != 1 ?
+-+            av_rescale(ts->pcr_pos, 8 * PCR_TIME_BASE, ts->mux_rate) :
+-+            (dts == AV_NOPTS_VALUE ? 0 : (dts - ts->delay) * 300);
+-+        if (force_pat || force_sdt || force_nit) {
+-+            retransmit_si_info(s, force_pat, force_sdt, force_nit);
+-+            force_pat = force_sdt = force_nit = 0;
+-+        }
+- 
+-         write_pcr = 0;
+-         if (ts->mux_rate > 1) {
+-             /* Send PCR packets for all PCR streams if needed */
+--            pcr = get_pcr(ts);
+-             if (pcr >= ts->next_pcr) {
+-                 int64_t next_pcr = INT64_MAX;
+-                 for (int i = 0; i < s->nb_streams; i++) {
+-@@ -1536,36 +1549,43 @@
+-                     AVStream *st2 = s->streams[st2_index];
+-                     MpegTSWriteStream *ts_st2 = st2->priv_data;
+-                     if (ts_st2->pcr_period) {
+--                        if (pcr - ts_st2->last_pcr >= ts_st2->pcr_period) {
+--                            ts_st2->last_pcr = FFMAX(pcr - ts_st2->pcr_period, ts_st2->last_pcr + ts_st2->pcr_period);
+--                            if (st2 != st) {
+-+                        if (pcr >= ts_st2->pcr_timer) {
+-+                            ts_st2->pcr_timer = pcr + ts_st2->pcr_period;
+-+                            if (st2 != st) { 
+-                                 mpegts_insert_pcr_only(s, st2);
+--                                pcr = get_pcr(ts);
+-                             } else {
+-                                 write_pcr = 1;
+-                             }
+-                         }
+--                        next_pcr = FFMIN(next_pcr, ts_st2->last_pcr + ts_st2->pcr_period);
+-+                        next_pcr = FFMIN(next_pcr, ts_st2->pcr_timer);
+-                     }
+-                 }
+-                 ts->next_pcr = next_pcr;
+-             }
+--            if (dts != AV_NOPTS_VALUE && (dts - pcr / SYSTEM_CLOCK_FREQUENCY_DIVISOR) > delay) {
+--                /* pcr insert gets priority over null packet insert */
+--                if (write_pcr)
+--                    mpegts_insert_pcr_only(s, st);
+--                else
+--                    mpegts_insert_null_packet(s);
+--                /* recalculate write_pcr and possibly retransmit si_info */
+--                continue;
+--            }
+--        } else if (ts_st->pcr_period && pcr != AV_NOPTS_VALUE) {
+--            if (pcr - ts_st->last_pcr >= ts_st->pcr_period && is_start) {
+--                ts_st->last_pcr = FFMAX(pcr - ts_st->pcr_period, ts_st->last_pcr + ts_st->pcr_period);
+-+        }
+-+        else if (ts_st->pcr_period) {
+-+            if (pcr >= ts_st->pcr_timer) {
+-+                ts_st->pcr_timer = pcr + ts_st->pcr_period;
+-                 write_pcr = 1;
+-             }
+-         }
+- 
+-+        if (write_pcr && ts->pcr_stream_pid >= 0) {
+-+           mpegts_insert_pcr_only(s, 0);
+-+           continue;
+-+        }
+-+
+-+        if (ts->mux_rate > 1 && dts != AV_NOPTS_VALUE &&
+-+               (dts - pcr / 300) > ts->delay) {
+-+           /* pcr insert gets priority over null packet insert */
+-+           if (write_pcr)
+-+               mpegts_insert_pcr_only(s, st);
+-+            else
+-+               mpegts_insert_null_packet(s);
+-+            /* recalculate write_pcr and possibly retransimit si_info */
+-+            continue;
+-+        }
+-+
+-         /* prepare packet header */
+-         q    = buf;
+-         *q++ = SYNC_BYTE;
+-@@ -1595,7 +1615,6 @@
+-         if (write_pcr) {
+-             set_af_flag(buf, 0x10);
+-             q = get_ts_payload_start(buf);
+--            // add 11, pcr references the last byte of program clock reference base
+-             if (dts != AV_NOPTS_VALUE && dts < pcr / SYSTEM_CLOCK_FREQUENCY_DIVISOR)
+-                 av_log(s, AV_LOG_WARNING, "dts < pcr, TS is invalid\n");
+-             extend_af(buf, write_pcr_bits(q, pcr));
+-@@ -1867,8 +1886,8 @@
+-     uint8_t *data = NULL;
+-     MpegTSWrite *ts = s->priv_data;
+-     MpegTSWriteStream *ts_st = st->priv_data;
+--    const int64_t delay = av_rescale(s->max_delay, 90000, AV_TIME_BASE) * 2;
+--    const int64_t max_audio_delay = av_rescale(s->max_delay, 90000, AV_TIME_BASE) / 2;
+-+    const int64_t delay_ticks2 = ts->delay * 2;
+-+    const int64_t max_audio_delay = ts->delay / 2;
+-     int64_t dts = pkt->dts, pts = pkt->pts;
+-     int opus_samples = 0;
+-     size_t side_data_size;
+-@@ -1888,9 +1907,9 @@
+- 
+-     if (ts->copyts < 1) {
+-         if (pts != AV_NOPTS_VALUE)
+--            pts += delay;
+-+            pts += delay_ticks2;
+-         if (dts != AV_NOPTS_VALUE)
+--            dts += delay;
+-+            dts += delay_ticks2;
+-     }
+- 
+-     if (!ts_st->first_timestamp_checked && (pts == AV_NOPTS_VALUE || dts == AV_NOPTS_VALUE)) {
+-@@ -2357,8 +2376,10 @@
+-       0, AV_OPT_TYPE_CONST, { .i64 = MPEGTS_SERVICE_TYPE_HEVC_DIGITAL_HDTV }, 0x01, 0xff, ENC, .unit = "mpegts_service_type" },
+-     { "mpegts_pmt_start_pid", "Set the first pid of the PMT.",
+-       OFFSET(pmt_start_pid), AV_OPT_TYPE_INT, { .i64 = 0x1000 }, FIRST_OTHER_PID, LAST_OTHER_PID, ENC },
+-+    { "mpegts_pcr_stream_pid", "create seperate PCR stream on this pid.",
+-+      OFFSET(pcr_stream_pid), AV_OPT_TYPE_INT, { .i64 = -1 }, -1, 0x1f00, ENC },
+-     { "mpegts_start_pid", "Set the first pid.",
+--      OFFSET(start_pid), AV_OPT_TYPE_INT, { .i64 = 0x0100 }, FIRST_OTHER_PID, LAST_OTHER_PID, ENC },
+-+      OFFSET(start_pid), AV_OPT_TYPE_INT, { .i64 = -1 }, -1, LAST_OTHER_PID, ENC },
+-     { "mpegts_m2ts_mode", "Enable m2ts mode.", OFFSET(m2ts_mode), AV_OPT_TYPE_BOOL, { .i64 = -1 }, -1, 1, ENC },
+-     { "muxrate", NULL, OFFSET(mux_rate), AV_OPT_TYPE_INT, { .i64 = 1 }, 0, INT_MAX, ENC },
+-     { "pes_payload_size", "Minimum PES packet payload in bytes",
+-@@ -2384,10 +2405,10 @@
+-       OFFSET(omit_video_pes_length), AV_OPT_TYPE_BOOL, { .i64 = 1 }, 0, 1, ENC },
+-     { "pcr_period", "PCR retransmission time in milliseconds",
+-       OFFSET(pcr_period_ms), AV_OPT_TYPE_INT, { .i64 = -1 }, -1, INT_MAX, ENC },
+--    { "pat_period", "PAT/PMT retransmission time limit in seconds",
+-+    { "pat_period", "PAT/PMT retransmission time limit in ms, -1 no pat",
+-       OFFSET(pat_period_us), AV_OPT_TYPE_DURATION, { .i64 = PAT_RETRANS_TIME * 1000LL }, 0, INT64_MAX, ENC },
+--    { "sdt_period", "SDT retransmission time limit in seconds",
+--      OFFSET(sdt_period_us), AV_OPT_TYPE_DURATION, { .i64 = SDT_RETRANS_TIME * 1000LL }, 0, INT64_MAX, ENC },
+-+    { "sdt_period", "SDT retransmission time limit in ms, -1 no sdt",
+-+      OFFSET(sdt_period_us), AV_OPT_TYPE_INT64, { .i64 = SDT_RETRANS_TIME * 1000LL }, -1, INT64_MAX, ENC },
+-     { "nit_period", "NIT retransmission time limit in seconds",
+-       OFFSET(nit_period_us), AV_OPT_TYPE_DURATION, { .i64 = NIT_RETRANS_TIME * 1000LL }, 0, INT64_MAX, ENC },
+-     { NULL },
+---- a/libavformat/mpegts.h	2025-05-12 18:48:32.808049998 -0600
+-+++ b/libavformat/mpegts.h	2025-05-13 12:23:31.824879487 -0600
+-@@ -68,6 +68,7 @@
+- /* PID from 0x1FFC to 0x1FFE may be assigned as needed to PMT, elementary
+-  * streams and other data tables */
+- #define NULL_PID        0x1FFF /* Null packet (used for fixed bandwidth padding) */
+-+#define START_PID	0x0400
+- 
+- /* m2ts pids */
+- #define M2TS_PMT_PID                      0x0100
+---- a/libavformat/bluray.c	2025-05-12 18:48:54.328383651 -0600
+-+++ b/libavformat/bluray.c	2025-05-12 18:52:51.113993748 -0600
+-@@ -27,7 +27,7 @@
+- #include "libavutil/opt.h"
+- 
+- #define BLURAY_PROTO_PREFIX     "bluray:"
+--#define MIN_PLAYLIST_LENGTH     180     /* 3 min */
+-+#define MIN_PLAYLIST_LENGTH     0
+- 
+- typedef struct {
+-     const AVClass *class;
+-
+---- a/doc/muxers.texi	2025-05-12 18:49:20.456781375 -0600
+-+++ b/doc/muxers.texi	2025-05-13 12:19:17.959026488 -0600
+-@@ -3116,7 +3116,8 @@
+- Maximum time in seconds between PAT/PMT tables. Default is @code{0.1}.
+- 
+- @item sdt_period @var{duration}
+--Maximum time in seconds between SDT tables. Default is @code{0.5}.
+-+Maximum time in seconds between SDT tables. Default is @code{0.5}. Regardless
+-+of this setting no SDT is written in m2ts mode.
+- 
+- @item nit_period @var{duration}
+- Maximum time in seconds between NIT tables. Default is @code{0.5}.
+diff --git a/cinelerra-5.1/thirdparty/src/ffmpeg.git.patch3 b/cinelerra-5.1/thirdparty/src/ffmpeg.git.patch3
+deleted file mode 100644
+index 538c5935..00000000
+--- a/cinelerra-5.1/thirdparty/src/ffmpeg.git.patch3
++++ /dev/null
+@@ -1,68 +0,0 @@
+---- a/libavformat/avformat.h	2025-05-08 15:58:37.933172640 -0600
+-+++ b/libavformat/avformat.h	2025-05-08 15:57:46.964410825 -0600
+-@@ -496,6 +496,9 @@
+-                                         The user or muxer can override this through
+-                                         AVFormatContext.avoid_negative_ts
+-                                         */
+-+#define AVFMT_SEEK_NOSTREAMS  0x80000 /**< Stream index ignored by seek,
+-+                                           or some streams fail to seek
+-+                                           */
+- 
+- #define AVFMT_SEEK_TO_PTS   0x4000000 /**< Seeking is based on PTS */
+- 
+-@@ -559,7 +562,8 @@
+-     /**
+-      * Can use flags: AVFMT_NOFILE, AVFMT_NEEDNUMBER, AVFMT_SHOW_IDS,
+-      * AVFMT_NOTIMESTAMPS, AVFMT_GENERIC_INDEX, AVFMT_TS_DISCONT, AVFMT_NOBINSEARCH,
+--     * AVFMT_NOGENSEARCH, AVFMT_NO_BYTE_SEEK, AVFMT_SEEK_TO_PTS.
+-+     * AVFMT_NOGENSEARCH, AVFMT_NO_BYTE_SEEK, AVFMT_SEEK_TO_PTS,
+-+     * AVFMT_SEEK_NOSTREAMS
+-      */
+-     int flags;
+- 
+---- a/libavformat/dv.c	2025-05-08 15:59:26.143851727 -0600
+-+++ b/libavformat/dv.c	2025-05-08 15:59:01.103509955 -0600
+-@@ -714,6 +714,7 @@
+- const FFInputFormat ff_dv_demuxer = {
+-     .p.name         = "dv",
+-     .p.long_name    = NULL_IF_CONFIG_SMALL("DV (Digital Video)"),
+-+    .p.flags	     = AVFMT_SEEK_NOSTREAMS,
+-     .p.extensions   = "dv,dif",
+-     .priv_data_size = sizeof(RawDVContext),
+-     .read_probe     = dv_probe,
+-
+---- a/libavformat/matroskadec.c	2025-05-08 16:00:34.406740107 -0600
+-+++ b/libavformat/matroskadec.c	2025-05-08 15:59:37.777003123 -0600
+-@@ -4832,6 +4832,7 @@
+- const FFInputFormat ff_webm_dash_manifest_demuxer = {
+-     .p.name         = "webm_dash_manifest",
+-     .p.long_name    = NULL_IF_CONFIG_SMALL("WebM DASH Manifest"),
+-+    .p.flags        = AVFMT_SEEK_NOSTREAMS,
+-     .p.priv_class   = &webm_dash_class,
+-     .priv_data_size = sizeof(MatroskaDemuxContext),
+-     .flags_internal = FF_INFMT_FLAG_INIT_CLEANUP,
+-@@ -4844,6 +4845,7 @@
+- const FFInputFormat ff_matroska_demuxer = {
+-     .p.name         = "matroska,webm",
+-     .p.long_name    = NULL_IF_CONFIG_SMALL("Matroska / WebM"),
+-+    .p.flags        = AVFMT_SEEK_NOSTREAMS,
+-     .p.extensions   = "mkv,mk3d,mka,mks,webm",
+-     .p.mime_type    = "audio/webm,audio/x-matroska,video/webm,video/x-matroska",
+-     .priv_data_size = sizeof(MatroskaDemuxContext),
+-
+---- a/libavformat/seek.c	2025-05-08 16:01:47.828700137 -0600
+-+++ b/libavformat/seek.c	2025-05-08 16:00:44.845875964 -0600
+-@@ -607,6 +607,13 @@
+-         return seek_frame_byte(s, stream_index, timestamp, flags);
+-     }
+- 
+-+    if (stream_index != -1 && (s->iformat->flags & AVFMT_SEEK_NOSTREAMS)) {
+-+            timestamp = av_rescale_q(timestamp,
+-+                    s->streams[stream_index]->time_base,
+-+                    AV_TIME_BASE_Q);
+-+            stream_index = -1;
+-+    }
+-+
+-     if (stream_index < 0) {
+-         stream_index = av_find_default_stream_index(s);
+-         if (stream_index < 0)
+diff --git a/cinelerra-5.1/thirdparty/src/ffmpeg.git.patch4 b/cinelerra-5.1/thirdparty/src/ffmpeg.git.patch4
+deleted file mode 100644
+index b054f7a1..00000000
+--- a/cinelerra-5.1/thirdparty/src/ffmpeg.git.patch4
++++ /dev/null
+@@ -1,10 +0,0 @@
+---- a/libavformat/avidec.c	2025-05-09 13:35:07.851155737 -0600
+-+++ b/libavformat/avidec.c	2025-05-09 13:34:45.702821357 -0600
+-@@ -2021,6 +2021,7 @@
+-     .p.name         = "avi",
+-     .p.long_name    = NULL_IF_CONFIG_SMALL("AVI (Audio Video Interleaved)"),
+-     .p.extensions   = "avi",
+-+    .p.flags        = AVFMT_SEEK_NOSTREAMS,
+-     .p.priv_class   = &demuxer_class,
+-     .priv_data_size = sizeof(AVIContext),
+-     .flags_internal = FF_INFMT_FLAG_INIT_CLEANUP,
+diff --git a/cinelerra-5.1/thirdparty/src/ffmpeg.git.patch5 b/cinelerra-5.1/thirdparty/src/ffmpeg.git.patch5
+deleted file mode 100644
+index 64ee262c..00000000
+--- a/cinelerra-5.1/thirdparty/src/ffmpeg.git.patch5
++++ /dev/null
+@@ -1,25 +0,0 @@
+---- a/libavfilter/formats.c
+-+++ b/libavfilter/formats.c
+-@@ -110,11 +110,13 @@
+-        possibly causing a lossy conversion elsewhere in the graph.
+-        To avoid that, pretend that there are no common formats to force the
+-        insertion of a conversion filter. */
+--    if (type == AVMEDIA_TYPE_VIDEO)
+-+    if (type == AVMEDIA_TYPE_VIDEO) {
+-         for (i = 0; i < a->nb_formats; i++) {
+-             const AVPixFmtDescriptor *const adesc = av_pix_fmt_desc_get(a->formats[i]);
+-+            if( !adesc ) continue;
+-             for (j = 0; j < b->nb_formats; j++) {
+-                 const AVPixFmtDescriptor *bdesc = av_pix_fmt_desc_get(b->formats[j]);
+-+                if( !bdesc ) continue;
+-                 alpha2 |= adesc->flags & bdesc->flags & AV_PIX_FMT_FLAG_ALPHA;
+-                 chroma2|= adesc->nb_components > 1 && bdesc->nb_components > 1;
+-                 if (a->formats[i] == b->formats[j]) {
+-@@ -123,6 +125,7 @@
+-                 }
+-             }
+-         }
+-+    }
+- 
+-     // If chroma or alpha can be lost through merging then do not merge
+-     if (alpha2 > alpha1 || chroma2 > chroma1)
+diff --git a/cinelerra-5.1/thirdparty/src/ffmpeg.git.patch7 b/cinelerra-5.1/thirdparty/src/ffmpeg.git.patch7
+deleted file mode 100644
+index e2c43f74..00000000
+--- a/cinelerra-5.1/thirdparty/src/ffmpeg.git.patch7
++++ /dev/null
+@@ -1,10 +0,0 @@
+---- a/libavcodec/vdpau_mpeg12.c	2025-05-09 14:54:40.549494700 -0600
+-+++ b/libavcodec/vdpau_mpeg12.c	2025-05-09 14:53:57.284866101 -0600
+-@@ -118,6 +118,7 @@
+-     .frame_priv_data_size = sizeof(struct vdpau_picture_context),
+-     .init           = vdpau_mpeg1_init,
+-     .uninit         = ff_vdpau_common_uninit,
+-+    .frame_params   = ff_vdpau_common_frame_params,
+-     .priv_data_size = sizeof(VDPAUContext),
+-     .caps_internal  = HWACCEL_CAP_ASYNC_SAFE,
+- };
+diff --git a/cinelerra-5.1/thirdparty/src/ffmpeg.git.patch9 b/cinelerra-5.1/thirdparty/src/ffmpeg.git.patch9
+deleted file mode 100644
+index befd285f..00000000
+--- a/cinelerra-5.1/thirdparty/src/ffmpeg.git.patch9
++++ /dev/null
+@@ -1,14 +0,0 @@
+---- a/libavformat/mpegenc.c	2025-05-11 15:05:24.437490237 -0600
+-+++ b/libavformat/mpegenc.c	2025-05-11 14:46:46.661934073 -0600
+-@@ -989,9 +989,9 @@
+-         PacketDesc *pkt_desc;
+- 
+-         while ((pkt_desc = stream->predecode_packet) &&
+-+               pkt_desc != stream->premux_packet &&
+-                scr > pkt_desc->dts) { // FIXME: > vs >=
+--            if (stream->buffer_index < pkt_desc->size ||
+--                stream->predecode_packet == stream->premux_packet) {
+-+            if (stream->buffer_index < pkt_desc->size) {
+-                 av_log(ctx, AV_LOG_ERROR,
+-                        "buffer underflow st=%d bufi=%d size=%d\n",
+-                        i, stream->buffer_index, pkt_desc->size);
+diff --git a/cinelerra-5.1/thirdparty/src/ffmpeg.git.patchB b/cinelerra-5.1/thirdparty/src/ffmpeg.git.patchB
+deleted file mode 100644
+index 89e99896..00000000
+--- a/cinelerra-5.1/thirdparty/src/ffmpeg.git.patchB
++++ /dev/null
+@@ -1,22 +0,0 @@
+---- a/libavutil/hwcontext_vdpau.c
+-+++ b/libavutil/hwcontext_vdpau.c
+-@@ -47,6 +47,11 @@
+-     { 0,                     AV_PIX_FMT_NONE,   },
+- };
+- 
+-+static const VDPAUPixFmtMap pix_fmts_420j[] = {
+-+    { VDP_YCBCR_FORMAT_YV12, AV_PIX_FMT_YUVJ420P },
+-+    { 0,                     AV_PIX_FMT_NONE,   },
+-+};
+-+
+- static const VDPAUPixFmtMap pix_fmts_422[] = {
+-     { VDP_YCBCR_FORMAT_NV12, AV_PIX_FMT_NV16    },
+-     { VDP_YCBCR_FORMAT_YV12, AV_PIX_FMT_YUV422P },
+-@@ -71,6 +76,7 @@
+-     const VDPAUPixFmtMap *map;
+- } vdpau_pix_fmts[] = {
+-     { VDP_CHROMA_TYPE_420, AV_PIX_FMT_YUV420P, pix_fmts_420 },
+-+    { VDP_CHROMA_TYPE_420, AV_PIX_FMT_YUVJ420P, pix_fmts_420j },
+-     { VDP_CHROMA_TYPE_422, AV_PIX_FMT_YUV422P, pix_fmts_422 },
+-     { VDP_CHROMA_TYPE_444, AV_PIX_FMT_YUV444P, pix_fmts_444 },
+- #ifdef VDP_YCBCR_FORMAT_P016
+diff --git a/cinelerra-5.1/thirdparty/src/ffmpeg.git.patchC b/cinelerra-5.1/thirdparty/src/ffmpeg.git.patchC
+deleted file mode 100644
+index 63d187f9..00000000
+--- a/cinelerra-5.1/thirdparty/src/ffmpeg.git.patchC
++++ /dev/null
+@@ -1,41 +0,0 @@
+---- a/libavcodec/encode.c	2025-05-12 08:52:53.070539488 -0600
+-+++ b/libavcodec/encode.c	2025-05-12 08:40:22.831978565 -0600
+-@@ -306,7 +306,7 @@
+-     }
+- 
+-     if (!frame->buf[0]) {
+--        if (!(avctx->codec->capabilities & AV_CODEC_CAP_DELAY ||
+-+        if (avci->draining && !(avctx->codec->capabilities & AV_CODEC_CAP_DELAY ||
+-               avci->frame_thread_encoder))
+-             return AVERROR_EOF;
+- 
+-@@ -325,8 +325,10 @@
+-         ret = ff_encode_encode_cb(avctx, avpkt, frame, &got_packet);
+-     }
+- 
+--    if (avci->draining && !got_packet)
+-+    if (avci->draining && !got_packet) {
+-+       fflush(stderr);
+-         avci->draining_done = 1;
+-+    }
+- 
+-     return ret;
+- }
+-@@ -501,10 +503,16 @@
+-     if (avci->draining)
+-         return AVERROR_EOF;
+- 
+--    if (avci->buffer_frame->buf[0])
+-+    if (avci->buffer_frame->buf[0]) {
+-+        if (!frame) {
+-+           fflush(stderr);
+-+            av_frame_unref(avci->buffer_frame);
+-+       }
+-         return AVERROR(EAGAIN);
+-+    }
+- 
+-     if (!frame) {
+-+       fflush(stderr);
+-         avci->draining = 1;
+-     } else {
+-         ret = encode_send_frame_internal(avctx, frame);
+diff --git a/cinelerra-5.1/thirdparty/src/ffmpeg.git.patchD b/cinelerra-5.1/thirdparty/src/ffmpeg.git.patchD
+deleted file mode 100644
+index d782ae97..00000000
+--- a/cinelerra-5.1/thirdparty/src/ffmpeg.git.patchD
++++ /dev/null
+@@ -1,24 +0,0 @@
+---- a/libavcodec/pcm-dvdenc.c	2025-05-12 17:20:39.267102833 -0600
+-+++ b/libavcodec/pcm-dvdenc.c	2025-05-12 17:22:13.361600238 -0600
+-@@ -38,6 +38,12 @@
+-     int quant, freq, frame_size;
+- 
+-     switch (avctx->sample_rate) {
+-+    case 32000:
+-+       freq = 3;
+-+       break;
+-+    case 44100:
+-+       freq = 2;
+-+       break;
+-     case 48000:
+-         freq = 0;
+-         break;
+-@@ -181,7 +187,7 @@
+-     .priv_data_size = sizeof(PCMDVDContext),
+-     .init           = pcm_dvd_encode_init,
+-     FF_CODEC_ENCODE_CB(pcm_dvd_encode_frame),
+--    CODEC_SAMPLERATES(48000, 96000),
+-+    CODEC_SAMPLERATES(32000, 44100, 48000, 96000),
+-     CODEC_CH_LAYOUTS(AV_CHANNEL_LAYOUT_MONO,    AV_CHANNEL_LAYOUT_STEREO,
+-                      AV_CHANNEL_LAYOUT_5POINT1, AV_CHANNEL_LAYOUT_7POINT1),
+-     CODEC_SAMPLEFMTS(AV_SAMPLE_FMT_S16, AV_SAMPLE_FMT_S32),
+diff --git a/cinelerra-5.1/thirdparty/src/ffmpeg.git.patchZ1 b/cinelerra-5.1/thirdparty/src/ffmpeg.git.patchZ1
+deleted file mode 100644
+index 5354f74a..00000000
+--- a/cinelerra-5.1/thirdparty/src/ffmpeg.git.patchZ1
++++ /dev/null
+@@ -1,49 +0,0 @@
+---- a/libavcodec/wrapped_avframe.c	2025-05-11 16:34:43.753546422 -0600
+-+++ b/libavcodec/wrapped_avframe.c	2025-05-11 15:08:08.157768438 -0600
+-@@ -32,6 +32,38 @@
+- #include "libavutil/buffer.h"
+- #include "libavutil/mem.h"
+- 
+-+
+-+
+-+static const enum AVPixelFormat pix_fmts_all[] = {
+-+    AV_PIX_FMT_YUV411P,
+-+    AV_PIX_FMT_YUV420P,
+-+    AV_PIX_FMT_YUVJ420P,
+-+    AV_PIX_FMT_YUV422P,
+-+    AV_PIX_FMT_YUVJ422P,
+-+    AV_PIX_FMT_YUV444P,
+-+    AV_PIX_FMT_YUVJ444P,
+-+    AV_PIX_FMT_YUV420P10,
+-+    AV_PIX_FMT_YUV422P10,
+-+    AV_PIX_FMT_YUV444P10,
+-+    AV_PIX_FMT_YUV420P12,
+-+    AV_PIX_FMT_YUV422P12,
+-+    AV_PIX_FMT_YUV444P12,
+-+    AV_PIX_FMT_YUV420P14,
+-+    AV_PIX_FMT_YUV422P14,
+-+    AV_PIX_FMT_YUV444P14,
+-+    AV_PIX_FMT_YUV420P16,
+-+    AV_PIX_FMT_YUV422P16,
+-+    AV_PIX_FMT_YUV444P16,
+-+    AV_PIX_FMT_GRAY8,
+-+    AV_PIX_FMT_GRAY9,
+-+    AV_PIX_FMT_GRAY10,
+-+    AV_PIX_FMT_GRAY12,
+-+    AV_PIX_FMT_GRAY16,
+-+    AV_PIX_FMT_NONE
+-+};
+-+
+-+
+-+
+- static void wrapped_avframe_release_buffer(void *unused, uint8_t *data)
+- {
+-     AVFrame *frame = (AVFrame *)data;
+-@@ -110,6 +142,7 @@
+-     .p.id           = AV_CODEC_ID_WRAPPED_AVFRAME,
+-     .p.capabilities = AV_CODEC_CAP_ENCODER_REORDERED_OPAQUE,
+-     FF_CODEC_ENCODE_CB(wrapped_avframe_encode),
+-+    .p.pix_fmts       = pix_fmts_all,
+- };
+- 
+- const FFCodec ff_wrapped_avframe_decoder = {
+diff --git a/cinelerra-5.1/thirdparty/src/ffmpeg.git.patchZ2 b/cinelerra-5.1/thirdparty/src/ffmpeg.git.patchZ2
+deleted file mode 100644
+index 6a20f7ab..00000000
+--- a/cinelerra-5.1/thirdparty/src/ffmpeg.git.patchZ2
++++ /dev/null
+@@ -1,11 +0,0 @@
+---- a/libavformat/yuv4mpegenc.c	2025-05-11 15:58:35.782501756 -0600
+-+++ b/libavformat/yuv4mpegenc.c	2025-05-11 15:58:08.480121797 -0600
+-@@ -265,7 +265,7 @@
+-             av_log(s, AV_LOG_ERROR, "'%s' is not an official yuv4mpegpipe pixel format. "
+-                    "Use '-strict -1' to encode to this pixel format.\n",
+-                    av_get_pix_fmt_name(s->streams[0]->codecpar->format));
+--            return AVERROR(EINVAL);
+-+            //return AVERROR(EINVAL);
+-         }
+-         av_log(s, AV_LOG_WARNING, "Warning: generating non standard YUV stream. "
+-                "Mjpegtools will not work.\n");
+-- 
+2.46.4
+

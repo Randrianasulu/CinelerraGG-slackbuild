@@ -1,0 +1,34 @@
+From 4ab18a06fed6f148a29c1340448050af0edc80a3 Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <randrianasulu@gmail.com>
+Date: Thu, 19 Mar 2026 07:26:28 +0300
+Subject: [PATCH 3/9] Update ffmpeg to 8.1 and dav1d to 1.5.3 in configure.ac
+
+---
+ cinelerra-5.1/configure.ac | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/cinelerra-5.1/configure.ac b/cinelerra-5.1/configure.ac
+index 02935af8..15e7d4ac 100644
+--- a/cinelerra-5.1/configure.ac
++++ b/cinelerra-5.1/configure.ac
+@@ -236,7 +236,7 @@ PKG_3RD([esound],[no],
+   [ . ])
+ 
+ PKG_3RD([ffmpeg],[yes],
+-  [ffmpeg-8.0],
++  [ffmpeg-8.1],
+   [ libavutil/libavutil.a \
+     libavcodec/libavcodec.a \
+     libavformat/libavformat.a \
+@@ -485,7 +485,7 @@ PKG_3RD([libsvtav1],[no],
+   [ usr/local/include/svt-av1 ])
+ 
+ PKG_3RD([dav1d],[auto],
+-  [dav1d-0.5.1],
++  [dav1d-1.5.3],
+   [ usr/local/lib*/libdav1d*.a ],
+   [ usr/local/include ])
+ 
+-- 
+2.46.4
+
