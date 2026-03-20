@@ -236,8 +236,8 @@ export CC="ccache gcc"
 #    --with-git-ffmpeg=https://git.ffmpeg.org/ffmpeg.git \
 #    --with-opencv=sta,tar=https://cinelerra-gg.org/download/opencv/opencv-20200306.tgz \
 
-EXTRA_LIBS=" -lOpenCL -lSvtAv1Enc -lvpl -ldav1d -lxvidcore -lass -lbluray -lsnappy -lzimg -lplacebo -lshaderc_shared" \
-FFMPEG_EXTRA_CFG=" --enable-libvpl --disable-doc --enable-opencl --enable-libsvtav1 --enable-frei0r --enable-libdav1d --enable-libzimg --enable-libxvid --enable-libass --enable-libbluray --enable-libsnappy --enable-libshaderc --enable-libplacebo --enable-vulkan --disable-debug --extra-cflags=-I/usr/local/include/vpl --extra-cflags=-I/usr/include/svt-av1" \
+EXTRA_LIBS=" -lOpenCL -lSvtAv1Enc -ldav1d -lxvidcore -lass -lbluray -lsnappy -lshaderc_shared" \
+FFMPEG_EXTRA_CFG=" --disable-doc --enable-opencl --enable-libsvtav1 --enable-frei0r --enable-libdav1d --enable-libxvid --enable-libass --enable-libbluray --enable-libsnappy --disable-debug --extra-cflags=-I/usr/local/include/vpl --extra-cflags=-I/usr/include/svt-av1" \
 CFLAGS="$SLKCFLAGS  -D__STDC_CONSTANT_MACROS" \
 CXXFLAGS="$SLKCFLAGS -D__STDC_CONSTANT_MACROS" \
 LDFLAGS="-L/usr/X11R7/lib -ldl -L/usr/lib${LIBDIRSUFFIX}" \
@@ -249,6 +249,10 @@ LDFLAGS="-L/usr/X11R7/lib -ldl -L/usr/lib${LIBDIRSUFFIX}" \
     --libdir=/usr/lib${LIBDIRSUFFIX} \
     --with-ladspa-build \
     --with-opus \
+    --with-onevpl \
+    --with-vulkan \
+    --with-libzimg \
+    --with-libplacebo \
     --enable-libsvtav1 \
     --with-nv \
     --enable-opus \
