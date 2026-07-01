@@ -1,7 +1,7 @@
 From 4ab18a06fed6f148a29c1340448050af0edc80a3 Mon Sep 17 00:00:00 2001
 From: Andrew Randrianasulu <randrianasulu@gmail.com>
 Date: Thu, 19 Mar 2026 07:26:28 +0300
-Subject: [PATCH 3/9] Update ffmpeg to 8.1 and dav1d to 1.5.3 in configure.ac
+Subject: [PATCH 03/10] Update ffmpeg to 8.1 and dav1d to 1.5.3 in configure.ac
 
 ---
  cinelerra-5.1/configure.ac | 4 ++--

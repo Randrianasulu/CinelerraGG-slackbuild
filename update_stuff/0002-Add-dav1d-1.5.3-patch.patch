@@ -1,7 +1,7 @@
 From c66a4eea2def24ea73c4789c370317813827d6a1 Mon Sep 17 00:00:00 2001
 From: Andrew Randrianasulu <randrianasulu@gmail.com>
 Date: Thu, 19 Mar 2026 07:25:49 +0300
-Subject: [PATCH 2/9] Add dav1d 1.5.3 patch
+Subject: [PATCH 02/10] Add dav1d 1.5.3 patch
 
 ---
  .../thirdparty/src/dav1d_1.5.3.patch          | 405 ++++++++++++++++++

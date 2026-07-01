@@ -1,0 +1,150 @@
+From a174d40ffb59399f5e91dfd9ba8884e2fd76f0df Mon Sep 17 00:00:00 2001
+From: Andrew Randrianasulu <randrianasulu@gmail.com>
+Date: Fri, 20 Mar 2026 12:52:45 +0300
+Subject: [PATCH 10/10] Integrate nasm 2.15.05
+
+---
+ cinelerra-5.1/configure.ac                    | 38 +++++++++++++------
+ cinelerra-5.1/thirdparty/Makefile             | 14 ++++---
+ .../thirdparty/src/dav1d-1.5.3.patch          |  2 +-
+ 3 files changed, 35 insertions(+), 19 deletions(-)
+
+diff --git a/cinelerra-5.1/configure.ac b/cinelerra-5.1/configure.ac
+index 15e7d4ac..e6e84baf 100644
+--- a/cinelerra-5.1/configure.ac
++++ b/cinelerra-5.1/configure.ac
+@@ -394,6 +394,9 @@ PKG_3RD([mjpegtools],[yes],
+ 
+ fi
+ 
++
++
++
+ PKG_3RD([openexr],[auto],
+   [openexr-2.4.1],
+   [ usr/local/lib/libHalf.a \
+@@ -545,20 +548,26 @@ I86=[`expr "x$ARCH" : 'xi[346]86.*'`]
+ X86=[`expr "x$ARCH" : 'x..._64*'`]
+ 
+ if test "x$I86$X86" != "x00" ; then
++
+   # Checks for ix86 programs.
+-  REQUIRE_PROG(NASM, [nasm])
++#  REQUIRE_PROG(NASM, [nasm])
+   # libx264 nasm fix
+-  AC_MSG_CHECKING([nasm x264 compatible])
+-  echo "vmovdqa32 [[eax]]{k1}{z}, zmm0" > conftest.asm
+-  nasm conftest.asm -o conftest.o > /dev/null 2>&1
+-  if test $? != 0 ; then
+-   AC_MSG_RESULT([no])
+-   AC_MSG_WARN([libx264 built without assembly code])
+-   X264_CFG_PARAMS="$X264_CFG_PARAMS --disable-asm"
+-  else
+-   AC_MSG_RESULT([yes])
+-  fi
+-  rm -f conftest.asm conftest.o
++#  AC_MSG_CHECKING([nasm x264 compatible])
++#  echo "vmovdqa32 [[eax]]{k1}{z}, zmm0" > conftest.asm
++#  nasm conftest.asm -o conftest.o > /dev/null 2>&1
++#  if test $? != 0 ; then
++#   AC_MSG_RESULT([no])
++#   AC_MSG_WARN([libx264 built without assembly code])
++#   X264_CFG_PARAMS="$X264_CFG_PARAMS --disable-asm"
++#  else
++#   AC_MSG_RESULT([yes])
++#  fi
++#  rm -f conftest.asm conftest.o
++PKG_3RD([nasm],[yes],
++ [nasm-2.15.05],
++ [ ],
++ [ . ])
++
+   REQUIRE_PROG(YASM, [yasm])
+ fi
+ 
+@@ -1074,6 +1083,9 @@ PKG_PROVIDE([libaom])
+ PKG_PROVIDE([libsvtav1])
+ PKG_PROVIDE([dav1d])
+ PKG_PROVIDE([libwebp])
++if test "x$I86$X86" != "x00" ; then
++PKG_PROVIDE([nasm])
++fi
+ PKG_PROVIDE([openExr], [$WANT_OPENEXR])
+ PKG_PROVIDE([openexr], [$WANT_OPENEXR])
+ PKG_PROVIDE([openjpeg])
+@@ -1449,6 +1461,8 @@ echo ""
+ echo "export thirdparty_libraries libraries"
+ echo "export CFLAGS_ CXXFLAGS_ LDFLAGS_"
+ echo "unexport CFLAGS CXXFLAGS LDFLAGS"
++echo "export PATH=`realpath $(echo $PWD)`/thirdparty/nasm-2.15.05:$PATH"
++echo "export ASM_NASM=`realpath $(echo $PWD)`/thirdparty/nasm-2.15.05/nasm"
+ 
+ if test "x$HAVE_tiff" = "xyes"; then
+   if test "x$HAVE_jbig" != "xyes"; then
+diff --git a/cinelerra-5.1/thirdparty/Makefile b/cinelerra-5.1/thirdparty/Makefile
+index 95a4e311..f639794a 100644
+--- a/cinelerra-5.1/thirdparty/Makefile
++++ b/cinelerra-5.1/thirdparty/Makefile
+@@ -259,6 +259,7 @@ libtheora.cfg_params?= --disable-examples --disable-spec --enable-shared=no
+ libuuid.cfg_vars?= autoreconf -ifv -I m4 && automake -caf;
+ libuuid.cfg_params?=--enable-shared=no
+ libvorbis.cfg_params?= --disable-oggtest --enable-shared=no
++nasm.cfg_params?= --disable-doc
+ openjpeg.cfg_params?= -DBUILD_SHARED_LIBS:BOOL=OFF -DBUILD_CODEC:BOOL=OFF
+ openjpeg.cfg_vars?=$(call cmake_config,.)
+ openjpeg.mak_params?= ; cd $(call bld_path,openjpeg,src/lib/openjp2); ln -sf . openjpeg-2.1
+@@ -353,6 +354,7 @@ uname := $(shell uname -o)
+ ifeq ($(uname), Android)
+ $(call rules,$(call std-build,libbthread))
+ endif
++$(call rules,$(call std-build,nasm))
+ $(call rules,$(call std-build,a52dec,djbfft))
+ $(call rules,$(call std-build,djbfft))
+ $(call rules,$(call std-build,audiofile))
+@@ -366,15 +368,15 @@ $(call rules,$(call std-build,flac,libogg))
+ $(call rules,$(call std-build,giflib))
+ $(call rules,$(call std-build,ilmBase, openexr))
+ $(call rules,$(call std-build,ladspa))
+-$(call rules,$(call std-build,lame))
++$(call rules,$(call std-build,lame,nasm))
+ $(call rules,$(call std-build,libaom))
+ $(call rules,$(call std-build,libsvtav1))
+-$(call rules,$(call std-build,dav1d))
+-$(call rules,$(call std-build,libwebp))
++$(call rules,$(call std-build,dav1d,nasm))
++$(call rules,$(call std-build,libwebp,nasm))
+ $(call rules,$(call std-build,libavc1394,libraw1394))
+ $(call rules,$(call std-build,libdv))
+ $(call rules,$(call std-build,libiec61883,libraw1394))
+-$(call rules,$(call std-build,libjpeg))
++$(call rules,$(call std-build,libjpeg,nasm))
+ $(call rules,$(call std-build,libogg))
+ $(call rules,$(call std-build,libraw1394))
+ $(call rules,$(call std-build,libsndfile))
+@@ -390,8 +392,8 @@ $(call rules,$(call std-build,opus))
+ $(call rules,$(call std-build,speech_tools))
+ $(call rules,$(call std-build,tiff, libwebp libjpeg))
+ $(call rules,$(call std-build,twolame))
+-$(call rules,$(call std-build,x264))
+-$(call rules,$(call std-build,x265))
++$(call rules,$(call std-build,x264,nasm))
++$(call rules,$(call std-build,x265,nasm))
+ $(call rules,$(call std-build,libvpx))
+ $(call rules,$(call std-build,lv2))
+ $(call rules,$(call std-build,serd))
+diff --git a/cinelerra-5.1/thirdparty/src/dav1d-1.5.3.patch b/cinelerra-5.1/thirdparty/src/dav1d-1.5.3.patch
+index 82573a1c..4f636201 100644
+--- a/cinelerra-5.1/thirdparty/src/dav1d-1.5.3.patch
++++ b/cinelerra-5.1/thirdparty/src/dav1d-1.5.3.patch
+@@ -93,7 +93,7 @@
+ +	-dl \
+ +
+ +CC_CC=$(Q)cc $(CC_OPTS) $(CFLAGS)
+-+NASM=$(Q)/usr/bin/nasm
+++NASM=$(Q)nasm
+ +any=$(foreach i,$(2),$(1)/$(i))
+ +
+ +# nasm
+-- 
+2.46.4
+

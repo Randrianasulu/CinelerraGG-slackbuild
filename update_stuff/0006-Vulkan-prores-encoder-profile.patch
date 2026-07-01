@@ -1,7 +1,7 @@
 From bc9d436196406f572fbbdc9d7263d775e2d10fcc Mon Sep 17 00:00:00 2001
 From: Andrew Randrianasulu <randrianasulu@gmail.com>
 Date: Thu, 19 Mar 2026 08:17:49 +0300
-Subject: [PATCH 6/9] Vulkan prores encoder profile
+Subject: [PATCH 06/10] Vulkan prores encoder profile
 
 ---
  cinelerra-5.1/ffmpeg/video/prores_vulkan.pro | 12 ++++++++++++
